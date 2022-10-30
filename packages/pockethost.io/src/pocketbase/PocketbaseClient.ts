@@ -1,3 +1,4 @@
+import { browser } from '$app/environment'
 import { createGenericSyncEvent } from '$util/events'
 import {
   assertExists,
@@ -22,8 +23,30 @@ export type AuthStoreProps = {
 
 export type PocketbaseClientApi = ReturnType<typeof createPocketbaseClient>
 
-export const createPocketbaseClient = (url: string) => {
+export type BeforeSendHandler = (
+  url: string,
+  reqConfig: {
+    [key: string]: any
+  }
+) => {
+  [key: string]: any
+}
+export type PocketbaseClientProps = {
+  url: string
+  cookie: string | null
+  beforeSend?: BeforeSendHandler
+}
+
+export const createPocketbaseClient = (props?: Partial<PocketbaseClientProps>) => {
+  const _props: PocketbaseClientProps = {
+    url: 'http://localhost:5990',
+    cookie: '',
+    ...props
+  }
+  const { cookie, url, beforeSend } = _props
   const client = new PocketBase(url)
+  if (cookie) client.authStore.loadFromCookie(cookie)
+  client.beforeSend = beforeSend
 
   const { authStore } = client
 
@@ -120,6 +143,8 @@ export const createPocketbaseClient = (url: string) => {
    * This section is for initialization
    */
   {
+    console.log(`logged in?`, isLoggedIn())
+
     /**
      * Listen for native authStore changes and convert to synthetic event
      */
@@ -132,6 +157,15 @@ export const createPocketbaseClient = (url: string) => {
      * out of date, or fields in the user record may have changed in the backend.
      */
     refreshAuthToken()
+
+    /**
+     * Export to cookie every time auth changes
+     */
+    onAuthChange(() => {
+      console.log(`Exporting to cookie`)
+      const cookie = client.authStore.exportToCookie({ httpOnly: false })
+      if (browser) document.cookie = cookie
+    })
 
     /**
      * Listen for auth state changes and subscribe to realtime _user events.

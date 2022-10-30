@@ -1,15 +1,18 @@
-import { browser } from '$app/environment'
 import { PUBLIC_PB_DOMAIN, PUBLIC_PB_SUBDOMAIN } from '$src/env'
-import { createPocketbaseClient, type PocketbaseClientApi } from './PocketbaseClient'
+import {
+  createPocketbaseClient,
+  type PocketbaseClientApi,
+  type PocketbaseClientProps
+} from './PocketbaseClient'
 
 export const client = (() => {
   let clientInstance: PocketbaseClientApi | undefined
-  return () => {
-    if (!browser) throw new Error(`PocketBase client not supported in SSR`)
+  return (props?: Partial<PocketbaseClientProps>) => {
     if (clientInstance) return clientInstance
-    console.log(`Initializing pocketbase client`)
     const url = `https://${PUBLIC_PB_SUBDOMAIN}.${PUBLIC_PB_DOMAIN}`
-    clientInstance = createPocketbaseClient(url)
+    const _props = { url, ...props }
+    console.log(`Initializing pocketbase client`, _props)
+    clientInstance = createPocketbaseClient(_props)
     return clientInstance
   }
 })()

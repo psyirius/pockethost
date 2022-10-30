@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { browser } from '$app/environment'
   import { assertTruthy } from '@pockethost/common'
   import { find } from '@s-libs/micro-dash'
   import Cookies from 'js-cookie'
@@ -20,6 +19,12 @@
   }
 
   const html = () => {
+    if (typeof document === 'undefined') {
+      return {
+        getAttribute: () => DEFAULT_THEME,
+        setAttribute: () => {}
+      }
+    }
     const htmlElement = document.querySelector('html')
     assertTruthy(htmlElement, `Expected <html> element to exist`)
     return htmlElement
@@ -38,7 +43,7 @@
   export let navLink: boolean = false
 
   // Set the default icon to be light mode
-  let iconClass: string = browser ? currentIcon() : ''
+  let iconClass = currentIcon()
 
   // Wait for the DOM to be available
   onMount(() => {
@@ -60,7 +65,7 @@
     // Update the HTML element to have the right data-theme value
     htmlElement.setAttribute(THEME_ATTRIBUTE, themeName)
 
-    Cookies.set(STORAGE_NAME, themeName)
+    Cookies.set(STORAGE_NAME, themeName, { sameSite: 'Strict' })
   }
 </script>
 
