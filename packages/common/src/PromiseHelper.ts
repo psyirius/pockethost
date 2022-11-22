@@ -46,6 +46,12 @@ export const createPromiseHelper = (config: PromiseHelperConfig) => {
               error(pfx, `Unknown PocketBase API error`)
             }
           }
+          if (!(e instanceof Error)) {
+            if (!(e instanceof Error)) {
+              throw new Error(`Expected Error here, but got ${typeof e}: ${e}`)
+            }
+            error(e)
+          }
           throw e
         })
     }

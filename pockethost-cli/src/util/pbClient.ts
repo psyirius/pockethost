@@ -14,8 +14,8 @@ export const pbClient = (
   const { host, session } = config
   const client = new PocketBase(
     host,
-    'en-US',
-    new CustomAuthStore(session, saver)
+    new CustomAuthStore(session, saver),
+    'en-US'
   )
   return client
 }

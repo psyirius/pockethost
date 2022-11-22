@@ -3,7 +3,7 @@
   "version": "0.0.5",
   "main": "./dist/index.js",
   "bin": {
-    "pbscript": "./dist/pbscript"
+    "pockethost": "./dist/pockethost"
   },
   "author": {
     "name": "Ben Allfree",
@@ -15,22 +15,29 @@
   "scripts": {
     "dev": "chokidar package.json 'src/**' './node_modules/**' -c 'yarn build' --initial",
     "build": "parcel build --no-cache && yarn build:shebang && npm i -g --force .",
-    "build:shebang": "echo \"#!/usr/bin/env node\"|cat - ./dist/index.js > ./dist/pbscript",
+    "build:shebang": "echo \"#!/usr/bin/env node\"|cat - ./dist/index.js > ./dist/pockethost",
     "publish": "npm publish --access public"
   },
   "license": "MIT",
   "devDependencies": {
-    "parcel": "^2.7.0"
+    "parcel": "^2.7.0",
+    "prettier": "^2.7.1",
+    "prettier-plugin-organize-imports": "^3.2.0"
   },
   "dependencies": {
+    "@pockethost/common": "../packages/common",
+    "@s-libs/micro-dash": "^14.1.0",
     "@types/eventsource": "^1.1.9",
     "@types/node": "^18.8.2",
+    "@types/node-localstorage": "^1.3.0",
     "@types/prompts": "^2.4.1",
     "@types/tmp": "^0.2.3",
     "commander": "^9.4.0",
     "cross-fetch": "^3.1.5",
     "eventsource": "^2.0.2",
     "find-up": "^6.3.0",
+    "immer": "^9.0.16",
+    "node-localstorage": "^2.2.1",
     "pocketbase": "^0.8.0",
     "prompts": "^2.4.2",
     "tmp": "^0.2.1"
