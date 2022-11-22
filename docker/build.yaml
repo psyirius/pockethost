@@ -9,8 +9,9 @@ services:
       dockerfile: Dockerfile
     container_name: build
     working_dir: /src
-    command: bash -c "rm -rf node_modules && yarn && yarn build"
+    command: bash -c "yarn && yarn build"
     volumes:
       - ./mount/cache/go:/go
       - ./mount/cache/yarn:/usr/local/share/.cache/yarn/v6
       - ..:/src
+      - ./mount/cache/node_modules:/src/node_modules

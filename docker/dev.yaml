@@ -13,6 +13,7 @@ services:
     command: bash -c "yarn dev:www --host=www"
     volumes:
       - ..:/src
+      - ./mount/cache/node_modules:/src/node_modules
     networks:
       - app-network
     ports:
@@ -33,6 +34,7 @@ services:
     volumes:
       - ./mount/daemon/instances:/data
       - ..:/src
+      - ./mount/cache/node_modules:/src/node_modules
     networks:
       - app-network
     ports:

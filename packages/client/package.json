@@ -1,0 +1,11 @@
+{
+  "name": "@pockethost/client",
+  "version": "0.0.1",
+  "main": "src/index.ts",
+  "license": "MIT",
+  "dependencies": {
+    "@pockethost/schema": "0.0.1",
+    "@pockethost/tools": "0.0.1",
+    "pocketbase": "^0.8.0"
+  }
+}

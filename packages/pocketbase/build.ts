@@ -1,4 +1,4 @@
-import { binFor, RELEASES } from '@pockethost/common'
+import { binFor, RELEASES } from '@pockethost/releases'
 import { forEach } from '@s-libs/micro-dash'
 import Bottleneck from 'bottleneck'
 import { exec } from 'child_process'

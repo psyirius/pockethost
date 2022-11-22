@@ -1,0 +1,12 @@
+{
+  "name": "@pockethost/schema",
+  "version": "0.0.1",
+  "main": "src/index.ts",
+  "license": "MIT",
+  "dependencies": {
+    "ajv": "^8.11.2",
+    "pocketbase": "^0.8.0",
+    "@pockethost/tools": "0.0.1",
+    "type-fest": "^3.2.0"
+  }
+}

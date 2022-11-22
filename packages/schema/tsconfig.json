@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "module": "ESNext",
+    "target": "ESNext",
+    "moduleResolution": "node",
+    "noUncheckedIndexedAccess": true,
+    "strictNullChecks": true,
+    "noEmit": true,
+    "types": []
+  },
+
+  "include": [
+    "./src",
+    "../pockethost-utils/src/pocketNow.ts",
+    "../releases/src/releases.ts"
+  ]
+}

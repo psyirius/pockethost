@@ -26,7 +26,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@pockethost/common": "0.0.1",
+    "@pockethost/client": "0.0.1",
+    "@pockethost/tools": "0.0.1",
     "@s-libs/micro-dash": "^14.1.0",
     "@types/bootstrap": "^5.2.6",
     "@types/js-cookie": "^3.0.2",

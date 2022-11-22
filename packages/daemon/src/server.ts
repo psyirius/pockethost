@@ -1,4 +1,4 @@
-import { binFor } from '@pockethost/common'
+import { binFor } from '@pockethost/releases'
 import {
   DAEMON_PB_PASSWORD,
   DAEMON_PB_PORT_BASE,
