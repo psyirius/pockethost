@@ -1,8 +1,8 @@
 import { createPromiseHelper, InstanceFields } from '@pockethost/common'
 import pocketbaseEs from 'pocketbase'
 import { LocalStorageCompatibleAuthStore } from '../providers/LocalStorageCompatibleAuthStore'
-import { getProject, localStorage } from '../util/project'
-import { info } from './logger'
+import { info, logger } from './logger'
+import { getProject, localStorage } from './project'
 
 export const createClient = () => {
   const host = getProject().host || `pockethost-central.pockethost.io`

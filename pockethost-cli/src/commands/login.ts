@@ -1,9 +1,9 @@
 import { map } from '@s-libs/micro-dash'
 import { Command } from 'commander'
 import prompts from 'prompts'
+import { createClient } from '../util/createClient'
+import { dbg, error, info } from '../util/logger'
 import { setProject } from '../util/project'
-import { createClient } from './createClient'
-import { dbg, error, info } from './logger'
 
 export const addLoginCommand = (program: Command) => {
   program

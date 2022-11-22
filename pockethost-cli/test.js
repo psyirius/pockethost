@@ -15277,6 +15277,1098 @@ function map(collection, iteratee) {
 // src/commands/login.ts
 var import_prompts = __toESM(require_prompts3());
 
+// node_modules/@pockethost/common/src/Logger.ts
+var createLogger = (config) => {
+  const { debug } = config;
+  const dbg2 = (...args) => {
+    if (!debug)
+      return;
+    console.log(`[DBG]`, ...args);
+  };
+  const warn2 = (...args) => {
+    console.log(`[WARN]`, ...args);
+  };
+  const info2 = (...args) => {
+    console.log(`[INFO]`, ...args);
+  };
+  const error2 = (...args) => {
+    console.error(`[ERROR]`, ...args);
+  };
+  return { dbg: dbg2, warn: warn2, info: info2, error: error2 };
+};
+
+// node_modules/nanoid/index.js
+var import_crypto = require("crypto");
+var POOL_SIZE_MULTIPLIER = 128;
+var pool;
+var poolOffset;
+var fillPool = (bytes) => {
+  if (!pool || pool.length < bytes) {
+    pool = Buffer.allocUnsafe(bytes * POOL_SIZE_MULTIPLIER);
+    (0, import_crypto.randomFillSync)(pool);
+    poolOffset = 0;
+  } else if (poolOffset + bytes > pool.length) {
+    (0, import_crypto.randomFillSync)(pool);
+    poolOffset = 0;
+  }
+  poolOffset += bytes;
+};
+var random = (bytes) => {
+  fillPool(bytes -= 0);
+  return pool.subarray(poolOffset - bytes, poolOffset);
+};
+var customRandom = (alphabet, defaultSize, getRandom) => {
+  let mask = (2 << 31 - Math.clz32(alphabet.length - 1 | 1)) - 1;
+  let step = Math.ceil(1.6 * mask * defaultSize / alphabet.length);
+  return (size = defaultSize) => {
+    let id = "";
+    while (true) {
+      let bytes = getRandom(step);
+      let i3 = step;
+      while (i3--) {
+        id += alphabet[bytes[i3] & mask] || "";
+        if (id.length === size)
+          return id;
+      }
+    }
+  };
+};
+var customAlphabet = (alphabet, size = 21) => customRandom(alphabet, size, random);
+
+// node_modules/pocketbase/dist/pocketbase.es.mjs
+var t = function(e2, n3) {
+  return t = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(t3, e3) {
+    t3.__proto__ = e3;
+  } || function(t3, e3) {
+    for (var n4 in e3)
+      Object.prototype.hasOwnProperty.call(e3, n4) && (t3[n4] = e3[n4]);
+  }, t(e2, n3);
+};
+function e(e2, n3) {
+  if ("function" != typeof n3 && null !== n3)
+    throw new TypeError("Class extends value " + String(n3) + " is not a constructor or null");
+  function i3() {
+    this.constructor = e2;
+  }
+  t(e2, n3), e2.prototype = null === n3 ? Object.create(n3) : (i3.prototype = n3.prototype, new i3());
+}
+var n = function() {
+  return n = Object.assign || function(t3) {
+    for (var e2, n3 = 1, i3 = arguments.length; n3 < i3; n3++)
+      for (var o3 in e2 = arguments[n3])
+        Object.prototype.hasOwnProperty.call(e2, o3) && (t3[o3] = e2[o3]);
+    return t3;
+  }, n.apply(this, arguments);
+};
+function i(t3, e2, n3, i3) {
+  return new (n3 || (n3 = Promise))(function(o3, r3) {
+    function s3(t4) {
+      try {
+        u3(i3.next(t4));
+      } catch (t5) {
+        r3(t5);
+      }
+    }
+    function a3(t4) {
+      try {
+        u3(i3.throw(t4));
+      } catch (t5) {
+        r3(t5);
+      }
+    }
+    function u3(t4) {
+      var e3;
+      t4.done ? o3(t4.value) : (e3 = t4.value, e3 instanceof n3 ? e3 : new n3(function(t5) {
+        t5(e3);
+      })).then(s3, a3);
+    }
+    u3((i3 = i3.apply(t3, e2 || [])).next());
+  });
+}
+function o(t3, e2) {
+  var n3, i3, o3, r3, s3 = { label: 0, sent: function() {
+    if (1 & o3[0])
+      throw o3[1];
+    return o3[1];
+  }, trys: [], ops: [] };
+  return r3 = { next: a3(0), throw: a3(1), return: a3(2) }, "function" == typeof Symbol && (r3[Symbol.iterator] = function() {
+    return this;
+  }), r3;
+  function a3(r4) {
+    return function(a4) {
+      return function(r5) {
+        if (n3)
+          throw new TypeError("Generator is already executing.");
+        for (; s3; )
+          try {
+            if (n3 = 1, i3 && (o3 = 2 & r5[0] ? i3.return : r5[0] ? i3.throw || ((o3 = i3.return) && o3.call(i3), 0) : i3.next) && !(o3 = o3.call(i3, r5[1])).done)
+              return o3;
+            switch (i3 = 0, o3 && (r5 = [2 & r5[0], o3.value]), r5[0]) {
+              case 0:
+              case 1:
+                o3 = r5;
+                break;
+              case 4:
+                return s3.label++, { value: r5[1], done: false };
+              case 5:
+                s3.label++, i3 = r5[1], r5 = [0];
+                continue;
+              case 7:
+                r5 = s3.ops.pop(), s3.trys.pop();
+                continue;
+              default:
+                if (!(o3 = s3.trys, (o3 = o3.length > 0 && o3[o3.length - 1]) || 6 !== r5[0] && 2 !== r5[0])) {
+                  s3 = 0;
+                  continue;
+                }
+                if (3 === r5[0] && (!o3 || r5[1] > o3[0] && r5[1] < o3[3])) {
+                  s3.label = r5[1];
+                  break;
+                }
+                if (6 === r5[0] && s3.label < o3[1]) {
+                  s3.label = o3[1], o3 = r5;
+                  break;
+                }
+                if (o3 && s3.label < o3[2]) {
+                  s3.label = o3[2], s3.ops.push(r5);
+                  break;
+                }
+                o3[2] && s3.ops.pop(), s3.trys.pop();
+                continue;
+            }
+            r5 = e2.call(t3, s3);
+          } catch (t4) {
+            r5 = [6, t4], i3 = 0;
+          } finally {
+            n3 = o3 = 0;
+          }
+        if (5 & r5[0])
+          throw r5[1];
+        return { value: r5[0] ? r5[1] : void 0, done: true };
+      }([r4, a4]);
+    };
+  }
+}
+var r;
+var s = function(t3) {
+  function i3(e2) {
+    var n3, o3 = this;
+    return (o3 = t3.call(this, "ClientResponseError") || this).url = "", o3.status = 0, o3.data = {}, o3.isAbort = false, o3.originalError = null, Object.setPrototypeOf(o3, i3.prototype), e2 instanceof i3 || (o3.originalError = e2), null !== e2 && "object" == typeof e2 && (o3.url = "string" == typeof e2.url ? e2.url : "", o3.status = "number" == typeof e2.status ? e2.status : 0, o3.data = null !== e2.data && "object" == typeof e2.data ? e2.data : {}), "undefined" != typeof DOMException && e2 instanceof DOMException && (o3.isAbort = true), o3.name = "ClientResponseError " + o3.status, o3.message = null === (n3 = o3.data) || void 0 === n3 ? void 0 : n3.message, o3.message || (o3.message = o3.isAbort ? "The request was autocancelled. More info you could find in https://github.com/pocketbase/js-sdk#auto-cancellation." : "Something went wrong while processing your request."), o3;
+  }
+  return e(i3, t3), i3.prototype.toJSON = function() {
+    return n({}, this);
+  }, i3;
+}(Error);
+var a = /^[\u0009\u0020-\u007e\u0080-\u00ff]+$/;
+function u(t3, e2, n3) {
+  var i3 = Object.assign({}, n3 || {}), o3 = i3.encode || c;
+  if (!a.test(t3))
+    throw new TypeError("argument name is invalid");
+  var r3 = o3(e2);
+  if (r3 && !a.test(r3))
+    throw new TypeError("argument val is invalid");
+  var s3 = t3 + "=" + r3;
+  if (null != i3.maxAge) {
+    var u3 = i3.maxAge - 0;
+    if (isNaN(u3) || !isFinite(u3))
+      throw new TypeError("option maxAge is invalid");
+    s3 += "; Max-Age=" + Math.floor(u3);
+  }
+  if (i3.domain) {
+    if (!a.test(i3.domain))
+      throw new TypeError("option domain is invalid");
+    s3 += "; Domain=" + i3.domain;
+  }
+  if (i3.path) {
+    if (!a.test(i3.path))
+      throw new TypeError("option path is invalid");
+    s3 += "; Path=" + i3.path;
+  }
+  if (i3.expires) {
+    if (!function(t4) {
+      return "[object Date]" === Object.prototype.toString.call(t4) || t4 instanceof Date;
+    }(i3.expires) || isNaN(i3.expires.valueOf()))
+      throw new TypeError("option expires is invalid");
+    s3 += "; Expires=" + i3.expires.toUTCString();
+  }
+  if (i3.httpOnly && (s3 += "; HttpOnly"), i3.secure && (s3 += "; Secure"), i3.priority)
+    switch ("string" == typeof i3.priority ? i3.priority.toLowerCase() : i3.priority) {
+      case "low":
+        s3 += "; Priority=Low";
+        break;
+      case "medium":
+        s3 += "; Priority=Medium";
+        break;
+      case "high":
+        s3 += "; Priority=High";
+        break;
+      default:
+        throw new TypeError("option priority is invalid");
+    }
+  if (i3.sameSite)
+    switch ("string" == typeof i3.sameSite ? i3.sameSite.toLowerCase() : i3.sameSite) {
+      case true:
+        s3 += "; SameSite=Strict";
+        break;
+      case "lax":
+        s3 += "; SameSite=Lax";
+        break;
+      case "strict":
+        s3 += "; SameSite=Strict";
+        break;
+      case "none":
+        s3 += "; SameSite=None";
+        break;
+      default:
+        throw new TypeError("option sameSite is invalid");
+    }
+  return s3;
+}
+function l(t3) {
+  return -1 !== t3.indexOf("%") ? decodeURIComponent(t3) : t3;
+}
+function c(t3) {
+  return encodeURIComponent(t3);
+}
+function d(t3) {
+  if (t3)
+    try {
+      var e2 = decodeURIComponent(r(t3.split(".")[1]).split("").map(function(t4) {
+        return "%" + ("00" + t4.charCodeAt(0).toString(16)).slice(-2);
+      }).join(""));
+      return JSON.parse(e2) || {};
+    } catch (t4) {
+    }
+  return {};
+}
+r = "function" == typeof atob ? atob : function(t3) {
+  var e2 = String(t3).replace(/=+$/, "");
+  if (e2.length % 4 == 1)
+    throw new Error("'atob' failed: The string to be decoded is not correctly encoded.");
+  for (var n3, i3, o3 = 0, r3 = 0, s3 = ""; i3 = e2.charAt(r3++); ~i3 && (n3 = o3 % 4 ? 64 * n3 + i3 : i3, o3++ % 4) ? s3 += String.fromCharCode(255 & n3 >> (-2 * o3 & 6)) : 0)
+    i3 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=".indexOf(i3);
+  return s3;
+};
+var h = function() {
+  function t3(t4) {
+    void 0 === t4 && (t4 = {}), this.load(t4 || {});
+  }
+  return t3.prototype.load = function(t4) {
+    for (var e2 = 0, n3 = Object.entries(t4); e2 < n3.length; e2++) {
+      var i3 = n3[e2], o3 = i3[0], r3 = i3[1];
+      this[o3] = r3;
+    }
+    this.id = void 0 !== t4.id ? t4.id : "", this.created = void 0 !== t4.created ? t4.created : "", this.updated = void 0 !== t4.updated ? t4.updated : "";
+  }, Object.defineProperty(t3.prototype, "isNew", { get: function() {
+    return !this.id;
+  }, enumerable: false, configurable: true }), t3.prototype.clone = function() {
+    return new this.constructor(JSON.parse(JSON.stringify(this)));
+  }, t3.prototype.export = function() {
+    return Object.assign({}, this);
+  }, t3;
+}();
+var p = function(t3) {
+  function n3() {
+    return null !== t3 && t3.apply(this, arguments) || this;
+  }
+  return e(n3, t3), n3.prototype.load = function(e2) {
+    t3.prototype.load.call(this, e2), this.collectionId = "string" == typeof e2.collectionId ? e2.collectionId : "", this.collectionName = "string" == typeof e2.collectionName ? e2.collectionName : "", this.expand = "object" == typeof e2.expand && null !== e2.expand ? e2.expand : {};
+  }, n3;
+}(h);
+var f = function(t3) {
+  function n3() {
+    return null !== t3 && t3.apply(this, arguments) || this;
+  }
+  return e(n3, t3), n3.prototype.load = function(e2) {
+    t3.prototype.load.call(this, e2), this.avatar = "number" == typeof e2.avatar ? e2.avatar : 0, this.email = "string" == typeof e2.email ? e2.email : "";
+  }, n3;
+}(h);
+var v = function() {
+  function t3() {
+    this.baseToken = "", this.baseModel = null, this._onChangeCallbacks = [];
+  }
+  return Object.defineProperty(t3.prototype, "token", { get: function() {
+    return this.baseToken;
+  }, enumerable: false, configurable: true }), Object.defineProperty(t3.prototype, "model", { get: function() {
+    return this.baseModel;
+  }, enumerable: false, configurable: true }), Object.defineProperty(t3.prototype, "isValid", { get: function() {
+    return !function(t4, e2) {
+      void 0 === e2 && (e2 = 0);
+      var n3 = d(t4);
+      return !(Object.keys(n3).length > 0 && (!n3.exp || n3.exp - e2 > Date.now() / 1e3));
+    }(this.token);
+  }, enumerable: false, configurable: true }), t3.prototype.save = function(t4, e2) {
+    this.baseToken = t4 || "", this.baseModel = null !== e2 && "object" == typeof e2 ? void 0 !== e2.collectionId ? new p(e2) : new f(e2) : null, this.triggerChange();
+  }, t3.prototype.clear = function() {
+    this.baseToken = "", this.baseModel = null, this.triggerChange();
+  }, t3.prototype.loadFromCookie = function(t4, e2) {
+    void 0 === e2 && (e2 = "pb_auth");
+    var n3 = function(t5, e3) {
+      var n4 = {};
+      if ("string" != typeof t5)
+        return n4;
+      for (var i4 = Object.assign({}, e3 || {}).decode || l, o3 = 0; o3 < t5.length; ) {
+        var r3 = t5.indexOf("=", o3);
+        if (-1 === r3)
+          break;
+        var s3 = t5.indexOf(";", o3);
+        if (-1 === s3)
+          s3 = t5.length;
+        else if (s3 < r3) {
+          o3 = t5.lastIndexOf(";", r3 - 1) + 1;
+          continue;
+        }
+        var a3 = t5.slice(o3, r3).trim();
+        if (void 0 === n4[a3]) {
+          var u3 = t5.slice(r3 + 1, s3).trim();
+          34 === u3.charCodeAt(0) && (u3 = u3.slice(1, -1));
+          try {
+            n4[a3] = i4(u3);
+          } catch (t6) {
+            n4[a3] = u3;
+          }
+        }
+        o3 = s3 + 1;
+      }
+      return n4;
+    }(t4 || "")[e2] || "", i3 = {};
+    try {
+      (null === typeof (i3 = JSON.parse(n3)) || "object" != typeof i3 || Array.isArray(i3)) && (i3 = {});
+    } catch (t5) {
+    }
+    this.save(i3.token || "", i3.model || null);
+  }, t3.prototype.exportToCookie = function(t4, e2) {
+    var n3, i3, o3;
+    void 0 === e2 && (e2 = "pb_auth");
+    var r3 = { secure: true, sameSite: true, httpOnly: true, path: "/" }, s3 = d(this.token);
+    (null == s3 ? void 0 : s3.exp) ? r3.expires = new Date(1e3 * s3.exp) : r3.expires = new Date("1970-01-01"), t4 = Object.assign({}, r3, t4);
+    var a3 = { token: this.token, model: (null === (n3 = this.model) || void 0 === n3 ? void 0 : n3.export()) || null }, l3 = u(e2, JSON.stringify(a3), t4), c3 = "undefined" != typeof Blob ? new Blob([l3]).size : l3.length;
+    return a3.model && c3 > 4096 && (a3.model = { id: null === (i3 = null == a3 ? void 0 : a3.model) || void 0 === i3 ? void 0 : i3.id, email: null === (o3 = null == a3 ? void 0 : a3.model) || void 0 === o3 ? void 0 : o3.email }, this.model instanceof p && (a3.model.username = this.model.username, a3.model.verified = this.model.verified, a3.model.collectionId = this.model.collectionId), l3 = u(e2, JSON.stringify(a3), t4)), l3;
+  }, t3.prototype.onChange = function(t4, e2) {
+    var n3 = this;
+    return void 0 === e2 && (e2 = false), this._onChangeCallbacks.push(t4), e2 && t4(this.token, this.model), function() {
+      for (var e3 = n3._onChangeCallbacks.length - 1; e3 >= 0; e3--)
+        if (n3._onChangeCallbacks[e3] == t4)
+          return delete n3._onChangeCallbacks[e3], void n3._onChangeCallbacks.splice(e3, 1);
+    };
+  }, t3.prototype.triggerChange = function() {
+    for (var t4 = 0, e2 = this._onChangeCallbacks; t4 < e2.length; t4++) {
+      var n3 = e2[t4];
+      n3 && n3(this.token, this.model);
+    }
+  }, t3;
+}();
+var b = function(t3) {
+  function n3(e2) {
+    void 0 === e2 && (e2 = "pocketbase_auth");
+    var n4 = t3.call(this) || this;
+    return n4.storageFallback = {}, n4.storageKey = e2, n4;
+  }
+  return e(n3, t3), Object.defineProperty(n3.prototype, "token", { get: function() {
+    return (this._storageGet(this.storageKey) || {}).token || "";
+  }, enumerable: false, configurable: true }), Object.defineProperty(n3.prototype, "model", { get: function() {
+    var t4, e2 = this._storageGet(this.storageKey) || {};
+    return null === e2 || "object" != typeof e2 || null === e2.model || "object" != typeof e2.model ? null : void 0 === (null === (t4 = e2.model) || void 0 === t4 ? void 0 : t4.collectionId) ? new f(e2.model) : new p(e2.model);
+  }, enumerable: false, configurable: true }), n3.prototype.save = function(e2, n4) {
+    this._storageSet(this.storageKey, { token: e2, model: n4 }), t3.prototype.save.call(this, e2, n4);
+  }, n3.prototype.clear = function() {
+    this._storageRemove(this.storageKey), t3.prototype.clear.call(this);
+  }, n3.prototype._storageGet = function(t4) {
+    if ("undefined" != typeof window && (null === window || void 0 === window ? void 0 : window.localStorage)) {
+      var e2 = window.localStorage.getItem(t4) || "";
+      try {
+        return JSON.parse(e2);
+      } catch (t5) {
+        return e2;
+      }
+    }
+    return this.storageFallback[t4];
+  }, n3.prototype._storageSet = function(t4, e2) {
+    if ("undefined" != typeof window && (null === window || void 0 === window ? void 0 : window.localStorage)) {
+      var n4 = e2;
+      "string" != typeof e2 && (n4 = JSON.stringify(e2)), window.localStorage.setItem(t4, n4);
+    } else
+      this.storageFallback[t4] = e2;
+  }, n3.prototype._storageRemove = function(t4) {
+    var e2;
+    "undefined" != typeof window && (null === window || void 0 === window ? void 0 : window.localStorage) && (null === (e2 = window.localStorage) || void 0 === e2 || e2.removeItem(t4)), delete this.storageFallback[t4];
+  }, n3;
+}(v);
+var y = function(t3) {
+  this.client = t3;
+};
+var m = function(t3) {
+  function n3() {
+    return null !== t3 && t3.apply(this, arguments) || this;
+  }
+  return e(n3, t3), n3.prototype.getAll = function(t4) {
+    return void 0 === t4 && (t4 = {}), this.client.send("/api/settings", { method: "GET", params: t4 }).then(function(t5) {
+      return t5 || {};
+    });
+  }, n3.prototype.update = function(t4, e2) {
+    return void 0 === t4 && (t4 = {}), void 0 === e2 && (e2 = {}), this.client.send("/api/settings", { method: "PATCH", params: e2, body: t4 }).then(function(t5) {
+      return t5 || {};
+    });
+  }, n3.prototype.testS3 = function(t4) {
+    return void 0 === t4 && (t4 = {}), this.client.send("/api/settings/test/s3", { method: "POST", params: t4 }).then(function() {
+      return true;
+    });
+  }, n3.prototype.testEmail = function(t4, e2, n4) {
+    void 0 === n4 && (n4 = {});
+    var i3 = { email: t4, template: e2 };
+    return this.client.send("/api/settings/test/email", { method: "POST", params: n4, body: i3 }).then(function() {
+      return true;
+    });
+  }, n3;
+}(y);
+var g = function(t3, e2, n3, i3, o3) {
+  this.page = t3 > 0 ? t3 : 1, this.perPage = e2 >= 0 ? e2 : 0, this.totalItems = n3 >= 0 ? n3 : 0, this.totalPages = i3 >= 0 ? i3 : 0, this.items = o3 || [];
+};
+var w = function(t3) {
+  function n3() {
+    return null !== t3 && t3.apply(this, arguments) || this;
+  }
+  return e(n3, t3), n3.prototype.getFullList = function(t4, e2) {
+    return void 0 === t4 && (t4 = 200), void 0 === e2 && (e2 = {}), this._getFullList(this.baseCrudPath, t4, e2);
+  }, n3.prototype.getList = function(t4, e2, n4) {
+    return void 0 === t4 && (t4 = 1), void 0 === e2 && (e2 = 30), void 0 === n4 && (n4 = {}), this._getList(this.baseCrudPath, t4, e2, n4);
+  }, n3.prototype.getFirstListItem = function(t4, e2) {
+    return void 0 === e2 && (e2 = {}), this._getFirstListItem(this.baseCrudPath, t4, e2);
+  }, n3.prototype.getOne = function(t4, e2) {
+    return void 0 === e2 && (e2 = {}), this._getOne(this.baseCrudPath, t4, e2);
+  }, n3.prototype.create = function(t4, e2) {
+    return void 0 === t4 && (t4 = {}), void 0 === e2 && (e2 = {}), this._create(this.baseCrudPath, t4, e2);
+  }, n3.prototype.update = function(t4, e2, n4) {
+    return void 0 === e2 && (e2 = {}), void 0 === n4 && (n4 = {}), this._update(this.baseCrudPath, t4, e2, n4);
+  }, n3.prototype.delete = function(t4, e2) {
+    return void 0 === e2 && (e2 = {}), this._delete(this.baseCrudPath, t4, e2);
+  }, n3;
+}(function(t3) {
+  function n3() {
+    return null !== t3 && t3.apply(this, arguments) || this;
+  }
+  return e(n3, t3), n3.prototype._getFullList = function(t4, e2, n4) {
+    var r3 = this;
+    void 0 === e2 && (e2 = 100), void 0 === n4 && (n4 = {});
+    var s3 = [], a3 = function(u3) {
+      return i(r3, void 0, void 0, function() {
+        return o(this, function(i3) {
+          return [2, this._getList(t4, u3, e2, n4).then(function(t5) {
+            var e3 = t5, n5 = e3.items, i4 = e3.totalItems;
+            return s3 = s3.concat(n5), n5.length && i4 > s3.length ? a3(u3 + 1) : s3;
+          })];
+        });
+      });
+    };
+    return a3(1);
+  }, n3.prototype._getList = function(t4, e2, n4, i3) {
+    var o3 = this;
+    return void 0 === e2 && (e2 = 1), void 0 === n4 && (n4 = 30), void 0 === i3 && (i3 = {}), i3 = Object.assign({ page: e2, perPage: n4 }, i3), this.client.send(t4, { method: "GET", params: i3 }).then(function(t5) {
+      var e3 = [];
+      if (null == t5 ? void 0 : t5.items) {
+        t5.items = t5.items || [];
+        for (var n5 = 0, i4 = t5.items; n5 < i4.length; n5++) {
+          var r3 = i4[n5];
+          e3.push(o3.decode(r3));
+        }
+      }
+      return new g((null == t5 ? void 0 : t5.page) || 1, (null == t5 ? void 0 : t5.perPage) || 0, (null == t5 ? void 0 : t5.totalItems) || 0, (null == t5 ? void 0 : t5.totalPages) || 0, e3);
+    });
+  }, n3.prototype._getOne = function(t4, e2, n4) {
+    var i3 = this;
+    return void 0 === n4 && (n4 = {}), this.client.send(t4 + "/" + encodeURIComponent(e2), { method: "GET", params: n4 }).then(function(t5) {
+      return i3.decode(t5);
+    });
+  }, n3.prototype._getFirstListItem = function(t4, e2, n4) {
+    return void 0 === n4 && (n4 = {}), n4 = Object.assign({ filter: e2, $cancelKey: "one_by_filter_" + t4 + "_" + e2 }, n4), this._getList(t4, 1, 1, n4).then(function(t5) {
+      var e3;
+      if (!(null === (e3 = null == t5 ? void 0 : t5.items) || void 0 === e3 ? void 0 : e3.length))
+        throw new s({ status: 404, data: { code: 404, message: "The requested resource wasn't found.", data: {} } });
+      return t5.items[0];
+    });
+  }, n3.prototype._create = function(t4, e2, n4) {
+    var i3 = this;
+    return void 0 === e2 && (e2 = {}), void 0 === n4 && (n4 = {}), this.client.send(t4, { method: "POST", params: n4, body: e2 }).then(function(t5) {
+      return i3.decode(t5);
+    });
+  }, n3.prototype._update = function(t4, e2, n4, i3) {
+    var o3 = this;
+    return void 0 === n4 && (n4 = {}), void 0 === i3 && (i3 = {}), this.client.send(t4 + "/" + encodeURIComponent(e2), { method: "PATCH", params: i3, body: n4 }).then(function(t5) {
+      return o3.decode(t5);
+    });
+  }, n3.prototype._delete = function(t4, e2, n4) {
+    return void 0 === n4 && (n4 = {}), this.client.send(t4 + "/" + encodeURIComponent(e2), { method: "DELETE", params: n4 }).then(function() {
+      return true;
+    });
+  }, n3;
+}(y));
+var S = function(t3) {
+  function n3() {
+    return null !== t3 && t3.apply(this, arguments) || this;
+  }
+  return e(n3, t3), n3.prototype.decode = function(t4) {
+    return new f(t4);
+  }, Object.defineProperty(n3.prototype, "baseCrudPath", { get: function() {
+    return "/api/admins";
+  }, enumerable: false, configurable: true }), n3.prototype.update = function(e2, n4, i3) {
+    var o3 = this;
+    return void 0 === n4 && (n4 = {}), void 0 === i3 && (i3 = {}), t3.prototype.update.call(this, e2, n4, i3).then(function(t4) {
+      var e3, n5;
+      return o3.client.authStore.model && void 0 === (null === (e3 = o3.client.authStore.model) || void 0 === e3 ? void 0 : e3.collectionId) && (null === (n5 = o3.client.authStore.model) || void 0 === n5 ? void 0 : n5.id) === (null == t4 ? void 0 : t4.id) && o3.client.authStore.save(o3.client.authStore.token, t4), t4;
+    });
+  }, n3.prototype.delete = function(e2, n4) {
+    var i3 = this;
+    return void 0 === n4 && (n4 = {}), t3.prototype.delete.call(this, e2, n4).then(function(t4) {
+      var n5, o3;
+      return t4 && i3.client.authStore.model && void 0 === (null === (n5 = i3.client.authStore.model) || void 0 === n5 ? void 0 : n5.collectionId) && (null === (o3 = i3.client.authStore.model) || void 0 === o3 ? void 0 : o3.id) === e2 && i3.client.authStore.clear(), t4;
+    });
+  }, n3.prototype.authResponse = function(t4) {
+    var e2 = this.decode((null == t4 ? void 0 : t4.admin) || {});
+    return (null == t4 ? void 0 : t4.token) && (null == t4 ? void 0 : t4.admin) && this.client.authStore.save(t4.token, e2), Object.assign({}, t4, { token: (null == t4 ? void 0 : t4.token) || "", admin: e2 });
+  }, n3.prototype.authWithPassword = function(t4, e2, n4, i3) {
+    return void 0 === n4 && (n4 = {}), void 0 === i3 && (i3 = {}), n4 = Object.assign({ identity: t4, password: e2 }, n4), this.client.send(this.baseCrudPath + "/auth-with-password", { method: "POST", params: i3, body: n4, headers: { Authorization: "" } }).then(this.authResponse.bind(this));
+  }, n3.prototype.authRefresh = function(t4, e2) {
+    return void 0 === t4 && (t4 = {}), void 0 === e2 && (e2 = {}), this.client.send(this.baseCrudPath + "/auth-refresh", { method: "POST", params: e2, body: t4 }).then(this.authResponse.bind(this));
+  }, n3.prototype.requestPasswordReset = function(t4, e2, n4) {
+    return void 0 === e2 && (e2 = {}), void 0 === n4 && (n4 = {}), e2 = Object.assign({ email: t4 }, e2), this.client.send(this.baseCrudPath + "/request-password-reset", { method: "POST", params: n4, body: e2 }).then(function() {
+      return true;
+    });
+  }, n3.prototype.confirmPasswordReset = function(t4, e2, n4, i3, o3) {
+    return void 0 === i3 && (i3 = {}), void 0 === o3 && (o3 = {}), i3 = Object.assign({ token: t4, password: e2, passwordConfirm: n4 }, i3), this.client.send(this.baseCrudPath + "/confirm-password-reset", { method: "POST", params: o3, body: i3 }).then(function() {
+      return true;
+    });
+  }, n3;
+}(w);
+var O = function(t3) {
+  function n3() {
+    return null !== t3 && t3.apply(this, arguments) || this;
+  }
+  return e(n3, t3), n3.prototype.load = function(e2) {
+    t3.prototype.load.call(this, e2), this.recordId = "string" == typeof e2.recordId ? e2.recordId : "", this.collectionId = "string" == typeof e2.collectionId ? e2.collectionId : "", this.provider = "string" == typeof e2.provider ? e2.provider : "", this.providerId = "string" == typeof e2.providerId ? e2.providerId : "";
+  }, n3;
+}(h);
+var C = function(t3) {
+  function n3(e2, n4) {
+    var i3 = t3.call(this, e2) || this;
+    return i3.collectionIdOrName = n4, i3;
+  }
+  return e(n3, t3), n3.prototype.decode = function(t4) {
+    return new p(t4);
+  }, Object.defineProperty(n3.prototype, "baseCrudPath", { get: function() {
+    return this.baseCollectionPath + "/records";
+  }, enumerable: false, configurable: true }), Object.defineProperty(n3.prototype, "baseCollectionPath", { get: function() {
+    return "/api/collections/" + encodeURIComponent(this.collectionIdOrName);
+  }, enumerable: false, configurable: true }), n3.prototype.subscribeOne = function(t4, e2) {
+    return i(this, void 0, void 0, function() {
+      return o(this, function(n4) {
+        return console.warn("PocketBase: subscribeOne(recordId, callback) is deprecated. Please replace it with subsribe(recordId, callback)."), [2, this.client.realtime.subscribe(this.collectionIdOrName + "/" + t4, e2)];
+      });
+    });
+  }, n3.prototype.subscribe = function(t4, e2) {
+    return i(this, void 0, void 0, function() {
+      var n4;
+      return o(this, function(i3) {
+        if ("function" == typeof t4)
+          return console.warn("PocketBase: subscribe(callback) is deprecated. Please replace it with subsribe('*', callback)."), [2, this.client.realtime.subscribe(this.collectionIdOrName, t4)];
+        if (!e2)
+          throw new Error("Missing subscription callback.");
+        if ("" === t4)
+          throw new Error("Missing topic.");
+        return n4 = this.collectionIdOrName, "*" !== t4 && (n4 += "/" + t4), [2, this.client.realtime.subscribe(n4, e2)];
+      });
+    });
+  }, n3.prototype.unsubscribe = function(t4) {
+    return i(this, void 0, void 0, function() {
+      return o(this, function(e2) {
+        return "*" === t4 ? [2, this.client.realtime.unsubscribe(this.collectionIdOrName)] : t4 ? [2, this.client.realtime.unsubscribe(this.collectionIdOrName + "/" + t4)] : [2, this.client.realtime.unsubscribeByPrefix(this.collectionIdOrName)];
+      });
+    });
+  }, n3.prototype.update = function(e2, n4, i3) {
+    var o3 = this;
+    return void 0 === n4 && (n4 = {}), void 0 === i3 && (i3 = {}), t3.prototype.update.call(this, e2, n4, i3).then(function(t4) {
+      var e3, n5;
+      return void 0 !== (null === (e3 = o3.client.authStore.model) || void 0 === e3 ? void 0 : e3.collectionId) && (null === (n5 = o3.client.authStore.model) || void 0 === n5 ? void 0 : n5.id) === (null == t4 ? void 0 : t4.id) && o3.client.authStore.save(o3.client.authStore.token, t4), t4;
+    });
+  }, n3.prototype.delete = function(e2, n4) {
+    var i3 = this;
+    return void 0 === n4 && (n4 = {}), t3.prototype.delete.call(this, e2, n4).then(function(t4) {
+      var n5, o3;
+      return t4 && void 0 !== (null === (n5 = i3.client.authStore.model) || void 0 === n5 ? void 0 : n5.collectionId) && (null === (o3 = i3.client.authStore.model) || void 0 === o3 ? void 0 : o3.id) === e2 && i3.client.authStore.clear(), t4;
+    });
+  }, n3.prototype.authResponse = function(t4) {
+    var e2 = this.decode((null == t4 ? void 0 : t4.record) || {});
+    return this.client.authStore.save(null == t4 ? void 0 : t4.token, e2), Object.assign({}, t4, { token: (null == t4 ? void 0 : t4.token) || "", record: e2 });
+  }, n3.prototype.listAuthMethods = function(t4) {
+    return void 0 === t4 && (t4 = {}), this.client.send(this.baseCollectionPath + "/auth-methods", { method: "GET", params: t4 }).then(function(t5) {
+      return Object.assign({}, t5, { usernamePassword: !!(null == t5 ? void 0 : t5.usernamePassword), emailPassword: !!(null == t5 ? void 0 : t5.emailPassword), authProviders: Array.isArray(null == t5 ? void 0 : t5.authProviders) ? null == t5 ? void 0 : t5.authProviders : [] });
+    });
+  }, n3.prototype.authWithPassword = function(t4, e2, n4, i3) {
+    var o3 = this;
+    return void 0 === n4 && (n4 = {}), void 0 === i3 && (i3 = {}), n4 = Object.assign({ identity: t4, password: e2 }, n4), this.client.send(this.baseCollectionPath + "/auth-with-password", { method: "POST", params: i3, body: n4, headers: { Authorization: "" } }).then(function(t5) {
+      return o3.authResponse(t5);
+    });
+  }, n3.prototype.authWithOAuth2 = function(t4, e2, n4, i3, o3, r3, s3) {
+    var a3 = this;
+    return void 0 === o3 && (o3 = {}), void 0 === r3 && (r3 = {}), void 0 === s3 && (s3 = {}), r3 = Object.assign({ provider: t4, code: e2, codeVerifier: n4, redirectUrl: i3, createData: o3 }, r3), this.client.send(this.baseCollectionPath + "/auth-with-oauth2", { method: "POST", params: s3, body: r3 }).then(function(t5) {
+      return a3.authResponse(t5);
+    });
+  }, n3.prototype.authRefresh = function(t4, e2) {
+    var n4 = this;
+    return void 0 === t4 && (t4 = {}), void 0 === e2 && (e2 = {}), this.client.send(this.baseCollectionPath + "/auth-refresh", { method: "POST", params: e2, body: t4 }).then(function(t5) {
+      return n4.authResponse(t5);
+    });
+  }, n3.prototype.requestPasswordReset = function(t4, e2, n4) {
+    return void 0 === e2 && (e2 = {}), void 0 === n4 && (n4 = {}), e2 = Object.assign({ email: t4 }, e2), this.client.send(this.baseCollectionPath + "/request-password-reset", { method: "POST", params: n4, body: e2 }).then(function() {
+      return true;
+    });
+  }, n3.prototype.confirmPasswordReset = function(t4, e2, n4, i3, o3) {
+    return void 0 === i3 && (i3 = {}), void 0 === o3 && (o3 = {}), i3 = Object.assign({ token: t4, password: e2, passwordConfirm: n4 }, i3), this.client.send(this.baseCollectionPath + "/confirm-password-reset", { method: "POST", params: o3, body: i3 }).then(function() {
+      return true;
+    });
+  }, n3.prototype.requestVerification = function(t4, e2, n4) {
+    return void 0 === e2 && (e2 = {}), void 0 === n4 && (n4 = {}), e2 = Object.assign({ email: t4 }, e2), this.client.send(this.baseCollectionPath + "/request-verification", { method: "POST", params: n4, body: e2 }).then(function() {
+      return true;
+    });
+  }, n3.prototype.confirmVerification = function(t4, e2, n4) {
+    return void 0 === e2 && (e2 = {}), void 0 === n4 && (n4 = {}), e2 = Object.assign({ token: t4 }, e2), this.client.send(this.baseCollectionPath + "/confirm-verification", { method: "POST", params: n4, body: e2 }).then(function() {
+      return true;
+    });
+  }, n3.prototype.requestEmailChange = function(t4, e2, n4) {
+    return void 0 === e2 && (e2 = {}), void 0 === n4 && (n4 = {}), e2 = Object.assign({ newEmail: t4 }, e2), this.client.send(this.baseCollectionPath + "/request-email-change", { method: "POST", params: n4, body: e2 }).then(function() {
+      return true;
+    });
+  }, n3.prototype.confirmEmailChange = function(t4, e2, n4, i3) {
+    return void 0 === n4 && (n4 = {}), void 0 === i3 && (i3 = {}), n4 = Object.assign({ token: t4, password: e2 }, n4), this.client.send(this.baseCollectionPath + "/confirm-email-change", { method: "POST", params: i3, body: n4 }).then(function() {
+      return true;
+    });
+  }, n3.prototype.listExternalAuths = function(t4, e2) {
+    return void 0 === e2 && (e2 = {}), this.client.send(this.baseCrudPath + "/" + encodeURIComponent(t4) + "/external-auths", { method: "GET", params: e2 }).then(function(t5) {
+      var e3 = [];
+      if (Array.isArray(t5))
+        for (var n4 = 0, i3 = t5; n4 < i3.length; n4++) {
+          var o3 = i3[n4];
+          e3.push(new O(o3));
+        }
+      return e3;
+    });
+  }, n3.prototype.unlinkExternalAuth = function(t4, e2, n4) {
+    return void 0 === n4 && (n4 = {}), this.client.send(this.baseCrudPath + "/" + encodeURIComponent(t4) + "/external-auths/" + encodeURIComponent(e2), { method: "DELETE", params: n4 }).then(function() {
+      return true;
+    });
+  }, n3;
+}(w);
+var P = function() {
+  function t3(t4) {
+    void 0 === t4 && (t4 = {}), this.load(t4 || {});
+  }
+  return t3.prototype.load = function(t4) {
+    this.id = void 0 !== t4.id ? t4.id : "", this.name = void 0 !== t4.name ? t4.name : "", this.type = void 0 !== t4.type ? t4.type : "text", this.system = !!t4.system, this.required = !!t4.required, this.unique = !!t4.unique, this.options = "object" == typeof t4.options && null !== t4.options ? t4.options : {};
+  }, t3;
+}();
+var I = function(t3) {
+  function n3() {
+    return null !== t3 && t3.apply(this, arguments) || this;
+  }
+  return e(n3, t3), n3.prototype.load = function(e2) {
+    t3.prototype.load.call(this, e2), this.system = !!e2.system, this.name = "string" == typeof e2.name ? e2.name : "", this.type = "string" == typeof e2.type ? e2.type : "base", this.options = void 0 !== e2.options ? e2.options : {}, this.listRule = "string" == typeof e2.listRule ? e2.listRule : null, this.viewRule = "string" == typeof e2.viewRule ? e2.viewRule : null, this.createRule = "string" == typeof e2.createRule ? e2.createRule : null, this.updateRule = "string" == typeof e2.updateRule ? e2.updateRule : null, this.deleteRule = "string" == typeof e2.deleteRule ? e2.deleteRule : null, e2.schema = Array.isArray(e2.schema) ? e2.schema : [], this.schema = [];
+    for (var n4 = 0, i3 = e2.schema; n4 < i3.length; n4++) {
+      var o3 = i3[n4];
+      this.schema.push(new P(o3));
+    }
+  }, Object.defineProperty(n3.prototype, "isBase", { get: function() {
+    return "base" === this.type;
+  }, enumerable: false, configurable: true }), Object.defineProperty(n3.prototype, "isAuth", { get: function() {
+    return "auth" === this.type;
+  }, enumerable: false, configurable: true }), Object.defineProperty(n3.prototype, "isSingle", { get: function() {
+    return "single" === this.type;
+  }, enumerable: false, configurable: true }), n3;
+}(h);
+var k = function(t3) {
+  function n3() {
+    return null !== t3 && t3.apply(this, arguments) || this;
+  }
+  return e(n3, t3), n3.prototype.decode = function(t4) {
+    return new I(t4);
+  }, Object.defineProperty(n3.prototype, "baseCrudPath", { get: function() {
+    return "/api/collections";
+  }, enumerable: false, configurable: true }), n3.prototype.import = function(t4, e2, n4) {
+    return void 0 === e2 && (e2 = false), void 0 === n4 && (n4 = {}), i(this, void 0, void 0, function() {
+      return o(this, function(i3) {
+        return [2, this.client.send(this.baseCrudPath + "/import", { method: "PUT", params: n4, body: { collections: t4, deleteMissing: e2 } }).then(function() {
+          return true;
+        })];
+      });
+    });
+  }, n3;
+}(w);
+var j = function(t3) {
+  function n3() {
+    return null !== t3 && t3.apply(this, arguments) || this;
+  }
+  return e(n3, t3), n3.prototype.load = function(e2) {
+    t3.prototype.load.call(this, e2), e2.remoteIp = e2.remoteIp || e2.ip, this.url = "string" == typeof e2.url ? e2.url : "", this.method = "string" == typeof e2.method ? e2.method : "GET", this.status = "number" == typeof e2.status ? e2.status : 200, this.auth = "string" == typeof e2.auth ? e2.auth : "guest", this.remoteIp = "string" == typeof e2.remoteIp ? e2.remoteIp : "", this.userIp = "string" == typeof e2.userIp ? e2.userIp : "", this.referer = "string" == typeof e2.referer ? e2.referer : "", this.userAgent = "string" == typeof e2.userAgent ? e2.userAgent : "", this.meta = "object" == typeof e2.meta && null !== e2.meta ? e2.meta : {};
+  }, n3;
+}(h);
+var T = function(t3) {
+  function n3() {
+    return null !== t3 && t3.apply(this, arguments) || this;
+  }
+  return e(n3, t3), n3.prototype.getRequestsList = function(t4, e2, n4) {
+    return void 0 === t4 && (t4 = 1), void 0 === e2 && (e2 = 30), void 0 === n4 && (n4 = {}), n4 = Object.assign({ page: t4, perPage: e2 }, n4), this.client.send("/api/logs/requests", { method: "GET", params: n4 }).then(function(t5) {
+      var e3 = [];
+      if (null == t5 ? void 0 : t5.items) {
+        t5.items = (null == t5 ? void 0 : t5.items) || [];
+        for (var n5 = 0, i3 = t5.items; n5 < i3.length; n5++) {
+          var o3 = i3[n5];
+          e3.push(new j(o3));
+        }
+      }
+      return new g((null == t5 ? void 0 : t5.page) || 1, (null == t5 ? void 0 : t5.perPage) || 0, (null == t5 ? void 0 : t5.totalItems) || 0, (null == t5 ? void 0 : t5.totalPages) || 0, e3);
+    });
+  }, n3.prototype.getRequest = function(t4, e2) {
+    return void 0 === e2 && (e2 = {}), this.client.send("/api/logs/requests/" + encodeURIComponent(t4), { method: "GET", params: e2 }).then(function(t5) {
+      return new j(t5);
+    });
+  }, n3.prototype.getRequestsStats = function(t4) {
+    return void 0 === t4 && (t4 = {}), this.client.send("/api/logs/requests/stats", { method: "GET", params: t4 }).then(function(t5) {
+      return t5;
+    });
+  }, n3;
+}(y);
+var E = function(t3) {
+  function n3() {
+    var e2 = null !== t3 && t3.apply(this, arguments) || this;
+    return e2.clientId = "", e2.eventSource = null, e2.subscriptions = {}, e2;
+  }
+  return e(n3, t3), n3.prototype.subscribe = function(t4, e2) {
+    return i(this, void 0, void 0, function() {
+      var n4, r3 = this;
+      return o(this, function(s3) {
+        switch (s3.label) {
+          case 0:
+            if (!t4)
+              throw new Error("topic must be set.");
+            return n4 = function(t5) {
+              var n5, i3 = t5;
+              try {
+                n5 = JSON.parse(null == i3 ? void 0 : i3.data);
+              } catch (t6) {
+              }
+              e2(n5 || {});
+            }, this.subscriptions[t4] || (this.subscriptions[t4] = []), this.subscriptions[t4].push(n4), this.eventSource ? [3, 1] : (this.connect(), [3, 4]);
+          case 1:
+            return 1 !== this.subscriptions[t4].length ? [3, 3] : [4, this.submitSubscriptions()];
+          case 2:
+            return s3.sent(), [3, 4];
+          case 3:
+            this.eventSource.addEventListener(t4, n4), s3.label = 4;
+          case 4:
+            return [2, function() {
+              return i(r3, void 0, void 0, function() {
+                return o(this, function(e3) {
+                  return [2, this.unsubscribeByTopicAndListener(t4, n4)];
+                });
+              });
+            }];
+        }
+      });
+    });
+  }, n3.prototype.unsubscribe = function(t4) {
+    var e2;
+    return i(this, void 0, void 0, function() {
+      var n4, i3, r3;
+      return o(this, function(o3) {
+        switch (o3.label) {
+          case 0:
+            if (!this.hasSubscriptionListeners(t4))
+              return [2];
+            if (t4) {
+              for (n4 = 0, i3 = this.subscriptions[t4]; n4 < i3.length; n4++)
+                r3 = i3[n4], null === (e2 = this.eventSource) || void 0 === e2 || e2.removeEventListener(t4, r3);
+              delete this.subscriptions[t4];
+            } else
+              this.subscriptions = {};
+            return this.hasSubscriptionListeners() ? [3, 1] : (this.disconnect(), [3, 3]);
+          case 1:
+            return this.hasSubscriptionListeners(t4) ? [3, 3] : [4, this.submitSubscriptions()];
+          case 2:
+            o3.sent(), o3.label = 3;
+          case 3:
+            return [2];
+        }
+      });
+    });
+  }, n3.prototype.unsubscribeByPrefix = function(t4) {
+    var e2;
+    return i(this, void 0, void 0, function() {
+      var n4, i3, r3, s3, a3;
+      return o(this, function(o3) {
+        switch (o3.label) {
+          case 0:
+            for (i3 in n4 = false, this.subscriptions)
+              if (i3.startsWith(t4)) {
+                for (n4 = true, r3 = 0, s3 = this.subscriptions[i3]; r3 < s3.length; r3++)
+                  a3 = s3[r3], null === (e2 = this.eventSource) || void 0 === e2 || e2.removeEventListener(i3, a3);
+                delete this.subscriptions[i3];
+              }
+            return n4 ? this.hasSubscriptionListeners() ? [4, this.submitSubscriptions()] : [3, 2] : [2];
+          case 1:
+            return o3.sent(), [3, 3];
+          case 2:
+            this.disconnect(), o3.label = 3;
+          case 3:
+            return [2];
+        }
+      });
+    });
+  }, n3.prototype.unsubscribeByTopicAndListener = function(t4, e2) {
+    var n4;
+    return i(this, void 0, void 0, function() {
+      var i3, r3;
+      return o(this, function(o3) {
+        switch (o3.label) {
+          case 0:
+            if (!Array.isArray(this.subscriptions[t4]) || !this.subscriptions[t4].length)
+              return [2];
+            for (i3 = false, r3 = this.subscriptions[t4].length - 1; r3 >= 0; r3--)
+              this.subscriptions[t4][r3] === e2 && (i3 = true, delete this.subscriptions[t4][r3], this.subscriptions[t4].splice(r3, 1), null === (n4 = this.eventSource) || void 0 === n4 || n4.removeEventListener(t4, e2));
+            return i3 ? (this.subscriptions[t4].length || delete this.subscriptions[t4], this.hasSubscriptionListeners() ? [3, 1] : (this.disconnect(), [3, 3])) : [2];
+          case 1:
+            return this.hasSubscriptionListeners(t4) ? [3, 3] : [4, this.submitSubscriptions()];
+          case 2:
+            o3.sent(), o3.label = 3;
+          case 3:
+            return [2];
+        }
+      });
+    });
+  }, n3.prototype.hasSubscriptionListeners = function(t4) {
+    var e2, n4;
+    if (this.subscriptions = this.subscriptions || {}, t4)
+      return !!(null === (e2 = this.subscriptions[t4]) || void 0 === e2 ? void 0 : e2.length);
+    for (var i3 in this.subscriptions)
+      if (null === (n4 = this.subscriptions[i3]) || void 0 === n4 ? void 0 : n4.length)
+        return true;
+    return false;
+  }, n3.prototype.submitSubscriptions = function() {
+    return i(this, void 0, void 0, function() {
+      return o(this, function(t4) {
+        return this.clientId ? (this.addAllSubscriptionListeners(), [2, this.client.send("/api/realtime", { method: "POST", body: { clientId: this.clientId, subscriptions: this.getNonEmptySubscriptionTopics() }, params: { $cancelKey: "realtime_subscriptions_" + this.clientId } }).then(function() {
+          return true;
+        }).catch(function(t5) {
+          if (null == t5 ? void 0 : t5.isAbort)
+            return true;
+          throw t5;
+        })]) : [2, false];
+      });
+    });
+  }, n3.prototype.getNonEmptySubscriptionTopics = function() {
+    var t4 = [];
+    for (var e2 in this.subscriptions)
+      this.subscriptions[e2].length && t4.push(e2);
+    return t4;
+  }, n3.prototype.addAllSubscriptionListeners = function() {
+    if (this.eventSource)
+      for (var t4 in this.removeAllSubscriptionListeners(), this.subscriptions)
+        for (var e2 = 0, n4 = this.subscriptions[t4]; e2 < n4.length; e2++) {
+          var i3 = n4[e2];
+          this.eventSource.addEventListener(t4, i3);
+        }
+  }, n3.prototype.removeAllSubscriptionListeners = function() {
+    if (this.eventSource)
+      for (var t4 in this.subscriptions)
+        for (var e2 = 0, n4 = this.subscriptions[t4]; e2 < n4.length; e2++) {
+          var i3 = n4[e2];
+          this.eventSource.removeEventListener(t4, i3);
+        }
+  }, n3.prototype.connectHandler = function(t4) {
+    var e2 = t4;
+    this.clientId = null == e2 ? void 0 : e2.lastEventId, this.submitSubscriptions();
+  }, n3.prototype.connect = function() {
+    var t4 = this;
+    this.disconnect(), this.eventSource = new EventSource(this.client.buildUrl("/api/realtime")), this.eventSource.addEventListener("PB_CONNECT", function(e2) {
+      return t4.connectHandler(e2);
+    });
+  }, n3.prototype.disconnect = function() {
+    var t4, e2, n4 = this;
+    this.removeAllSubscriptionListeners(), null === (t4 = this.eventSource) || void 0 === t4 || t4.removeEventListener("PB_CONNECT", function(t5) {
+      return n4.connectHandler(t5);
+    }), null === (e2 = this.eventSource) || void 0 === e2 || e2.close(), this.eventSource = null, this.clientId = "";
+  }, n3;
+}(y);
+var R = function() {
+  function t3(t4, e2, n3) {
+    void 0 === t4 && (t4 = "/"), void 0 === n3 && (n3 = "en-US"), this.cancelControllers = {}, this.recordServices = {}, this.enableAutoCancellation = true, this.baseUrl = t4, this.lang = n3, this.authStore = e2 || new b(), this.admins = new S(this), this.collections = new k(this), this.logs = new T(this), this.settings = new m(this), this.realtime = new E(this);
+  }
+  return t3.prototype.collection = function(t4) {
+    return this.recordServices[t4] || (this.recordServices[t4] = new C(this, t4)), this.recordServices[t4];
+  }, t3.prototype.autoCancellation = function(t4) {
+    return this.enableAutoCancellation = !!t4, this;
+  }, t3.prototype.cancelRequest = function(t4) {
+    return this.cancelControllers[t4] && (this.cancelControllers[t4].abort(), delete this.cancelControllers[t4]), this;
+  }, t3.prototype.cancelAllRequests = function() {
+    for (var t4 in this.cancelControllers)
+      this.cancelControllers[t4].abort();
+    return this.cancelControllers = {}, this;
+  }, t3.prototype.send = function(t4, e2) {
+    var n3, r3, a3, u3, l3, c3, d3, h3;
+    return i(this, void 0, void 0, function() {
+      var p3, f3, v3, b3, y3, m2 = this;
+      return o(this, function(g3) {
+        return (p3 = Object.assign({ method: "GET" }, e2)).body && "FormData" !== p3.body.constructor.name && ("string" != typeof p3.body && (p3.body = JSON.stringify(p3.body)), void 0 === (null === (n3 = null == p3 ? void 0 : p3.headers) || void 0 === n3 ? void 0 : n3["Content-Type"]) && (p3.headers = Object.assign({}, p3.headers, { "Content-Type": "application/json" }))), void 0 === (null === (r3 = null == p3 ? void 0 : p3.headers) || void 0 === r3 ? void 0 : r3["Accept-Language"]) && (p3.headers = Object.assign({}, p3.headers, { "Accept-Language": this.lang })), (null === (a3 = this.authStore) || void 0 === a3 ? void 0 : a3.token) && void 0 === (null === (u3 = null == p3 ? void 0 : p3.headers) || void 0 === u3 ? void 0 : u3.Authorization) && (p3.headers = Object.assign({}, p3.headers, { Authorization: this.authStore.token })), this.enableAutoCancellation && false !== (null === (l3 = p3.params) || void 0 === l3 ? void 0 : l3.$autoCancel) && (f3 = (null === (c3 = p3.params) || void 0 === c3 ? void 0 : c3.$cancelKey) || (p3.method || "GET") + t4, this.cancelRequest(f3), v3 = new AbortController(), this.cancelControllers[f3] = v3, p3.signal = v3.signal), null === (d3 = p3.params) || void 0 === d3 || delete d3.$autoCancel, null === (h3 = p3.params) || void 0 === h3 || delete h3.$cancelKey, b3 = this.buildUrl(t4), void 0 !== p3.params && ((y3 = this.serializeQueryParams(p3.params)) && (b3 += (b3.includes("?") ? "&" : "?") + y3), delete p3.params), this.beforeSend && (p3 = Object.assign({}, this.beforeSend(b3, p3))), [2, fetch(b3, p3).then(function(t5) {
+          return i(m2, void 0, void 0, function() {
+            var e3;
+            return o(this, function(n4) {
+              switch (n4.label) {
+                case 0:
+                  e3 = {}, n4.label = 1;
+                case 1:
+                  return n4.trys.push([1, 3, , 4]), [4, t5.json()];
+                case 2:
+                  return e3 = n4.sent(), [3, 4];
+                case 3:
+                  return n4.sent(), [3, 4];
+                case 4:
+                  if (this.afterSend && (e3 = this.afterSend(t5, e3)), t5.status >= 400)
+                    throw new s({ url: t5.url, status: t5.status, data: e3 });
+                  return [2, e3];
+              }
+            });
+          });
+        }).catch(function(t5) {
+          throw new s(t5);
+        })];
+      });
+    });
+  }, t3.prototype.getFileUrl = function(t4, e2, n3) {
+    void 0 === n3 && (n3 = {});
+    var i3 = [];
+    i3.push("api"), i3.push("files"), i3.push(encodeURIComponent(t4.collectionId || t4.collectionName)), i3.push(encodeURIComponent(t4.id)), i3.push(encodeURIComponent(e2));
+    var o3 = this.buildUrl(i3.join("/"));
+    if (Object.keys(n3).length) {
+      var r3 = new URLSearchParams(n3);
+      o3 += (o3.includes("?") ? "&" : "?") + r3;
+    }
+    return o3;
+  }, t3.prototype.buildUrl = function(t4) {
+    var e2 = this.baseUrl + (this.baseUrl.endsWith("/") ? "" : "/");
+    return t4 && (e2 += t4.startsWith("/") ? t4.substring(1) : t4), e2;
+  }, t3.prototype.serializeQueryParams = function(t4) {
+    var e2 = [];
+    for (var n3 in t4)
+      if (null !== t4[n3]) {
+        var i3 = t4[n3], o3 = encodeURIComponent(n3);
+        if (Array.isArray(i3))
+          for (var r3 = 0, s3 = i3; r3 < s3.length; r3++) {
+            var a3 = s3[r3];
+            e2.push(o3 + "=" + encodeURIComponent(a3));
+          }
+        else
+          i3 instanceof Date ? e2.push(o3 + "=" + encodeURIComponent(i3.toISOString())) : null !== typeof i3 && "object" == typeof i3 ? e2.push(o3 + "=" + encodeURIComponent(JSON.stringify(i3))) : e2.push(o3 + "=" + encodeURIComponent(i3));
+      }
+    return e2.join("&");
+  }, t3;
+}();
+
+// node_modules/@pockethost/common/src/pocketbase-client-helpers/RpcHelper.ts
+var nanoid = customAlphabet("abcdefghijklmnopqrstuvwxyz");
+
+// node_modules/@pockethost/common/src/PromiseHelper.ts
+var createPromiseHelper = (config) => {
+  const { logger: logger2 } = config;
+  const { dbg: dbg2, error: error2, warn: warn2 } = logger2;
+  let inside = "";
+  let c3 = 0;
+  const safeCatch = (name, cb) => {
+    return (...args) => {
+      const _c = c3++;
+      const uuid = `${name}:${_c}`;
+      const pfx = `[safeCatch:${uuid}]`;
+      const tid = setTimeout(() => {
+        warn2(pfx, `timeout waiting for ${pfx}`);
+      }, 100);
+      inside = pfx;
+      return cb(...args).then((res) => {
+        inside = "";
+        clearTimeout(tid);
+        return res;
+      }).catch((e2) => {
+        error2(pfx, JSON.stringify(e2, null, 2));
+        if (e2 instanceof s) {
+          if (e2.status === 400) {
+            error2(
+              pfx,
+              `PocketBase API error: It looks like you don't have permission to make this request.`
+            );
+          } else {
+            error2(pfx, `Unknown PocketBase API error`);
+          }
+        }
+        throw e2;
+      });
+    };
+  };
+  return { safeCatch };
+};
+
+// src/providers/LocalStorageCompatibleAuthStore.ts
+var LocalStorageCompatibleAuthStore = class extends v {
+  storageKey;
+  storageProvider;
+  constructor(storageKey = "pocketbase_auth", storageProvider) {
+    super();
+    this.storageKey = storageKey;
+    this.storageProvider = storageProvider;
+  }
+  get token() {
+    const data = this._storageGet(this.storageKey) || {};
+    return data.token || "";
+  }
+  get model() {
+    const data = this._storageGet(this.storageKey) || {};
+    if (data === null || typeof data !== "object" || data.model === null || typeof data.model !== "object") {
+      return null;
+    }
+    if (typeof data.model?.collectionId === "undefined") {
+      return new f(data.model);
+    }
+    return new p(data.model);
+  }
+  save(token, model) {
+    this._storageSet(this.storageKey, {
+      token,
+      model
+    });
+    super.save(token, model);
+  }
+  clear() {
+    this._storageRemove(this.storageKey);
+    super.clear();
+  }
+  _storageGet(key) {
+    const rawValue = this.storageProvider.getItem(key) || "";
+    try {
+      return JSON.parse(rawValue);
+    } catch (e2) {
+      return rawValue;
+    }
+  }
+  _storageSet(key, value) {
+    let normalizedVal = value;
+    if (typeof value !== "string") {
+      normalizedVal = JSON.stringify(value);
+    }
+    this.storageProvider.setItem(key, normalizedVal);
+  }
+  _storageRemove(key) {
+    this.storageProvider.removeItem(key);
+  }
+};
+
+// src/util/logger.ts
+var logger = createLogger({ debug: true });
+var { dbg, info, warn, error } = logger;
+
 // node_modules/find-up/index.js
 var import_node_path2 = __toESM(require("node:path"), 1);
 var import_node_url2 = require("node:url");
@@ -15415,7 +16507,7 @@ function findUpSync(name, options = {}) {
 var import_fs = require("fs");
 
 // node_modules/immer/dist/immer.esm.mjs
-function n(n3) {
+function n2(n3) {
   for (var r3 = arguments.length, t3 = Array(r3 > 1 ? r3 - 1 : 0), e2 = 1; e2 < r3; e2++)
     t3[e2 - 1] = arguments[e2];
   if ("production" !== process.env.NODE_ENV) {
@@ -15426,10 +16518,10 @@ function n(n3) {
     return "'" + n4 + "'";
   }).join(",") : "") + ". Find the full error at: https://bit.ly/3cXEKWf");
 }
-function r(n3) {
+function r2(n3) {
   return !!n3 && !!n3[Q];
 }
-function t(n3) {
+function t2(n3) {
   var r3;
   return !!n3 && (function(n4) {
     if (!n4 || "object" != typeof n4)
@@ -15439,42 +16531,42 @@ function t(n3) {
       return true;
     var t3 = Object.hasOwnProperty.call(r4, "constructor") && r4.constructor;
     return t3 === Object || "function" == typeof t3 && Function.toString.call(t3) === Z;
-  }(n3) || Array.isArray(n3) || !!n3[L] || !!(null === (r3 = n3.constructor) || void 0 === r3 ? void 0 : r3[L]) || s(n3) || v(n3));
+  }(n3) || Array.isArray(n3) || !!n3[L] || !!(null === (r3 = n3.constructor) || void 0 === r3 ? void 0 : r3[L]) || s2(n3) || v2(n3));
 }
-function i(n3, r3, t3) {
-  void 0 === t3 && (t3 = false), 0 === o(n3) ? (t3 ? Object.keys : nn)(n3).forEach(function(e2) {
+function i2(n3, r3, t3) {
+  void 0 === t3 && (t3 = false), 0 === o2(n3) ? (t3 ? Object.keys : nn)(n3).forEach(function(e2) {
     t3 && "symbol" == typeof e2 || r3(e2, n3[e2], n3);
   }) : n3.forEach(function(t4, e2) {
     return r3(e2, t4, n3);
   });
 }
-function o(n3) {
+function o2(n3) {
   var r3 = n3[Q];
-  return r3 ? r3.i > 3 ? r3.i - 4 : r3.i : Array.isArray(n3) ? 1 : s(n3) ? 2 : v(n3) ? 3 : 0;
+  return r3 ? r3.i > 3 ? r3.i - 4 : r3.i : Array.isArray(n3) ? 1 : s2(n3) ? 2 : v2(n3) ? 3 : 0;
 }
-function u(n3, r3) {
-  return 2 === o(n3) ? n3.has(r3) : Object.prototype.hasOwnProperty.call(n3, r3);
+function u2(n3, r3) {
+  return 2 === o2(n3) ? n3.has(r3) : Object.prototype.hasOwnProperty.call(n3, r3);
 }
-function a(n3, r3) {
-  return 2 === o(n3) ? n3.get(r3) : n3[r3];
+function a2(n3, r3) {
+  return 2 === o2(n3) ? n3.get(r3) : n3[r3];
 }
-function f(n3, r3, t3) {
-  var e2 = o(n3);
+function f2(n3, r3, t3) {
+  var e2 = o2(n3);
   2 === e2 ? n3.set(r3, t3) : 3 === e2 ? (n3.delete(r3), n3.add(t3)) : n3[r3] = t3;
 }
-function c(n3, r3) {
+function c2(n3, r3) {
   return n3 === r3 ? 0 !== n3 || 1 / n3 == 1 / r3 : n3 != n3 && r3 != r3;
 }
-function s(n3) {
+function s2(n3) {
   return X && n3 instanceof Map;
 }
-function v(n3) {
+function v2(n3) {
   return q && n3 instanceof Set;
 }
-function p(n3) {
+function p2(n3) {
   return n3.o || n3.t;
 }
-function l(n3) {
+function l2(n3) {
   if (Array.isArray(n3))
     return Array.prototype.slice.call(n3);
   var r3 = rn(n3);
@@ -15485,51 +16577,51 @@ function l(n3) {
   }
   return Object.create(Object.getPrototypeOf(n3), r3);
 }
-function d(n3, e2) {
-  return void 0 === e2 && (e2 = false), y(n3) || r(n3) || !t(n3) ? n3 : (o(n3) > 1 && (n3.set = n3.add = n3.clear = n3.delete = h), Object.freeze(n3), e2 && i(n3, function(n4, r3) {
-    return d(r3, true);
+function d2(n3, e2) {
+  return void 0 === e2 && (e2 = false), y2(n3) || r2(n3) || !t2(n3) ? n3 : (o2(n3) > 1 && (n3.set = n3.add = n3.clear = n3.delete = h2), Object.freeze(n3), e2 && i2(n3, function(n4, r3) {
+    return d2(r3, true);
   }, true), n3);
 }
-function h() {
-  n(2);
+function h2() {
+  n2(2);
 }
-function y(n3) {
+function y2(n3) {
   return null == n3 || "object" != typeof n3 || Object.isFrozen(n3);
 }
-function b(r3) {
+function b2(r3) {
   var t3 = tn[r3];
-  return t3 || n(18, r3), t3;
+  return t3 || n2(18, r3), t3;
 }
 function _() {
-  return "production" === process.env.NODE_ENV || U || n(0), U;
+  return "production" === process.env.NODE_ENV || U || n2(0), U;
 }
-function j(n3, r3) {
-  r3 && (b("Patches"), n3.u = [], n3.s = [], n3.v = r3);
+function j2(n3, r3) {
+  r3 && (b2("Patches"), n3.u = [], n3.s = [], n3.v = r3);
 }
-function O(n3) {
-  g(n3), n3.p.forEach(S), n3.p = null;
+function O2(n3) {
+  g2(n3), n3.p.forEach(S2), n3.p = null;
 }
-function g(n3) {
+function g2(n3) {
   n3 === U && (U = n3.l);
 }
-function w(n3) {
+function w2(n3) {
   return U = { p: [], l: U, h: n3, m: true, _: 0 };
 }
-function S(n3) {
+function S2(n3) {
   var r3 = n3[Q];
   0 === r3.i || 1 === r3.i ? r3.j() : r3.O = true;
 }
-function P(r3, e2) {
+function P2(r3, e2) {
   e2._ = e2.p.length;
   var i3 = e2.p[0], o3 = void 0 !== r3 && r3 !== i3;
-  return e2.h.g || b("ES5").S(e2, r3, o3), o3 ? (i3[Q].P && (O(e2), n(4)), t(r3) && (r3 = M(e2, r3), e2.l || x(e2, r3)), e2.u && b("Patches").M(i3[Q].t, r3, e2.u, e2.s)) : r3 = M(e2, i3, []), O(e2), e2.u && e2.v(e2.u, e2.s), r3 !== H ? r3 : void 0;
+  return e2.h.g || b2("ES5").S(e2, r3, o3), o3 ? (i3[Q].P && (O2(e2), n2(4)), t2(r3) && (r3 = M(e2, r3), e2.l || x(e2, r3)), e2.u && b2("Patches").M(i3[Q].t, r3, e2.u, e2.s)) : r3 = M(e2, i3, []), O2(e2), e2.u && e2.v(e2.u, e2.s), r3 !== H ? r3 : void 0;
 }
 function M(n3, r3, t3) {
-  if (y(r3))
+  if (y2(r3))
     return r3;
   var e2 = r3[Q];
   if (!e2)
-    return i(r3, function(i3, o4) {
+    return i2(r3, function(i3, o4) {
       return A(n3, e2, r3, i3, o4, t3);
     }, true), r3;
   if (e2.A !== n3)
@@ -15538,34 +16630,34 @@ function M(n3, r3, t3) {
     return x(n3, e2.t, true), e2.t;
   if (!e2.I) {
     e2.I = true, e2.A._--;
-    var o3 = 4 === e2.i || 5 === e2.i ? e2.o = l(e2.k) : e2.o;
-    i(3 === e2.i ? new Set(o3) : o3, function(r4, i3) {
+    var o3 = 4 === e2.i || 5 === e2.i ? e2.o = l2(e2.k) : e2.o;
+    i2(3 === e2.i ? new Set(o3) : o3, function(r4, i3) {
       return A(n3, e2, o3, r4, i3, t3);
-    }), x(n3, o3, false), t3 && n3.u && b("Patches").R(e2, t3, n3.u, n3.s);
+    }), x(n3, o3, false), t3 && n3.u && b2("Patches").R(e2, t3, n3.u, n3.s);
   }
   return e2.o;
 }
 function A(e2, i3, o3, a3, c3, s3) {
-  if ("production" !== process.env.NODE_ENV && c3 === o3 && n(5), r(c3)) {
-    var v3 = M(e2, c3, s3 && i3 && 3 !== i3.i && !u(i3.D, a3) ? s3.concat(a3) : void 0);
-    if (f(o3, a3, v3), !r(v3))
+  if ("production" !== process.env.NODE_ENV && c3 === o3 && n2(5), r2(c3)) {
+    var v3 = M(e2, c3, s3 && i3 && 3 !== i3.i && !u2(i3.D, a3) ? s3.concat(a3) : void 0);
+    if (f2(o3, a3, v3), !r2(v3))
       return;
     e2.m = false;
   }
-  if (t(c3) && !y(c3)) {
+  if (t2(c3) && !y2(c3)) {
     if (!e2.h.F && e2._ < 1)
       return;
     M(e2, c3), i3 && i3.A.l || x(e2, c3);
   }
 }
 function x(n3, r3, t3) {
-  void 0 === t3 && (t3 = false), n3.h.F && n3.m && d(r3, t3);
+  void 0 === t3 && (t3 = false), n3.h.F && n3.m && d2(r3, t3);
 }
 function z(n3, r3) {
   var t3 = n3[Q];
-  return (t3 ? p(t3) : n3)[r3];
+  return (t3 ? p2(t3) : n3)[r3];
 }
-function I(n3, r3) {
+function I2(n3, r3) {
   if (r3 in n3)
     for (var t3 = Object.getPrototypeOf(n3); t3; ) {
       var e2 = Object.getOwnPropertyDescriptor(t3, r3);
@@ -15574,34 +16666,34 @@ function I(n3, r3) {
       t3 = Object.getPrototypeOf(t3);
     }
 }
-function k(n3) {
-  n3.P || (n3.P = true, n3.l && k(n3.l));
+function k2(n3) {
+  n3.P || (n3.P = true, n3.l && k2(n3.l));
 }
-function E(n3) {
-  n3.o || (n3.o = l(n3.t));
+function E2(n3) {
+  n3.o || (n3.o = l2(n3.t));
 }
-function R(n3, r3, t3) {
-  var e2 = s(r3) ? b("MapSet").N(r3, t3) : v(r3) ? b("MapSet").T(r3, t3) : n3.g ? function(n4, r4) {
+function R2(n3, r3, t3) {
+  var e2 = s2(r3) ? b2("MapSet").N(r3, t3) : v2(r3) ? b2("MapSet").T(r3, t3) : n3.g ? function(n4, r4) {
     var t4 = Array.isArray(n4), e3 = { i: t4 ? 1 : 0, A: r4 ? r4.A : _(), P: false, I: false, D: {}, l: r4, t: n4, k: null, o: null, j: null, C: false }, i3 = e3, o3 = en;
     t4 && (i3 = [e3], o3 = on);
     var u3 = Proxy.revocable(i3, o3), a3 = u3.revoke, f3 = u3.proxy;
     return e3.k = f3, e3.j = a3, f3;
-  }(r3, t3) : b("ES5").J(r3, t3);
+  }(r3, t3) : b2("ES5").J(r3, t3);
   return (t3 ? t3.A : _()).p.push(e2), e2;
 }
 function D(e2) {
-  return r(e2) || n(22, e2), function n3(r3) {
-    if (!t(r3))
+  return r2(e2) || n2(22, e2), function n3(r3) {
+    if (!t2(r3))
       return r3;
-    var e3, u3 = r3[Q], c3 = o(r3);
+    var e3, u3 = r3[Q], c3 = o2(r3);
     if (u3) {
-      if (!u3.P && (u3.i < 4 || !b("ES5").K(u3)))
+      if (!u3.P && (u3.i < 4 || !b2("ES5").K(u3)))
         return u3.t;
       u3.I = true, e3 = F(r3, c3), u3.I = false;
     } else
       e3 = F(r3, c3);
-    return i(e3, function(r4, t3) {
-      u3 && a(u3.t, r4) === t3 || f(e3, r4, n3(t3));
+    return i2(e3, function(r4, t3) {
+      u3 && a2(u3.t, r4) === t3 || f2(e3, r4, n3(t3));
     }), 3 === c3 ? new Set(e3) : e3;
   }(e2);
 }
@@ -15612,7 +16704,7 @@ function F(n3, r3) {
     case 3:
       return Array.from(n3);
   }
-  return l(n3);
+  return l2(n3);
 }
 var G;
 var U;
@@ -15652,52 +16744,52 @@ var tn = {};
 var en = { get: function(n3, r3) {
   if (r3 === Q)
     return n3;
-  var e2 = p(n3);
-  if (!u(e2, r3))
+  var e2 = p2(n3);
+  if (!u2(e2, r3))
     return function(n4, r4, t3) {
-      var e3, i4 = I(r4, t3);
+      var e3, i4 = I2(r4, t3);
       return i4 ? "value" in i4 ? i4.value : null === (e3 = i4.get) || void 0 === e3 ? void 0 : e3.call(n4.k) : void 0;
     }(n3, e2, r3);
   var i3 = e2[r3];
-  return n3.I || !t(i3) ? i3 : i3 === z(n3.t, r3) ? (E(n3), n3.o[r3] = R(n3.A.h, i3, n3)) : i3;
+  return n3.I || !t2(i3) ? i3 : i3 === z(n3.t, r3) ? (E2(n3), n3.o[r3] = R2(n3.A.h, i3, n3)) : i3;
 }, has: function(n3, r3) {
-  return r3 in p(n3);
+  return r3 in p2(n3);
 }, ownKeys: function(n3) {
-  return Reflect.ownKeys(p(n3));
+  return Reflect.ownKeys(p2(n3));
 }, set: function(n3, r3, t3) {
-  var e2 = I(p(n3), r3);
+  var e2 = I2(p2(n3), r3);
   if (null == e2 ? void 0 : e2.set)
     return e2.set.call(n3.k, t3), true;
   if (!n3.P) {
-    var i3 = z(p(n3), r3), o3 = null == i3 ? void 0 : i3[Q];
+    var i3 = z(p2(n3), r3), o3 = null == i3 ? void 0 : i3[Q];
     if (o3 && o3.t === t3)
       return n3.o[r3] = t3, n3.D[r3] = false, true;
-    if (c(t3, i3) && (void 0 !== t3 || u(n3.t, r3)))
+    if (c2(t3, i3) && (void 0 !== t3 || u2(n3.t, r3)))
       return true;
-    E(n3), k(n3);
+    E2(n3), k2(n3);
   }
   return n3.o[r3] === t3 && "number" != typeof t3 && (void 0 !== t3 || r3 in n3.o) || (n3.o[r3] = t3, n3.D[r3] = true, true);
 }, deleteProperty: function(n3, r3) {
-  return void 0 !== z(n3.t, r3) || r3 in n3.t ? (n3.D[r3] = false, E(n3), k(n3)) : delete n3.D[r3], n3.o && delete n3.o[r3], true;
+  return void 0 !== z(n3.t, r3) || r3 in n3.t ? (n3.D[r3] = false, E2(n3), k2(n3)) : delete n3.D[r3], n3.o && delete n3.o[r3], true;
 }, getOwnPropertyDescriptor: function(n3, r3) {
-  var t3 = p(n3), e2 = Reflect.getOwnPropertyDescriptor(t3, r3);
+  var t3 = p2(n3), e2 = Reflect.getOwnPropertyDescriptor(t3, r3);
   return e2 ? { writable: true, configurable: 1 !== n3.i || "length" !== r3, enumerable: e2.enumerable, value: t3[r3] } : e2;
 }, defineProperty: function() {
-  n(11);
+  n2(11);
 }, getPrototypeOf: function(n3) {
   return Object.getPrototypeOf(n3.t);
 }, setPrototypeOf: function() {
-  n(12);
+  n2(12);
 } };
 var on = {};
-i(en, function(n3, r3) {
+i2(en, function(n3, r3) {
   on[n3] = function() {
     return arguments[0] = arguments[0][0], r3.apply(this, arguments);
   };
 }), on.deleteProperty = function(r3, t3) {
-  return "production" !== process.env.NODE_ENV && isNaN(parseInt(t3)) && n(13), on.set.call(this, r3, t3, void 0);
+  return "production" !== process.env.NODE_ENV && isNaN(parseInt(t3)) && n2(13), on.set.call(this, r3, t3, void 0);
 }, on.set = function(r3, t3, e2) {
-  return "production" !== process.env.NODE_ENV && "length" !== t3 && isNaN(parseInt(t3)) && n(14), en.set.call(this, r3[0], t3, e2, r3[0]);
+  return "production" !== process.env.NODE_ENV && "length" !== t3 && isNaN(parseInt(t3)) && n2(14), en.set.call(this, r3[0], t3, e2, r3[0]);
 };
 var un = function() {
   function e2(r3) {
@@ -15719,27 +16811,27 @@ var un = function() {
         };
       }
       var f3;
-      if ("function" != typeof i4 && n(6), void 0 !== o3 && "function" != typeof o3 && n(7), t(r4)) {
-        var c3 = w(e3), s3 = R(e3, r4, void 0), v3 = true;
+      if ("function" != typeof i4 && n2(6), void 0 !== o3 && "function" != typeof o3 && n2(7), t2(r4)) {
+        var c3 = w2(e3), s3 = R2(e3, r4, void 0), v3 = true;
         try {
           f3 = i4(s3), v3 = false;
         } finally {
-          v3 ? O(c3) : g(c3);
+          v3 ? O2(c3) : g2(c3);
         }
         return "undefined" != typeof Promise && f3 instanceof Promise ? f3.then(function(n3) {
-          return j(c3, o3), P(n3, c3);
+          return j2(c3, o3), P2(n3, c3);
         }, function(n3) {
-          throw O(c3), n3;
-        }) : (j(c3, o3), P(f3, c3));
+          throw O2(c3), n3;
+        }) : (j2(c3, o3), P2(f3, c3));
       }
       if (!r4 || "object" != typeof r4) {
-        if (void 0 === (f3 = i4(r4)) && (f3 = r4), f3 === H && (f3 = void 0), e3.F && d(f3, true), o3) {
+        if (void 0 === (f3 = i4(r4)) && (f3 = r4), f3 === H && (f3 = void 0), e3.F && d2(f3, true), o3) {
           var p3 = [], l3 = [];
-          b("Patches").M(r4, f3, p3, l3), o3(p3, l3);
+          b2("Patches").M(r4, f3, p3, l3), o3(p3, l3);
         }
         return f3;
       }
-      n(21, r4);
+      n2(21, r4);
     }, this.produceWithPatches = function(n3, r4) {
       if ("function" == typeof n3)
         return function(r5) {
@@ -15759,18 +16851,18 @@ var un = function() {
   }
   var i3 = e2.prototype;
   return i3.createDraft = function(e3) {
-    t(e3) || n(8), r(e3) && (e3 = D(e3));
-    var i4 = w(this), o3 = R(this, e3, void 0);
-    return o3[Q].C = true, g(i4), o3;
+    t2(e3) || n2(8), r2(e3) && (e3 = D(e3));
+    var i4 = w2(this), o3 = R2(this, e3, void 0);
+    return o3[Q].C = true, g2(i4), o3;
   }, i3.finishDraft = function(r3, t3) {
     var e3 = r3 && r3[Q];
-    "production" !== process.env.NODE_ENV && (e3 && e3.C || n(9), e3.I && n(10));
+    "production" !== process.env.NODE_ENV && (e3 && e3.C || n2(9), e3.I && n2(10));
     var i4 = e3.A;
-    return j(i4, t3), P(void 0, i4);
+    return j2(i4, t3), P2(void 0, i4);
   }, i3.setAutoFreeze = function(n3) {
     this.F = n3;
   }, i3.setUseProxies = function(r3) {
-    r3 && !B && n(20), this.g = r3;
+    r3 && !B && n2(20), this.g = r3;
   }, i3.applyPatches = function(n3, t3) {
     var e3;
     for (e3 = t3.length - 1; e3 >= 0; e3--) {
@@ -15781,8 +16873,8 @@ var un = function() {
       }
     }
     e3 > -1 && (t3 = t3.slice(e3 + 1));
-    var o3 = b("Patches").$;
-    return r(n3) ? o3(n3, t3) : this.produce(n3, function(n4) {
+    var o3 = b2("Patches").$;
+    return r2(n3) ? o3(n3, t3) : this.produce(n3, function(n4) {
       return o3(n4, t3);
     });
   }, e2;
@@ -15825,1104 +16917,12 @@ var setProject = (mutator) => {
   (0, import_fs.writeFileSync)(path3, JSON.stringify(nextProject, null, 2));
 };
 
-// node_modules/@pockethost/common/src/Logger.ts
-var createLogger = (config) => {
-  const { debug } = config;
-  const dbg2 = (...args) => {
-    if (!debug)
-      return;
-    console.log(`[DBG]`, ...args);
-  };
-  const warn2 = (...args) => {
-    console.log(`[WARN]`, ...args);
-  };
-  const info2 = (...args) => {
-    console.log(`[INFO]`, ...args);
-  };
-  const error2 = (...args) => {
-    console.error(`[ERROR]`, ...args);
-  };
-  return { dbg: dbg2, warn: warn2, info: info2, error: error2 };
-};
-
-// node_modules/nanoid/index.js
-var import_crypto = require("crypto");
-var POOL_SIZE_MULTIPLIER = 128;
-var pool;
-var poolOffset;
-var fillPool = (bytes) => {
-  if (!pool || pool.length < bytes) {
-    pool = Buffer.allocUnsafe(bytes * POOL_SIZE_MULTIPLIER);
-    (0, import_crypto.randomFillSync)(pool);
-    poolOffset = 0;
-  } else if (poolOffset + bytes > pool.length) {
-    (0, import_crypto.randomFillSync)(pool);
-    poolOffset = 0;
-  }
-  poolOffset += bytes;
-};
-var random = (bytes) => {
-  fillPool(bytes -= 0);
-  return pool.subarray(poolOffset - bytes, poolOffset);
-};
-var customRandom = (alphabet, defaultSize, getRandom) => {
-  let mask = (2 << 31 - Math.clz32(alphabet.length - 1 | 1)) - 1;
-  let step = Math.ceil(1.6 * mask * defaultSize / alphabet.length);
-  return (size = defaultSize) => {
-    let id = "";
-    while (true) {
-      let bytes = getRandom(step);
-      let i3 = step;
-      while (i3--) {
-        id += alphabet[bytes[i3] & mask] || "";
-        if (id.length === size)
-          return id;
-      }
-    }
-  };
-};
-var customAlphabet = (alphabet, size = 21) => customRandom(alphabet, size, random);
-
-// node_modules/pocketbase/dist/pocketbase.es.mjs
-var t2 = function(e2, n3) {
-  return t2 = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(t3, e3) {
-    t3.__proto__ = e3;
-  } || function(t3, e3) {
-    for (var n4 in e3)
-      Object.prototype.hasOwnProperty.call(e3, n4) && (t3[n4] = e3[n4]);
-  }, t2(e2, n3);
-};
-function e(e2, n3) {
-  if ("function" != typeof n3 && null !== n3)
-    throw new TypeError("Class extends value " + String(n3) + " is not a constructor or null");
-  function i3() {
-    this.constructor = e2;
-  }
-  t2(e2, n3), e2.prototype = null === n3 ? Object.create(n3) : (i3.prototype = n3.prototype, new i3());
-}
-var n2 = function() {
-  return n2 = Object.assign || function(t3) {
-    for (var e2, n3 = 1, i3 = arguments.length; n3 < i3; n3++)
-      for (var o3 in e2 = arguments[n3])
-        Object.prototype.hasOwnProperty.call(e2, o3) && (t3[o3] = e2[o3]);
-    return t3;
-  }, n2.apply(this, arguments);
-};
-function i2(t3, e2, n3, i3) {
-  return new (n3 || (n3 = Promise))(function(o3, r3) {
-    function s3(t4) {
-      try {
-        u3(i3.next(t4));
-      } catch (t5) {
-        r3(t5);
-      }
-    }
-    function a3(t4) {
-      try {
-        u3(i3.throw(t4));
-      } catch (t5) {
-        r3(t5);
-      }
-    }
-    function u3(t4) {
-      var e3;
-      t4.done ? o3(t4.value) : (e3 = t4.value, e3 instanceof n3 ? e3 : new n3(function(t5) {
-        t5(e3);
-      })).then(s3, a3);
-    }
-    u3((i3 = i3.apply(t3, e2 || [])).next());
-  });
-}
-function o2(t3, e2) {
-  var n3, i3, o3, r3, s3 = { label: 0, sent: function() {
-    if (1 & o3[0])
-      throw o3[1];
-    return o3[1];
-  }, trys: [], ops: [] };
-  return r3 = { next: a3(0), throw: a3(1), return: a3(2) }, "function" == typeof Symbol && (r3[Symbol.iterator] = function() {
-    return this;
-  }), r3;
-  function a3(r4) {
-    return function(a4) {
-      return function(r5) {
-        if (n3)
-          throw new TypeError("Generator is already executing.");
-        for (; s3; )
-          try {
-            if (n3 = 1, i3 && (o3 = 2 & r5[0] ? i3.return : r5[0] ? i3.throw || ((o3 = i3.return) && o3.call(i3), 0) : i3.next) && !(o3 = o3.call(i3, r5[1])).done)
-              return o3;
-            switch (i3 = 0, o3 && (r5 = [2 & r5[0], o3.value]), r5[0]) {
-              case 0:
-              case 1:
-                o3 = r5;
-                break;
-              case 4:
-                return s3.label++, { value: r5[1], done: false };
-              case 5:
-                s3.label++, i3 = r5[1], r5 = [0];
-                continue;
-              case 7:
-                r5 = s3.ops.pop(), s3.trys.pop();
-                continue;
-              default:
-                if (!(o3 = s3.trys, (o3 = o3.length > 0 && o3[o3.length - 1]) || 6 !== r5[0] && 2 !== r5[0])) {
-                  s3 = 0;
-                  continue;
-                }
-                if (3 === r5[0] && (!o3 || r5[1] > o3[0] && r5[1] < o3[3])) {
-                  s3.label = r5[1];
-                  break;
-                }
-                if (6 === r5[0] && s3.label < o3[1]) {
-                  s3.label = o3[1], o3 = r5;
-                  break;
-                }
-                if (o3 && s3.label < o3[2]) {
-                  s3.label = o3[2], s3.ops.push(r5);
-                  break;
-                }
-                o3[2] && s3.ops.pop(), s3.trys.pop();
-                continue;
-            }
-            r5 = e2.call(t3, s3);
-          } catch (t4) {
-            r5 = [6, t4], i3 = 0;
-          } finally {
-            n3 = o3 = 0;
-          }
-        if (5 & r5[0])
-          throw r5[1];
-        return { value: r5[0] ? r5[1] : void 0, done: true };
-      }([r4, a4]);
-    };
-  }
-}
-var r2;
-var s2 = function(t3) {
-  function i3(e2) {
-    var n3, o3 = this;
-    return (o3 = t3.call(this, "ClientResponseError") || this).url = "", o3.status = 0, o3.data = {}, o3.isAbort = false, o3.originalError = null, Object.setPrototypeOf(o3, i3.prototype), e2 instanceof i3 || (o3.originalError = e2), null !== e2 && "object" == typeof e2 && (o3.url = "string" == typeof e2.url ? e2.url : "", o3.status = "number" == typeof e2.status ? e2.status : 0, o3.data = null !== e2.data && "object" == typeof e2.data ? e2.data : {}), "undefined" != typeof DOMException && e2 instanceof DOMException && (o3.isAbort = true), o3.name = "ClientResponseError " + o3.status, o3.message = null === (n3 = o3.data) || void 0 === n3 ? void 0 : n3.message, o3.message || (o3.message = o3.isAbort ? "The request was autocancelled. More info you could find in https://github.com/pocketbase/js-sdk#auto-cancellation." : "Something went wrong while processing your request."), o3;
-  }
-  return e(i3, t3), i3.prototype.toJSON = function() {
-    return n2({}, this);
-  }, i3;
-}(Error);
-var a2 = /^[\u0009\u0020-\u007e\u0080-\u00ff]+$/;
-function u2(t3, e2, n3) {
-  var i3 = Object.assign({}, n3 || {}), o3 = i3.encode || c2;
-  if (!a2.test(t3))
-    throw new TypeError("argument name is invalid");
-  var r3 = o3(e2);
-  if (r3 && !a2.test(r3))
-    throw new TypeError("argument val is invalid");
-  var s3 = t3 + "=" + r3;
-  if (null != i3.maxAge) {
-    var u3 = i3.maxAge - 0;
-    if (isNaN(u3) || !isFinite(u3))
-      throw new TypeError("option maxAge is invalid");
-    s3 += "; Max-Age=" + Math.floor(u3);
-  }
-  if (i3.domain) {
-    if (!a2.test(i3.domain))
-      throw new TypeError("option domain is invalid");
-    s3 += "; Domain=" + i3.domain;
-  }
-  if (i3.path) {
-    if (!a2.test(i3.path))
-      throw new TypeError("option path is invalid");
-    s3 += "; Path=" + i3.path;
-  }
-  if (i3.expires) {
-    if (!function(t4) {
-      return "[object Date]" === Object.prototype.toString.call(t4) || t4 instanceof Date;
-    }(i3.expires) || isNaN(i3.expires.valueOf()))
-      throw new TypeError("option expires is invalid");
-    s3 += "; Expires=" + i3.expires.toUTCString();
-  }
-  if (i3.httpOnly && (s3 += "; HttpOnly"), i3.secure && (s3 += "; Secure"), i3.priority)
-    switch ("string" == typeof i3.priority ? i3.priority.toLowerCase() : i3.priority) {
-      case "low":
-        s3 += "; Priority=Low";
-        break;
-      case "medium":
-        s3 += "; Priority=Medium";
-        break;
-      case "high":
-        s3 += "; Priority=High";
-        break;
-      default:
-        throw new TypeError("option priority is invalid");
-    }
-  if (i3.sameSite)
-    switch ("string" == typeof i3.sameSite ? i3.sameSite.toLowerCase() : i3.sameSite) {
-      case true:
-        s3 += "; SameSite=Strict";
-        break;
-      case "lax":
-        s3 += "; SameSite=Lax";
-        break;
-      case "strict":
-        s3 += "; SameSite=Strict";
-        break;
-      case "none":
-        s3 += "; SameSite=None";
-        break;
-      default:
-        throw new TypeError("option sameSite is invalid");
-    }
-  return s3;
-}
-function l2(t3) {
-  return -1 !== t3.indexOf("%") ? decodeURIComponent(t3) : t3;
-}
-function c2(t3) {
-  return encodeURIComponent(t3);
-}
-function d2(t3) {
-  if (t3)
-    try {
-      var e2 = decodeURIComponent(r2(t3.split(".")[1]).split("").map(function(t4) {
-        return "%" + ("00" + t4.charCodeAt(0).toString(16)).slice(-2);
-      }).join(""));
-      return JSON.parse(e2) || {};
-    } catch (t4) {
-    }
-  return {};
-}
-r2 = "function" == typeof atob ? atob : function(t3) {
-  var e2 = String(t3).replace(/=+$/, "");
-  if (e2.length % 4 == 1)
-    throw new Error("'atob' failed: The string to be decoded is not correctly encoded.");
-  for (var n3, i3, o3 = 0, r3 = 0, s3 = ""; i3 = e2.charAt(r3++); ~i3 && (n3 = o3 % 4 ? 64 * n3 + i3 : i3, o3++ % 4) ? s3 += String.fromCharCode(255 & n3 >> (-2 * o3 & 6)) : 0)
-    i3 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=".indexOf(i3);
-  return s3;
-};
-var h2 = function() {
-  function t3(t4) {
-    void 0 === t4 && (t4 = {}), this.load(t4 || {});
-  }
-  return t3.prototype.load = function(t4) {
-    for (var e2 = 0, n3 = Object.entries(t4); e2 < n3.length; e2++) {
-      var i3 = n3[e2], o3 = i3[0], r3 = i3[1];
-      this[o3] = r3;
-    }
-    this.id = void 0 !== t4.id ? t4.id : "", this.created = void 0 !== t4.created ? t4.created : "", this.updated = void 0 !== t4.updated ? t4.updated : "";
-  }, Object.defineProperty(t3.prototype, "isNew", { get: function() {
-    return !this.id;
-  }, enumerable: false, configurable: true }), t3.prototype.clone = function() {
-    return new this.constructor(JSON.parse(JSON.stringify(this)));
-  }, t3.prototype.export = function() {
-    return Object.assign({}, this);
-  }, t3;
-}();
-var p2 = function(t3) {
-  function n3() {
-    return null !== t3 && t3.apply(this, arguments) || this;
-  }
-  return e(n3, t3), n3.prototype.load = function(e2) {
-    t3.prototype.load.call(this, e2), this.collectionId = "string" == typeof e2.collectionId ? e2.collectionId : "", this.collectionName = "string" == typeof e2.collectionName ? e2.collectionName : "", this.expand = "object" == typeof e2.expand && null !== e2.expand ? e2.expand : {};
-  }, n3;
-}(h2);
-var f2 = function(t3) {
-  function n3() {
-    return null !== t3 && t3.apply(this, arguments) || this;
-  }
-  return e(n3, t3), n3.prototype.load = function(e2) {
-    t3.prototype.load.call(this, e2), this.avatar = "number" == typeof e2.avatar ? e2.avatar : 0, this.email = "string" == typeof e2.email ? e2.email : "";
-  }, n3;
-}(h2);
-var v2 = function() {
-  function t3() {
-    this.baseToken = "", this.baseModel = null, this._onChangeCallbacks = [];
-  }
-  return Object.defineProperty(t3.prototype, "token", { get: function() {
-    return this.baseToken;
-  }, enumerable: false, configurable: true }), Object.defineProperty(t3.prototype, "model", { get: function() {
-    return this.baseModel;
-  }, enumerable: false, configurable: true }), Object.defineProperty(t3.prototype, "isValid", { get: function() {
-    return !function(t4, e2) {
-      void 0 === e2 && (e2 = 0);
-      var n3 = d2(t4);
-      return !(Object.keys(n3).length > 0 && (!n3.exp || n3.exp - e2 > Date.now() / 1e3));
-    }(this.token);
-  }, enumerable: false, configurable: true }), t3.prototype.save = function(t4, e2) {
-    this.baseToken = t4 || "", this.baseModel = null !== e2 && "object" == typeof e2 ? void 0 !== e2.collectionId ? new p2(e2) : new f2(e2) : null, this.triggerChange();
-  }, t3.prototype.clear = function() {
-    this.baseToken = "", this.baseModel = null, this.triggerChange();
-  }, t3.prototype.loadFromCookie = function(t4, e2) {
-    void 0 === e2 && (e2 = "pb_auth");
-    var n3 = function(t5, e3) {
-      var n4 = {};
-      if ("string" != typeof t5)
-        return n4;
-      for (var i4 = Object.assign({}, e3 || {}).decode || l2, o3 = 0; o3 < t5.length; ) {
-        var r3 = t5.indexOf("=", o3);
-        if (-1 === r3)
-          break;
-        var s3 = t5.indexOf(";", o3);
-        if (-1 === s3)
-          s3 = t5.length;
-        else if (s3 < r3) {
-          o3 = t5.lastIndexOf(";", r3 - 1) + 1;
-          continue;
-        }
-        var a3 = t5.slice(o3, r3).trim();
-        if (void 0 === n4[a3]) {
-          var u3 = t5.slice(r3 + 1, s3).trim();
-          34 === u3.charCodeAt(0) && (u3 = u3.slice(1, -1));
-          try {
-            n4[a3] = i4(u3);
-          } catch (t6) {
-            n4[a3] = u3;
-          }
-        }
-        o3 = s3 + 1;
-      }
-      return n4;
-    }(t4 || "")[e2] || "", i3 = {};
-    try {
-      (null === typeof (i3 = JSON.parse(n3)) || "object" != typeof i3 || Array.isArray(i3)) && (i3 = {});
-    } catch (t5) {
-    }
-    this.save(i3.token || "", i3.model || null);
-  }, t3.prototype.exportToCookie = function(t4, e2) {
-    var n3, i3, o3;
-    void 0 === e2 && (e2 = "pb_auth");
-    var r3 = { secure: true, sameSite: true, httpOnly: true, path: "/" }, s3 = d2(this.token);
-    (null == s3 ? void 0 : s3.exp) ? r3.expires = new Date(1e3 * s3.exp) : r3.expires = new Date("1970-01-01"), t4 = Object.assign({}, r3, t4);
-    var a3 = { token: this.token, model: (null === (n3 = this.model) || void 0 === n3 ? void 0 : n3.export()) || null }, l3 = u2(e2, JSON.stringify(a3), t4), c3 = "undefined" != typeof Blob ? new Blob([l3]).size : l3.length;
-    return a3.model && c3 > 4096 && (a3.model = { id: null === (i3 = null == a3 ? void 0 : a3.model) || void 0 === i3 ? void 0 : i3.id, email: null === (o3 = null == a3 ? void 0 : a3.model) || void 0 === o3 ? void 0 : o3.email }, this.model instanceof p2 && (a3.model.username = this.model.username, a3.model.verified = this.model.verified, a3.model.collectionId = this.model.collectionId), l3 = u2(e2, JSON.stringify(a3), t4)), l3;
-  }, t3.prototype.onChange = function(t4, e2) {
-    var n3 = this;
-    return void 0 === e2 && (e2 = false), this._onChangeCallbacks.push(t4), e2 && t4(this.token, this.model), function() {
-      for (var e3 = n3._onChangeCallbacks.length - 1; e3 >= 0; e3--)
-        if (n3._onChangeCallbacks[e3] == t4)
-          return delete n3._onChangeCallbacks[e3], void n3._onChangeCallbacks.splice(e3, 1);
-    };
-  }, t3.prototype.triggerChange = function() {
-    for (var t4 = 0, e2 = this._onChangeCallbacks; t4 < e2.length; t4++) {
-      var n3 = e2[t4];
-      n3 && n3(this.token, this.model);
-    }
-  }, t3;
-}();
-var b2 = function(t3) {
-  function n3(e2) {
-    void 0 === e2 && (e2 = "pocketbase_auth");
-    var n4 = t3.call(this) || this;
-    return n4.storageFallback = {}, n4.storageKey = e2, n4;
-  }
-  return e(n3, t3), Object.defineProperty(n3.prototype, "token", { get: function() {
-    return (this._storageGet(this.storageKey) || {}).token || "";
-  }, enumerable: false, configurable: true }), Object.defineProperty(n3.prototype, "model", { get: function() {
-    var t4, e2 = this._storageGet(this.storageKey) || {};
-    return null === e2 || "object" != typeof e2 || null === e2.model || "object" != typeof e2.model ? null : void 0 === (null === (t4 = e2.model) || void 0 === t4 ? void 0 : t4.collectionId) ? new f2(e2.model) : new p2(e2.model);
-  }, enumerable: false, configurable: true }), n3.prototype.save = function(e2, n4) {
-    this._storageSet(this.storageKey, { token: e2, model: n4 }), t3.prototype.save.call(this, e2, n4);
-  }, n3.prototype.clear = function() {
-    this._storageRemove(this.storageKey), t3.prototype.clear.call(this);
-  }, n3.prototype._storageGet = function(t4) {
-    if ("undefined" != typeof window && (null === window || void 0 === window ? void 0 : window.localStorage)) {
-      var e2 = window.localStorage.getItem(t4) || "";
-      try {
-        return JSON.parse(e2);
-      } catch (t5) {
-        return e2;
-      }
-    }
-    return this.storageFallback[t4];
-  }, n3.prototype._storageSet = function(t4, e2) {
-    if ("undefined" != typeof window && (null === window || void 0 === window ? void 0 : window.localStorage)) {
-      var n4 = e2;
-      "string" != typeof e2 && (n4 = JSON.stringify(e2)), window.localStorage.setItem(t4, n4);
-    } else
-      this.storageFallback[t4] = e2;
-  }, n3.prototype._storageRemove = function(t4) {
-    var e2;
-    "undefined" != typeof window && (null === window || void 0 === window ? void 0 : window.localStorage) && (null === (e2 = window.localStorage) || void 0 === e2 || e2.removeItem(t4)), delete this.storageFallback[t4];
-  }, n3;
-}(v2);
-var y2 = function(t3) {
-  this.client = t3;
-};
-var m = function(t3) {
-  function n3() {
-    return null !== t3 && t3.apply(this, arguments) || this;
-  }
-  return e(n3, t3), n3.prototype.getAll = function(t4) {
-    return void 0 === t4 && (t4 = {}), this.client.send("/api/settings", { method: "GET", params: t4 }).then(function(t5) {
-      return t5 || {};
-    });
-  }, n3.prototype.update = function(t4, e2) {
-    return void 0 === t4 && (t4 = {}), void 0 === e2 && (e2 = {}), this.client.send("/api/settings", { method: "PATCH", params: e2, body: t4 }).then(function(t5) {
-      return t5 || {};
-    });
-  }, n3.prototype.testS3 = function(t4) {
-    return void 0 === t4 && (t4 = {}), this.client.send("/api/settings/test/s3", { method: "POST", params: t4 }).then(function() {
-      return true;
-    });
-  }, n3.prototype.testEmail = function(t4, e2, n4) {
-    void 0 === n4 && (n4 = {});
-    var i3 = { email: t4, template: e2 };
-    return this.client.send("/api/settings/test/email", { method: "POST", params: n4, body: i3 }).then(function() {
-      return true;
-    });
-  }, n3;
-}(y2);
-var g2 = function(t3, e2, n3, i3, o3) {
-  this.page = t3 > 0 ? t3 : 1, this.perPage = e2 >= 0 ? e2 : 0, this.totalItems = n3 >= 0 ? n3 : 0, this.totalPages = i3 >= 0 ? i3 : 0, this.items = o3 || [];
-};
-var w2 = function(t3) {
-  function n3() {
-    return null !== t3 && t3.apply(this, arguments) || this;
-  }
-  return e(n3, t3), n3.prototype.getFullList = function(t4, e2) {
-    return void 0 === t4 && (t4 = 200), void 0 === e2 && (e2 = {}), this._getFullList(this.baseCrudPath, t4, e2);
-  }, n3.prototype.getList = function(t4, e2, n4) {
-    return void 0 === t4 && (t4 = 1), void 0 === e2 && (e2 = 30), void 0 === n4 && (n4 = {}), this._getList(this.baseCrudPath, t4, e2, n4);
-  }, n3.prototype.getFirstListItem = function(t4, e2) {
-    return void 0 === e2 && (e2 = {}), this._getFirstListItem(this.baseCrudPath, t4, e2);
-  }, n3.prototype.getOne = function(t4, e2) {
-    return void 0 === e2 && (e2 = {}), this._getOne(this.baseCrudPath, t4, e2);
-  }, n3.prototype.create = function(t4, e2) {
-    return void 0 === t4 && (t4 = {}), void 0 === e2 && (e2 = {}), this._create(this.baseCrudPath, t4, e2);
-  }, n3.prototype.update = function(t4, e2, n4) {
-    return void 0 === e2 && (e2 = {}), void 0 === n4 && (n4 = {}), this._update(this.baseCrudPath, t4, e2, n4);
-  }, n3.prototype.delete = function(t4, e2) {
-    return void 0 === e2 && (e2 = {}), this._delete(this.baseCrudPath, t4, e2);
-  }, n3;
-}(function(t3) {
-  function n3() {
-    return null !== t3 && t3.apply(this, arguments) || this;
-  }
-  return e(n3, t3), n3.prototype._getFullList = function(t4, e2, n4) {
-    var r3 = this;
-    void 0 === e2 && (e2 = 100), void 0 === n4 && (n4 = {});
-    var s3 = [], a3 = function(u3) {
-      return i2(r3, void 0, void 0, function() {
-        return o2(this, function(i3) {
-          return [2, this._getList(t4, u3, e2, n4).then(function(t5) {
-            var e3 = t5, n5 = e3.items, i4 = e3.totalItems;
-            return s3 = s3.concat(n5), n5.length && i4 > s3.length ? a3(u3 + 1) : s3;
-          })];
-        });
-      });
-    };
-    return a3(1);
-  }, n3.prototype._getList = function(t4, e2, n4, i3) {
-    var o3 = this;
-    return void 0 === e2 && (e2 = 1), void 0 === n4 && (n4 = 30), void 0 === i3 && (i3 = {}), i3 = Object.assign({ page: e2, perPage: n4 }, i3), this.client.send(t4, { method: "GET", params: i3 }).then(function(t5) {
-      var e3 = [];
-      if (null == t5 ? void 0 : t5.items) {
-        t5.items = t5.items || [];
-        for (var n5 = 0, i4 = t5.items; n5 < i4.length; n5++) {
-          var r3 = i4[n5];
-          e3.push(o3.decode(r3));
-        }
-      }
-      return new g2((null == t5 ? void 0 : t5.page) || 1, (null == t5 ? void 0 : t5.perPage) || 0, (null == t5 ? void 0 : t5.totalItems) || 0, (null == t5 ? void 0 : t5.totalPages) || 0, e3);
-    });
-  }, n3.prototype._getOne = function(t4, e2, n4) {
-    var i3 = this;
-    return void 0 === n4 && (n4 = {}), this.client.send(t4 + "/" + encodeURIComponent(e2), { method: "GET", params: n4 }).then(function(t5) {
-      return i3.decode(t5);
-    });
-  }, n3.prototype._getFirstListItem = function(t4, e2, n4) {
-    return void 0 === n4 && (n4 = {}), n4 = Object.assign({ filter: e2, $cancelKey: "one_by_filter_" + t4 + "_" + e2 }, n4), this._getList(t4, 1, 1, n4).then(function(t5) {
-      var e3;
-      if (!(null === (e3 = null == t5 ? void 0 : t5.items) || void 0 === e3 ? void 0 : e3.length))
-        throw new s2({ status: 404, data: { code: 404, message: "The requested resource wasn't found.", data: {} } });
-      return t5.items[0];
-    });
-  }, n3.prototype._create = function(t4, e2, n4) {
-    var i3 = this;
-    return void 0 === e2 && (e2 = {}), void 0 === n4 && (n4 = {}), this.client.send(t4, { method: "POST", params: n4, body: e2 }).then(function(t5) {
-      return i3.decode(t5);
-    });
-  }, n3.prototype._update = function(t4, e2, n4, i3) {
-    var o3 = this;
-    return void 0 === n4 && (n4 = {}), void 0 === i3 && (i3 = {}), this.client.send(t4 + "/" + encodeURIComponent(e2), { method: "PATCH", params: i3, body: n4 }).then(function(t5) {
-      return o3.decode(t5);
-    });
-  }, n3.prototype._delete = function(t4, e2, n4) {
-    return void 0 === n4 && (n4 = {}), this.client.send(t4 + "/" + encodeURIComponent(e2), { method: "DELETE", params: n4 }).then(function() {
-      return true;
-    });
-  }, n3;
-}(y2));
-var S2 = function(t3) {
-  function n3() {
-    return null !== t3 && t3.apply(this, arguments) || this;
-  }
-  return e(n3, t3), n3.prototype.decode = function(t4) {
-    return new f2(t4);
-  }, Object.defineProperty(n3.prototype, "baseCrudPath", { get: function() {
-    return "/api/admins";
-  }, enumerable: false, configurable: true }), n3.prototype.update = function(e2, n4, i3) {
-    var o3 = this;
-    return void 0 === n4 && (n4 = {}), void 0 === i3 && (i3 = {}), t3.prototype.update.call(this, e2, n4, i3).then(function(t4) {
-      var e3, n5;
-      return o3.client.authStore.model && void 0 === (null === (e3 = o3.client.authStore.model) || void 0 === e3 ? void 0 : e3.collectionId) && (null === (n5 = o3.client.authStore.model) || void 0 === n5 ? void 0 : n5.id) === (null == t4 ? void 0 : t4.id) && o3.client.authStore.save(o3.client.authStore.token, t4), t4;
-    });
-  }, n3.prototype.delete = function(e2, n4) {
-    var i3 = this;
-    return void 0 === n4 && (n4 = {}), t3.prototype.delete.call(this, e2, n4).then(function(t4) {
-      var n5, o3;
-      return t4 && i3.client.authStore.model && void 0 === (null === (n5 = i3.client.authStore.model) || void 0 === n5 ? void 0 : n5.collectionId) && (null === (o3 = i3.client.authStore.model) || void 0 === o3 ? void 0 : o3.id) === e2 && i3.client.authStore.clear(), t4;
-    });
-  }, n3.prototype.authResponse = function(t4) {
-    var e2 = this.decode((null == t4 ? void 0 : t4.admin) || {});
-    return (null == t4 ? void 0 : t4.token) && (null == t4 ? void 0 : t4.admin) && this.client.authStore.save(t4.token, e2), Object.assign({}, t4, { token: (null == t4 ? void 0 : t4.token) || "", admin: e2 });
-  }, n3.prototype.authWithPassword = function(t4, e2, n4, i3) {
-    return void 0 === n4 && (n4 = {}), void 0 === i3 && (i3 = {}), n4 = Object.assign({ identity: t4, password: e2 }, n4), this.client.send(this.baseCrudPath + "/auth-with-password", { method: "POST", params: i3, body: n4, headers: { Authorization: "" } }).then(this.authResponse.bind(this));
-  }, n3.prototype.authRefresh = function(t4, e2) {
-    return void 0 === t4 && (t4 = {}), void 0 === e2 && (e2 = {}), this.client.send(this.baseCrudPath + "/auth-refresh", { method: "POST", params: e2, body: t4 }).then(this.authResponse.bind(this));
-  }, n3.prototype.requestPasswordReset = function(t4, e2, n4) {
-    return void 0 === e2 && (e2 = {}), void 0 === n4 && (n4 = {}), e2 = Object.assign({ email: t4 }, e2), this.client.send(this.baseCrudPath + "/request-password-reset", { method: "POST", params: n4, body: e2 }).then(function() {
-      return true;
-    });
-  }, n3.prototype.confirmPasswordReset = function(t4, e2, n4, i3, o3) {
-    return void 0 === i3 && (i3 = {}), void 0 === o3 && (o3 = {}), i3 = Object.assign({ token: t4, password: e2, passwordConfirm: n4 }, i3), this.client.send(this.baseCrudPath + "/confirm-password-reset", { method: "POST", params: o3, body: i3 }).then(function() {
-      return true;
-    });
-  }, n3;
-}(w2);
-var O2 = function(t3) {
-  function n3() {
-    return null !== t3 && t3.apply(this, arguments) || this;
-  }
-  return e(n3, t3), n3.prototype.load = function(e2) {
-    t3.prototype.load.call(this, e2), this.recordId = "string" == typeof e2.recordId ? e2.recordId : "", this.collectionId = "string" == typeof e2.collectionId ? e2.collectionId : "", this.provider = "string" == typeof e2.provider ? e2.provider : "", this.providerId = "string" == typeof e2.providerId ? e2.providerId : "";
-  }, n3;
-}(h2);
-var C = function(t3) {
-  function n3(e2, n4) {
-    var i3 = t3.call(this, e2) || this;
-    return i3.collectionIdOrName = n4, i3;
-  }
-  return e(n3, t3), n3.prototype.decode = function(t4) {
-    return new p2(t4);
-  }, Object.defineProperty(n3.prototype, "baseCrudPath", { get: function() {
-    return this.baseCollectionPath + "/records";
-  }, enumerable: false, configurable: true }), Object.defineProperty(n3.prototype, "baseCollectionPath", { get: function() {
-    return "/api/collections/" + encodeURIComponent(this.collectionIdOrName);
-  }, enumerable: false, configurable: true }), n3.prototype.subscribeOne = function(t4, e2) {
-    return i2(this, void 0, void 0, function() {
-      return o2(this, function(n4) {
-        return console.warn("PocketBase: subscribeOne(recordId, callback) is deprecated. Please replace it with subsribe(recordId, callback)."), [2, this.client.realtime.subscribe(this.collectionIdOrName + "/" + t4, e2)];
-      });
-    });
-  }, n3.prototype.subscribe = function(t4, e2) {
-    return i2(this, void 0, void 0, function() {
-      var n4;
-      return o2(this, function(i3) {
-        if ("function" == typeof t4)
-          return console.warn("PocketBase: subscribe(callback) is deprecated. Please replace it with subsribe('*', callback)."), [2, this.client.realtime.subscribe(this.collectionIdOrName, t4)];
-        if (!e2)
-          throw new Error("Missing subscription callback.");
-        if ("" === t4)
-          throw new Error("Missing topic.");
-        return n4 = this.collectionIdOrName, "*" !== t4 && (n4 += "/" + t4), [2, this.client.realtime.subscribe(n4, e2)];
-      });
-    });
-  }, n3.prototype.unsubscribe = function(t4) {
-    return i2(this, void 0, void 0, function() {
-      return o2(this, function(e2) {
-        return "*" === t4 ? [2, this.client.realtime.unsubscribe(this.collectionIdOrName)] : t4 ? [2, this.client.realtime.unsubscribe(this.collectionIdOrName + "/" + t4)] : [2, this.client.realtime.unsubscribeByPrefix(this.collectionIdOrName)];
-      });
-    });
-  }, n3.prototype.update = function(e2, n4, i3) {
-    var o3 = this;
-    return void 0 === n4 && (n4 = {}), void 0 === i3 && (i3 = {}), t3.prototype.update.call(this, e2, n4, i3).then(function(t4) {
-      var e3, n5;
-      return void 0 !== (null === (e3 = o3.client.authStore.model) || void 0 === e3 ? void 0 : e3.collectionId) && (null === (n5 = o3.client.authStore.model) || void 0 === n5 ? void 0 : n5.id) === (null == t4 ? void 0 : t4.id) && o3.client.authStore.save(o3.client.authStore.token, t4), t4;
-    });
-  }, n3.prototype.delete = function(e2, n4) {
-    var i3 = this;
-    return void 0 === n4 && (n4 = {}), t3.prototype.delete.call(this, e2, n4).then(function(t4) {
-      var n5, o3;
-      return t4 && void 0 !== (null === (n5 = i3.client.authStore.model) || void 0 === n5 ? void 0 : n5.collectionId) && (null === (o3 = i3.client.authStore.model) || void 0 === o3 ? void 0 : o3.id) === e2 && i3.client.authStore.clear(), t4;
-    });
-  }, n3.prototype.authResponse = function(t4) {
-    var e2 = this.decode((null == t4 ? void 0 : t4.record) || {});
-    return this.client.authStore.save(null == t4 ? void 0 : t4.token, e2), Object.assign({}, t4, { token: (null == t4 ? void 0 : t4.token) || "", record: e2 });
-  }, n3.prototype.listAuthMethods = function(t4) {
-    return void 0 === t4 && (t4 = {}), this.client.send(this.baseCollectionPath + "/auth-methods", { method: "GET", params: t4 }).then(function(t5) {
-      return Object.assign({}, t5, { usernamePassword: !!(null == t5 ? void 0 : t5.usernamePassword), emailPassword: !!(null == t5 ? void 0 : t5.emailPassword), authProviders: Array.isArray(null == t5 ? void 0 : t5.authProviders) ? null == t5 ? void 0 : t5.authProviders : [] });
-    });
-  }, n3.prototype.authWithPassword = function(t4, e2, n4, i3) {
-    var o3 = this;
-    return void 0 === n4 && (n4 = {}), void 0 === i3 && (i3 = {}), n4 = Object.assign({ identity: t4, password: e2 }, n4), this.client.send(this.baseCollectionPath + "/auth-with-password", { method: "POST", params: i3, body: n4, headers: { Authorization: "" } }).then(function(t5) {
-      return o3.authResponse(t5);
-    });
-  }, n3.prototype.authWithOAuth2 = function(t4, e2, n4, i3, o3, r3, s3) {
-    var a3 = this;
-    return void 0 === o3 && (o3 = {}), void 0 === r3 && (r3 = {}), void 0 === s3 && (s3 = {}), r3 = Object.assign({ provider: t4, code: e2, codeVerifier: n4, redirectUrl: i3, createData: o3 }, r3), this.client.send(this.baseCollectionPath + "/auth-with-oauth2", { method: "POST", params: s3, body: r3 }).then(function(t5) {
-      return a3.authResponse(t5);
-    });
-  }, n3.prototype.authRefresh = function(t4, e2) {
-    var n4 = this;
-    return void 0 === t4 && (t4 = {}), void 0 === e2 && (e2 = {}), this.client.send(this.baseCollectionPath + "/auth-refresh", { method: "POST", params: e2, body: t4 }).then(function(t5) {
-      return n4.authResponse(t5);
-    });
-  }, n3.prototype.requestPasswordReset = function(t4, e2, n4) {
-    return void 0 === e2 && (e2 = {}), void 0 === n4 && (n4 = {}), e2 = Object.assign({ email: t4 }, e2), this.client.send(this.baseCollectionPath + "/request-password-reset", { method: "POST", params: n4, body: e2 }).then(function() {
-      return true;
-    });
-  }, n3.prototype.confirmPasswordReset = function(t4, e2, n4, i3, o3) {
-    return void 0 === i3 && (i3 = {}), void 0 === o3 && (o3 = {}), i3 = Object.assign({ token: t4, password: e2, passwordConfirm: n4 }, i3), this.client.send(this.baseCollectionPath + "/confirm-password-reset", { method: "POST", params: o3, body: i3 }).then(function() {
-      return true;
-    });
-  }, n3.prototype.requestVerification = function(t4, e2, n4) {
-    return void 0 === e2 && (e2 = {}), void 0 === n4 && (n4 = {}), e2 = Object.assign({ email: t4 }, e2), this.client.send(this.baseCollectionPath + "/request-verification", { method: "POST", params: n4, body: e2 }).then(function() {
-      return true;
-    });
-  }, n3.prototype.confirmVerification = function(t4, e2, n4) {
-    return void 0 === e2 && (e2 = {}), void 0 === n4 && (n4 = {}), e2 = Object.assign({ token: t4 }, e2), this.client.send(this.baseCollectionPath + "/confirm-verification", { method: "POST", params: n4, body: e2 }).then(function() {
-      return true;
-    });
-  }, n3.prototype.requestEmailChange = function(t4, e2, n4) {
-    return void 0 === e2 && (e2 = {}), void 0 === n4 && (n4 = {}), e2 = Object.assign({ newEmail: t4 }, e2), this.client.send(this.baseCollectionPath + "/request-email-change", { method: "POST", params: n4, body: e2 }).then(function() {
-      return true;
-    });
-  }, n3.prototype.confirmEmailChange = function(t4, e2, n4, i3) {
-    return void 0 === n4 && (n4 = {}), void 0 === i3 && (i3 = {}), n4 = Object.assign({ token: t4, password: e2 }, n4), this.client.send(this.baseCollectionPath + "/confirm-email-change", { method: "POST", params: i3, body: n4 }).then(function() {
-      return true;
-    });
-  }, n3.prototype.listExternalAuths = function(t4, e2) {
-    return void 0 === e2 && (e2 = {}), this.client.send(this.baseCrudPath + "/" + encodeURIComponent(t4) + "/external-auths", { method: "GET", params: e2 }).then(function(t5) {
-      var e3 = [];
-      if (Array.isArray(t5))
-        for (var n4 = 0, i3 = t5; n4 < i3.length; n4++) {
-          var o3 = i3[n4];
-          e3.push(new O2(o3));
-        }
-      return e3;
-    });
-  }, n3.prototype.unlinkExternalAuth = function(t4, e2, n4) {
-    return void 0 === n4 && (n4 = {}), this.client.send(this.baseCrudPath + "/" + encodeURIComponent(t4) + "/external-auths/" + encodeURIComponent(e2), { method: "DELETE", params: n4 }).then(function() {
-      return true;
-    });
-  }, n3;
-}(w2);
-var P2 = function() {
-  function t3(t4) {
-    void 0 === t4 && (t4 = {}), this.load(t4 || {});
-  }
-  return t3.prototype.load = function(t4) {
-    this.id = void 0 !== t4.id ? t4.id : "", this.name = void 0 !== t4.name ? t4.name : "", this.type = void 0 !== t4.type ? t4.type : "text", this.system = !!t4.system, this.required = !!t4.required, this.unique = !!t4.unique, this.options = "object" == typeof t4.options && null !== t4.options ? t4.options : {};
-  }, t3;
-}();
-var I2 = function(t3) {
-  function n3() {
-    return null !== t3 && t3.apply(this, arguments) || this;
-  }
-  return e(n3, t3), n3.prototype.load = function(e2) {
-    t3.prototype.load.call(this, e2), this.system = !!e2.system, this.name = "string" == typeof e2.name ? e2.name : "", this.type = "string" == typeof e2.type ? e2.type : "base", this.options = void 0 !== e2.options ? e2.options : {}, this.listRule = "string" == typeof e2.listRule ? e2.listRule : null, this.viewRule = "string" == typeof e2.viewRule ? e2.viewRule : null, this.createRule = "string" == typeof e2.createRule ? e2.createRule : null, this.updateRule = "string" == typeof e2.updateRule ? e2.updateRule : null, this.deleteRule = "string" == typeof e2.deleteRule ? e2.deleteRule : null, e2.schema = Array.isArray(e2.schema) ? e2.schema : [], this.schema = [];
-    for (var n4 = 0, i3 = e2.schema; n4 < i3.length; n4++) {
-      var o3 = i3[n4];
-      this.schema.push(new P2(o3));
-    }
-  }, Object.defineProperty(n3.prototype, "isBase", { get: function() {
-    return "base" === this.type;
-  }, enumerable: false, configurable: true }), Object.defineProperty(n3.prototype, "isAuth", { get: function() {
-    return "auth" === this.type;
-  }, enumerable: false, configurable: true }), Object.defineProperty(n3.prototype, "isSingle", { get: function() {
-    return "single" === this.type;
-  }, enumerable: false, configurable: true }), n3;
-}(h2);
-var k2 = function(t3) {
-  function n3() {
-    return null !== t3 && t3.apply(this, arguments) || this;
-  }
-  return e(n3, t3), n3.prototype.decode = function(t4) {
-    return new I2(t4);
-  }, Object.defineProperty(n3.prototype, "baseCrudPath", { get: function() {
-    return "/api/collections";
-  }, enumerable: false, configurable: true }), n3.prototype.import = function(t4, e2, n4) {
-    return void 0 === e2 && (e2 = false), void 0 === n4 && (n4 = {}), i2(this, void 0, void 0, function() {
-      return o2(this, function(i3) {
-        return [2, this.client.send(this.baseCrudPath + "/import", { method: "PUT", params: n4, body: { collections: t4, deleteMissing: e2 } }).then(function() {
-          return true;
-        })];
-      });
-    });
-  }, n3;
-}(w2);
-var j2 = function(t3) {
-  function n3() {
-    return null !== t3 && t3.apply(this, arguments) || this;
-  }
-  return e(n3, t3), n3.prototype.load = function(e2) {
-    t3.prototype.load.call(this, e2), e2.remoteIp = e2.remoteIp || e2.ip, this.url = "string" == typeof e2.url ? e2.url : "", this.method = "string" == typeof e2.method ? e2.method : "GET", this.status = "number" == typeof e2.status ? e2.status : 200, this.auth = "string" == typeof e2.auth ? e2.auth : "guest", this.remoteIp = "string" == typeof e2.remoteIp ? e2.remoteIp : "", this.userIp = "string" == typeof e2.userIp ? e2.userIp : "", this.referer = "string" == typeof e2.referer ? e2.referer : "", this.userAgent = "string" == typeof e2.userAgent ? e2.userAgent : "", this.meta = "object" == typeof e2.meta && null !== e2.meta ? e2.meta : {};
-  }, n3;
-}(h2);
-var T = function(t3) {
-  function n3() {
-    return null !== t3 && t3.apply(this, arguments) || this;
-  }
-  return e(n3, t3), n3.prototype.getRequestsList = function(t4, e2, n4) {
-    return void 0 === t4 && (t4 = 1), void 0 === e2 && (e2 = 30), void 0 === n4 && (n4 = {}), n4 = Object.assign({ page: t4, perPage: e2 }, n4), this.client.send("/api/logs/requests", { method: "GET", params: n4 }).then(function(t5) {
-      var e3 = [];
-      if (null == t5 ? void 0 : t5.items) {
-        t5.items = (null == t5 ? void 0 : t5.items) || [];
-        for (var n5 = 0, i3 = t5.items; n5 < i3.length; n5++) {
-          var o3 = i3[n5];
-          e3.push(new j2(o3));
-        }
-      }
-      return new g2((null == t5 ? void 0 : t5.page) || 1, (null == t5 ? void 0 : t5.perPage) || 0, (null == t5 ? void 0 : t5.totalItems) || 0, (null == t5 ? void 0 : t5.totalPages) || 0, e3);
-    });
-  }, n3.prototype.getRequest = function(t4, e2) {
-    return void 0 === e2 && (e2 = {}), this.client.send("/api/logs/requests/" + encodeURIComponent(t4), { method: "GET", params: e2 }).then(function(t5) {
-      return new j2(t5);
-    });
-  }, n3.prototype.getRequestsStats = function(t4) {
-    return void 0 === t4 && (t4 = {}), this.client.send("/api/logs/requests/stats", { method: "GET", params: t4 }).then(function(t5) {
-      return t5;
-    });
-  }, n3;
-}(y2);
-var E2 = function(t3) {
-  function n3() {
-    var e2 = null !== t3 && t3.apply(this, arguments) || this;
-    return e2.clientId = "", e2.eventSource = null, e2.subscriptions = {}, e2;
-  }
-  return e(n3, t3), n3.prototype.subscribe = function(t4, e2) {
-    return i2(this, void 0, void 0, function() {
-      var n4, r3 = this;
-      return o2(this, function(s3) {
-        switch (s3.label) {
-          case 0:
-            if (!t4)
-              throw new Error("topic must be set.");
-            return n4 = function(t5) {
-              var n5, i3 = t5;
-              try {
-                n5 = JSON.parse(null == i3 ? void 0 : i3.data);
-              } catch (t6) {
-              }
-              e2(n5 || {});
-            }, this.subscriptions[t4] || (this.subscriptions[t4] = []), this.subscriptions[t4].push(n4), this.eventSource ? [3, 1] : (this.connect(), [3, 4]);
-          case 1:
-            return 1 !== this.subscriptions[t4].length ? [3, 3] : [4, this.submitSubscriptions()];
-          case 2:
-            return s3.sent(), [3, 4];
-          case 3:
-            this.eventSource.addEventListener(t4, n4), s3.label = 4;
-          case 4:
-            return [2, function() {
-              return i2(r3, void 0, void 0, function() {
-                return o2(this, function(e3) {
-                  return [2, this.unsubscribeByTopicAndListener(t4, n4)];
-                });
-              });
-            }];
-        }
-      });
-    });
-  }, n3.prototype.unsubscribe = function(t4) {
-    var e2;
-    return i2(this, void 0, void 0, function() {
-      var n4, i3, r3;
-      return o2(this, function(o3) {
-        switch (o3.label) {
-          case 0:
-            if (!this.hasSubscriptionListeners(t4))
-              return [2];
-            if (t4) {
-              for (n4 = 0, i3 = this.subscriptions[t4]; n4 < i3.length; n4++)
-                r3 = i3[n4], null === (e2 = this.eventSource) || void 0 === e2 || e2.removeEventListener(t4, r3);
-              delete this.subscriptions[t4];
-            } else
-              this.subscriptions = {};
-            return this.hasSubscriptionListeners() ? [3, 1] : (this.disconnect(), [3, 3]);
-          case 1:
-            return this.hasSubscriptionListeners(t4) ? [3, 3] : [4, this.submitSubscriptions()];
-          case 2:
-            o3.sent(), o3.label = 3;
-          case 3:
-            return [2];
-        }
-      });
-    });
-  }, n3.prototype.unsubscribeByPrefix = function(t4) {
-    var e2;
-    return i2(this, void 0, void 0, function() {
-      var n4, i3, r3, s3, a3;
-      return o2(this, function(o3) {
-        switch (o3.label) {
-          case 0:
-            for (i3 in n4 = false, this.subscriptions)
-              if (i3.startsWith(t4)) {
-                for (n4 = true, r3 = 0, s3 = this.subscriptions[i3]; r3 < s3.length; r3++)
-                  a3 = s3[r3], null === (e2 = this.eventSource) || void 0 === e2 || e2.removeEventListener(i3, a3);
-                delete this.subscriptions[i3];
-              }
-            return n4 ? this.hasSubscriptionListeners() ? [4, this.submitSubscriptions()] : [3, 2] : [2];
-          case 1:
-            return o3.sent(), [3, 3];
-          case 2:
-            this.disconnect(), o3.label = 3;
-          case 3:
-            return [2];
-        }
-      });
-    });
-  }, n3.prototype.unsubscribeByTopicAndListener = function(t4, e2) {
-    var n4;
-    return i2(this, void 0, void 0, function() {
-      var i3, r3;
-      return o2(this, function(o3) {
-        switch (o3.label) {
-          case 0:
-            if (!Array.isArray(this.subscriptions[t4]) || !this.subscriptions[t4].length)
-              return [2];
-            for (i3 = false, r3 = this.subscriptions[t4].length - 1; r3 >= 0; r3--)
-              this.subscriptions[t4][r3] === e2 && (i3 = true, delete this.subscriptions[t4][r3], this.subscriptions[t4].splice(r3, 1), null === (n4 = this.eventSource) || void 0 === n4 || n4.removeEventListener(t4, e2));
-            return i3 ? (this.subscriptions[t4].length || delete this.subscriptions[t4], this.hasSubscriptionListeners() ? [3, 1] : (this.disconnect(), [3, 3])) : [2];
-          case 1:
-            return this.hasSubscriptionListeners(t4) ? [3, 3] : [4, this.submitSubscriptions()];
-          case 2:
-            o3.sent(), o3.label = 3;
-          case 3:
-            return [2];
-        }
-      });
-    });
-  }, n3.prototype.hasSubscriptionListeners = function(t4) {
-    var e2, n4;
-    if (this.subscriptions = this.subscriptions || {}, t4)
-      return !!(null === (e2 = this.subscriptions[t4]) || void 0 === e2 ? void 0 : e2.length);
-    for (var i3 in this.subscriptions)
-      if (null === (n4 = this.subscriptions[i3]) || void 0 === n4 ? void 0 : n4.length)
-        return true;
-    return false;
-  }, n3.prototype.submitSubscriptions = function() {
-    return i2(this, void 0, void 0, function() {
-      return o2(this, function(t4) {
-        return this.clientId ? (this.addAllSubscriptionListeners(), [2, this.client.send("/api/realtime", { method: "POST", body: { clientId: this.clientId, subscriptions: this.getNonEmptySubscriptionTopics() }, params: { $cancelKey: "realtime_subscriptions_" + this.clientId } }).then(function() {
-          return true;
-        }).catch(function(t5) {
-          if (null == t5 ? void 0 : t5.isAbort)
-            return true;
-          throw t5;
-        })]) : [2, false];
-      });
-    });
-  }, n3.prototype.getNonEmptySubscriptionTopics = function() {
-    var t4 = [];
-    for (var e2 in this.subscriptions)
-      this.subscriptions[e2].length && t4.push(e2);
-    return t4;
-  }, n3.prototype.addAllSubscriptionListeners = function() {
-    if (this.eventSource)
-      for (var t4 in this.removeAllSubscriptionListeners(), this.subscriptions)
-        for (var e2 = 0, n4 = this.subscriptions[t4]; e2 < n4.length; e2++) {
-          var i3 = n4[e2];
-          this.eventSource.addEventListener(t4, i3);
-        }
-  }, n3.prototype.removeAllSubscriptionListeners = function() {
-    if (this.eventSource)
-      for (var t4 in this.subscriptions)
-        for (var e2 = 0, n4 = this.subscriptions[t4]; e2 < n4.length; e2++) {
-          var i3 = n4[e2];
-          this.eventSource.removeEventListener(t4, i3);
-        }
-  }, n3.prototype.connectHandler = function(t4) {
-    var e2 = t4;
-    this.clientId = null == e2 ? void 0 : e2.lastEventId, this.submitSubscriptions();
-  }, n3.prototype.connect = function() {
-    var t4 = this;
-    this.disconnect(), this.eventSource = new EventSource(this.client.buildUrl("/api/realtime")), this.eventSource.addEventListener("PB_CONNECT", function(e2) {
-      return t4.connectHandler(e2);
-    });
-  }, n3.prototype.disconnect = function() {
-    var t4, e2, n4 = this;
-    this.removeAllSubscriptionListeners(), null === (t4 = this.eventSource) || void 0 === t4 || t4.removeEventListener("PB_CONNECT", function(t5) {
-      return n4.connectHandler(t5);
-    }), null === (e2 = this.eventSource) || void 0 === e2 || e2.close(), this.eventSource = null, this.clientId = "";
-  }, n3;
-}(y2);
-var R2 = function() {
-  function t3(t4, e2, n3) {
-    void 0 === t4 && (t4 = "/"), void 0 === n3 && (n3 = "en-US"), this.cancelControllers = {}, this.recordServices = {}, this.enableAutoCancellation = true, this.baseUrl = t4, this.lang = n3, this.authStore = e2 || new b2(), this.admins = new S2(this), this.collections = new k2(this), this.logs = new T(this), this.settings = new m(this), this.realtime = new E2(this);
-  }
-  return t3.prototype.collection = function(t4) {
-    return this.recordServices[t4] || (this.recordServices[t4] = new C(this, t4)), this.recordServices[t4];
-  }, t3.prototype.autoCancellation = function(t4) {
-    return this.enableAutoCancellation = !!t4, this;
-  }, t3.prototype.cancelRequest = function(t4) {
-    return this.cancelControllers[t4] && (this.cancelControllers[t4].abort(), delete this.cancelControllers[t4]), this;
-  }, t3.prototype.cancelAllRequests = function() {
-    for (var t4 in this.cancelControllers)
-      this.cancelControllers[t4].abort();
-    return this.cancelControllers = {}, this;
-  }, t3.prototype.send = function(t4, e2) {
-    var n3, r3, a3, u3, l3, c3, d3, h3;
-    return i2(this, void 0, void 0, function() {
-      var p3, f3, v3, b3, y3, m2 = this;
-      return o2(this, function(g3) {
-        return (p3 = Object.assign({ method: "GET" }, e2)).body && "FormData" !== p3.body.constructor.name && ("string" != typeof p3.body && (p3.body = JSON.stringify(p3.body)), void 0 === (null === (n3 = null == p3 ? void 0 : p3.headers) || void 0 === n3 ? void 0 : n3["Content-Type"]) && (p3.headers = Object.assign({}, p3.headers, { "Content-Type": "application/json" }))), void 0 === (null === (r3 = null == p3 ? void 0 : p3.headers) || void 0 === r3 ? void 0 : r3["Accept-Language"]) && (p3.headers = Object.assign({}, p3.headers, { "Accept-Language": this.lang })), (null === (a3 = this.authStore) || void 0 === a3 ? void 0 : a3.token) && void 0 === (null === (u3 = null == p3 ? void 0 : p3.headers) || void 0 === u3 ? void 0 : u3.Authorization) && (p3.headers = Object.assign({}, p3.headers, { Authorization: this.authStore.token })), this.enableAutoCancellation && false !== (null === (l3 = p3.params) || void 0 === l3 ? void 0 : l3.$autoCancel) && (f3 = (null === (c3 = p3.params) || void 0 === c3 ? void 0 : c3.$cancelKey) || (p3.method || "GET") + t4, this.cancelRequest(f3), v3 = new AbortController(), this.cancelControllers[f3] = v3, p3.signal = v3.signal), null === (d3 = p3.params) || void 0 === d3 || delete d3.$autoCancel, null === (h3 = p3.params) || void 0 === h3 || delete h3.$cancelKey, b3 = this.buildUrl(t4), void 0 !== p3.params && ((y3 = this.serializeQueryParams(p3.params)) && (b3 += (b3.includes("?") ? "&" : "?") + y3), delete p3.params), this.beforeSend && (p3 = Object.assign({}, this.beforeSend(b3, p3))), [2, fetch(b3, p3).then(function(t5) {
-          return i2(m2, void 0, void 0, function() {
-            var e3;
-            return o2(this, function(n4) {
-              switch (n4.label) {
-                case 0:
-                  e3 = {}, n4.label = 1;
-                case 1:
-                  return n4.trys.push([1, 3, , 4]), [4, t5.json()];
-                case 2:
-                  return e3 = n4.sent(), [3, 4];
-                case 3:
-                  return n4.sent(), [3, 4];
-                case 4:
-                  if (this.afterSend && (e3 = this.afterSend(t5, e3)), t5.status >= 400)
-                    throw new s2({ url: t5.url, status: t5.status, data: e3 });
-                  return [2, e3];
-              }
-            });
-          });
-        }).catch(function(t5) {
-          throw new s2(t5);
-        })];
-      });
-    });
-  }, t3.prototype.getFileUrl = function(t4, e2, n3) {
-    void 0 === n3 && (n3 = {});
-    var i3 = [];
-    i3.push("api"), i3.push("files"), i3.push(encodeURIComponent(t4.collectionId || t4.collectionName)), i3.push(encodeURIComponent(t4.id)), i3.push(encodeURIComponent(e2));
-    var o3 = this.buildUrl(i3.join("/"));
-    if (Object.keys(n3).length) {
-      var r3 = new URLSearchParams(n3);
-      o3 += (o3.includes("?") ? "&" : "?") + r3;
-    }
-    return o3;
-  }, t3.prototype.buildUrl = function(t4) {
-    var e2 = this.baseUrl + (this.baseUrl.endsWith("/") ? "" : "/");
-    return t4 && (e2 += t4.startsWith("/") ? t4.substring(1) : t4), e2;
-  }, t3.prototype.serializeQueryParams = function(t4) {
-    var e2 = [];
-    for (var n3 in t4)
-      if (null !== t4[n3]) {
-        var i3 = t4[n3], o3 = encodeURIComponent(n3);
-        if (Array.isArray(i3))
-          for (var r3 = 0, s3 = i3; r3 < s3.length; r3++) {
-            var a3 = s3[r3];
-            e2.push(o3 + "=" + encodeURIComponent(a3));
-          }
-        else
-          i3 instanceof Date ? e2.push(o3 + "=" + encodeURIComponent(i3.toISOString())) : null !== typeof i3 && "object" == typeof i3 ? e2.push(o3 + "=" + encodeURIComponent(JSON.stringify(i3))) : e2.push(o3 + "=" + encodeURIComponent(i3));
-      }
-    return e2.join("&");
-  }, t3;
-}();
-
-// node_modules/@pockethost/common/src/pocketbase-client-helpers/RpcHelper.ts
-var nanoid = customAlphabet("abcdefghijklmnopqrstuvwxyz");
-
-// node_modules/@pockethost/common/src/PromiseHelper.ts
-var createPromiseHelper = (config) => {
-  const { logger: logger3 } = config;
-  const { dbg: dbg2, error: error2, warn: warn2 } = logger3;
-  let inside = "";
-  let c3 = 0;
-  const safeCatch = (name, cb) => {
-    return (...args) => {
-      const _c = c3++;
-      const uuid = `${name}:${_c}`;
-      const pfx = `[safeCatch:${uuid}]`;
-      const tid = setTimeout(() => {
-        warn2(pfx, `timeout waiting for ${pfx}`);
-      }, 100);
-      inside = pfx;
-      return cb(...args).then((res) => {
-        inside = "";
-        clearTimeout(tid);
-        return res;
-      }).catch((e2) => {
-        error2(pfx, JSON.stringify(e2, null, 2));
-        if (e2 instanceof s2) {
-          if (e2.status === 400) {
-            error2(
-              pfx,
-              `PocketBase API error: It looks like you don't have permission to make this request.`
-            );
-          } else {
-            error2(pfx, `Unknown PocketBase API error`);
-          }
-        }
-        throw e2;
-      });
-    };
-  };
-  return { safeCatch };
-};
-
-// src/providers/LocalStorageCompatibleAuthStore.ts
-var LocalStorageCompatibleAuthStore = class extends v2 {
-  storageKey;
-  storageProvider;
-  constructor(storageKey = "pocketbase_auth", storageProvider) {
-    super();
-    this.storageKey = storageKey;
-    this.storageProvider = storageProvider;
-  }
-  get token() {
-    const data = this._storageGet(this.storageKey) || {};
-    return data.token || "";
-  }
-  get model() {
-    const data = this._storageGet(this.storageKey) || {};
-    if (data === null || typeof data !== "object" || data.model === null || typeof data.model !== "object") {
-      return null;
-    }
-    if (typeof data.model?.collectionId === "undefined") {
-      return new f2(data.model);
-    }
-    return new p2(data.model);
-  }
-  save(token, model) {
-    this._storageSet(this.storageKey, {
-      token,
-      model
-    });
-    super.save(token, model);
-  }
-  clear() {
-    this._storageRemove(this.storageKey);
-    super.clear();
-  }
-  _storageGet(key) {
-    const rawValue = this.storageProvider.getItem(key) || "";
-    try {
-      return JSON.parse(rawValue);
-    } catch (e2) {
-      return rawValue;
-    }
-  }
-  _storageSet(key, value) {
-    let normalizedVal = value;
-    if (typeof value !== "string") {
-      normalizedVal = JSON.stringify(value);
-    }
-    this.storageProvider.setItem(key, normalizedVal);
-  }
-  _storageRemove(key) {
-    this.storageProvider.removeItem(key);
-  }
-};
-
-// src/commands/logger.ts
-var logger2 = createLogger({ debug: true });
-var { dbg, info, warn, error } = logger2;
-
-// src/commands/createClient.ts
+// src/util/createClient.ts
 var createClient = () => {
   const host = getProject().host || `pockethost-central.pockethost.io`;
   const endpoint = `https://${host}`;
   info(`PocketHost endpoint: ${endpoint}`);
-  const client = new R2(
+  const client = new R(
     endpoint,
     new LocalStorageCompatibleAuthStore(`auth`, localStorage)
   );
