@@ -4,7 +4,7 @@ import { Command } from 'commander'
 import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import inquirer from 'inquirer'
 import { dirname, join } from 'path'
-import { PH_ENTRY_PATH } from '../env'
+import { PH_CONFIG_FNAME, PH_ENTRY_PATH } from '../env'
 import template from '../templates/ts/index.ts.txt'
 import { authCheck } from '../util/authCheck'
 import { client } from '../util/client'
@@ -28,11 +28,10 @@ export const addInitCommand = (program: Command) => {
        */
       {
         const project = getProject()
-        assertExists(project, `Expected project here`)
-        const { host } = project
-        assertExists(host, `Expected valid host here`)
-
-        const { getInstances } = client(host)
+        if (!project) {
+          die(`${PH_CONFIG_FNAME} not found. Use 'pockethost init' to fix.`)
+        }
+        const { getInstances } = client()
         const instances = await getInstances()
         if (instances.length === 0) {
           die(

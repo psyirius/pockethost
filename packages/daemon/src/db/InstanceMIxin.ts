@@ -45,7 +45,9 @@ export const createInstanceMixin = (context: MixinContext) => {
   const updateInstance = safeCatch(
     `updateInstance`,
     async (instanceId: InstanceId, fields: Partial<InstanceFields>) => {
-      await client.collection('instances').update(instanceId, fields)
+      await client
+        .collection('instances')
+        .update(instanceId, fields, { $autoCancel: false })
     }
   )
 

@@ -21,9 +21,10 @@ console.log(`Connecting to ${POCKETBASE_URL} with ${ADMIN_LOGIN}`)
 
 const client = new Pocketbase(POCKETBASE_URL)
 
-await client.admins
-  .authWithPassword(ADMIN_LOGIN, ADMIN_PASSWORD)
-  .catch((e: Error) => console.log(e, JSON.stringify(e)))
-
-console.log(`Successfully logged in.`)
-console.log(client.authStore)
+try {
+  await client.admins.authWithPassword(ADMIN_LOGIN, ADMIN_PASSWORD)
+  console.log(`Successfully logged in.`)
+  console.log(client.authStore)
+} catch (e) {
+  console.error(e, JSON.stringify(e))
+}

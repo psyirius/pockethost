@@ -3,14 +3,12 @@ import commandExists from 'command-exists'
 import { Command } from 'commander'
 import { existsSync } from 'fs'
 import { join } from 'path'
+import { PH_CONFIG_FNAME, PH_HOST } from '../env'
 import { authCheck } from '../util/authCheck'
+import { client } from '../util/client'
 import { die } from '../util/die'
 import { dbg } from '../util/logger'
-import {
-  getProject,
-  getProjectRoot,
-  PROJECT_CONFIG_FNAME,
-} from '../util/project'
+import { getProject, getProjectRoot } from '../util/project'
 
 export const addDevCommand = (program: Command) => {
   program
@@ -20,16 +18,27 @@ export const addDevCommand = (program: Command) => {
     .argument('<admin_password>', 'PocketBase admin password used to log in')
     .action(async (email, password) => {
       await authCheck()
-      const { host, worker } = getProject()
-      if (!host) {
+      const { worker, instanceId } = getProject()
+
+      if (!instanceId) {
         die(
-          `Host not found in ${PROJECT_CONFIG_FNAME}. Use 'pockethost init' to fix.`
+          `Instance not defined in ${PH_CONFIG_FNAME}. Use 'pockethost init' to fix`
         )
       }
+      const { getInstanceById } = client()
+      const instance = await (async () => {
+        try {
+          return await getInstanceById(instanceId)
+        } catch (e) {}
+      })()
+      if (!instance) {
+        die(`Unable to retrieve instance ${instanceId} from ${PH_HOST}.`)
+      }
+
       const { entry } = worker || {}
       if (!entry) {
         die(
-          `Entry point not found in ${PROJECT_CONFIG_FNAME}. Use 'pockethost init' to fix.`
+          `Entry point not found in ${PH_CONFIG_FNAME}. Use 'pockethost init' to fix.`
         )
       }
       const path = join(getProjectRoot(), entry)
@@ -43,18 +52,19 @@ export const addDevCommand = (program: Command) => {
         die(`'deno' but be installed. https://deno.land.`)
       }
 
+      const instanceHost = `${instance.subdomain}.${PH_HOST}`
       //  deno  index.ts
       const args = [
         `run`,
         `--allow-env=POCKETBASE_URL,ADMIN_LOGIN,ADMIN_PASSWORD`,
-        `--allow-net=${host}:443`,
+        `--allow-net=${instanceHost}:443`,
         `--unsafely-ignore-certificate-errors`,
         `--watch`,
         path,
       ]
       const env = {
         ...process.env,
-        POCKETBASE_URL: `https://${host}`,
+        POCKETBASE_URL: `https://${instanceHost}`,
         ADMIN_LOGIN: email,
         ADMIN_PASSWORD: password,
       }

@@ -37,7 +37,9 @@ export const createInvocationMixin = (
       }
       const _inv = await client
         .collection('invocations')
-        .update<InvocationFields>(invocation.id, toUpdate)
+        .update<InvocationFields>(invocation.id, toUpdate, {
+          $autoCancel: false,
+        })
       await instanceApi.updateInstanceSeconds(invocation.instanceId)
       return _inv
     }

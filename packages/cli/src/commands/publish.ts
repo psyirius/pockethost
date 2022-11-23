@@ -1,100 +1,96 @@
+import { spawn } from 'child_process'
+import commandExists from 'command-exists'
 import { Command } from 'commander'
-import { existsSync, readFileSync } from 'fs'
+import { existsSync } from 'fs'
 import { join } from 'path'
-import pocketbaseEs from 'pocketbase'
-import { DEFAULT_PB_DEV_URL } from '../constants'
-import { SessionState } from '../providers/CustomAuthStore'
+import { PH_CONFIG_FNAME, PH_HOST } from '../env'
+import { authCheck } from '../util/authCheck'
+import { client } from '../util/client'
 import { die } from '../util/die'
-import { ensureAdminClient } from '../util/ensureAdminClient'
-import { getProjectRoot, readSettings } from '../util/project'
-
-export type PublishConfig = {
-  session: SessionState
-  host: string
-  dist: string
-}
-
-const migrate = async (client: pocketbaseEs) => {
-  {
-    // VERSION 1
-    const res = await client.collections.getList(1, 1, {
-      filter: `name='pbscript'`,
-    })
-    const [item] = res.items
-    if (!item) {
-      await client.collections.create({
-        name: 'pbscript',
-        schema: [
-          {
-            name: 'type',
-            type: 'text',
-            required: true,
-          },
-          {
-            name: 'isActive',
-            type: 'bool',
-          },
-          {
-            name: 'data',
-            type: 'json',
-            required: true,
-          },
-        ],
-      })
-    }
-  }
-}
-
-const publish = async (client: pocketbaseEs, fname: string) => {
-  const js = readFileSync(fname).toString()
-  const url = `${client.baseUrl}/api/pbscript/deploy`
-  const res = await client
-    .send(`api/pbscript/deploy`, {
-      method: 'post',
-      body: JSON.stringify({
-        source: js,
-      }),
-      headers: { 'Content-Type': 'application/json' },
-    })
-    .catch((e) => {
-      console.error(e)
-      throw e
-    })
-}
+import { dbg } from '../util/logger'
+import { getProject, getProjectRoot } from '../util/project'
 
 export const addPublishCommand = (program: Command) => {
-  const _srcDefault = join(getProjectRoot(), './dist/index.js')
-  const _hostDefault = DEFAULT_PB_DEV_URL
   program
     .command('publish')
-    .description('Publish JS bundle to PBScript-enabled PocketBase instance')
-    .option(
-      '--dist <src>',
-      `Path to dist bundle (default: <project>/dist/index.js)`
-    )
-    .option('--host <host>', `PocketBase host (default: ${DEFAULT_PB_DEV_URL})`)
-    .action(async (options) => {
-      const defaultHost = options.host
-      const defaultDist = options.dist
+    .description(`Publish your worker to ${PH_HOST}`)
+    .action(async (email, password) => {
+      await authCheck()
+      const { worker, instanceId } = getProject()
 
-      const config: PublishConfig = {
-        session: { token: '', model: null },
-        host: DEFAULT_PB_DEV_URL,
-        dist: join(getProjectRoot(), './dist/index.js'),
-        ...readSettings<PublishConfig>('publish'),
+      if (!instanceId) {
+        die(
+          `Instance not defined in ${PH_CONFIG_FNAME}. Use 'pockethost init' to fix`
+        )
       }
-      if (defaultHost) config.host = defaultHost
-      if (defaultDist) config.dist = defaultDist
-
-      const { host, dist } = config
-
-      if (!existsSync(dist)) {
-        die(`${dist} does not exist. Nothing to publish.`)
+      const { getInstanceById } = client()
+      const instance = await (async () => {
+        try {
+          return await getInstanceById(instanceId)
+        } catch (e) {}
+      })()
+      if (!instance) {
+        die(`Unable to retrieve instance ${instanceId} from ${PH_HOST}.`)
       }
 
-      const client = await ensureAdminClient('publish', config)
-      console.log(`Deploying from ${dist} to ${host}`)
-      await migrate(client)
-      await publish(client, dist)
+      const { entry } = worker || {}
+      if (!entry) {
+        die(
+          `Entry point not found in ${PH_CONFIG_FNAME}. Use 'pockethost init' to fix.`
+        )
+      }
+      const path = join(getProjectRoot(), entry)
+      if (!existsSync(path)) {
+        die(`Entry ${path} not found. Use 'pockethost init' to fix.`)
+      }
+
+      const cmd = `deno`
+      const hasDeno = await commandExists(cmd)
+      if (!hasDeno) {
+        die(`'deno' but be installed. https://deno.land.`)
+      }
+
+      const instanceHost = `${instance.subdomain}.${PH_HOST}`
+      //  deno  index.ts
+      const args = [
+        `run`,
+        `--allow-env=POCKETBASE_URL,ADMIN_LOGIN,ADMIN_PASSWORD`,
+        `--allow-net=${instanceHost}:443`,
+        `--unsafely-ignore-certificate-errors`,
+        `--watch`,
+        path,
+      ]
+      const env = {
+        ...process.env,
+        POCKETBASE_URL: `https://${instanceHost}`,
+        ADMIN_LOGIN: email,
+        ADMIN_PASSWORD: password,
+      }
+      dbg(`Spawning`, { cmd, args, env })
+      const proc = spawn(cmd, args, { env })
+      proc.stderr.on('data', (buf: Buffer) => {
+        process.stderr.write(buf)
+      })
+      proc.stdout.on('data', (buf: Buffer) => {
+        process.stdout.write(buf)
+      })
+      proc.on('spawn', (...e) => {
+        dbg(`spawn`, e)
+      })
+      proc.on('error', (...e) => {
+        dbg(`error`, e)
+      })
+      proc.on('disconnect', () => {
+        dbg(`disconnect`)
+      })
+      proc.on('close', (...e) => {
+        dbg(`close`, e)
+      })
+      proc.on('exit', (...e) => {
+        dbg(`exit`, e)
+      })
+      proc.on('message', (...e) => {
+        dbg(`message`, e)
+      })
     })
 }
