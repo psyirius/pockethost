@@ -2,29 +2,15 @@ import { assertExists } from '@pockethost/tools'
 import { map } from '@s-libs/micro-dash'
 import { Command } from 'commander'
 import { existsSync, mkdirSync, writeFileSync } from 'fs'
+import inquirer from 'inquirer'
 import { dirname, join } from 'path'
-import prompts from 'prompts'
-import { PH_ENTRY_PATH, PH_HOST } from '../env'
+import { PH_ENTRY_PATH } from '../env'
 import template from '../templates/ts/index.ts.txt'
+import { authCheck } from '../util/authCheck'
 import { client } from '../util/client'
-import { dbg, error, info } from '../util/logger'
+import { die } from '../util/die'
+import { dbg, info } from '../util/logger'
 import { getProject, getProjectRoot, setProject } from '../util/project'
-
-const authCheck = async () => {
-  const host = getProject()?.host || PH_HOST
-  const { pReady, isLoggedIn, user } = client(host)
-  await pReady
-  if (!isLoggedIn()) {
-    error(`Please use 'pockethost login' to log in before continuing.`)
-    process.exit()
-  }
-  if (!user()?.verified) {
-    error(
-      `Your account must be verified first. Log in at https://pockethost.io to proceed.`
-    )
-    process.exit()
-  }
-}
 
 export const addInitCommand = (program: Command) => {
   program
@@ -49,24 +35,23 @@ export const addInitCommand = (program: Command) => {
         const { getInstances } = client(host)
         const instances = await getInstances()
         if (instances.length === 0) {
-          error(
+          die(
             `You must create at least one instance at https://pockethost.io before continuing.`
           )
-          process.exit()
         }
 
         const choices = map(instances, (i) => ({
-          title: i.subdomain,
+          name: i.subdomain,
           value: i.id,
-        })).sort((a, b) => (a.title < b.title ? -1 : 1))
+        })).sort((a, b) => (a.name < b.name ? -1 : 1))
         dbg(`instanceid check`)
-        const response = await prompts([
+        const response = await inquirer.prompt([
           {
-            type: 'select',
+            type: 'list',
             name: 'instanceId',
             message: 'Choose your instance:',
             choices,
-            // initial: project.instanceId,
+            default: project.instanceId,
           },
         ])
         dbg({ response })
@@ -83,12 +68,12 @@ export const addInitCommand = (program: Command) => {
         const project = getProject()
         assertExists(project, `Expected project here`)
         const { entry } = project.worker || {}
-        const response = await prompts([
+        const response = await inquirer.prompt([
           {
-            type: 'text',
+            type: 'input',
             name: 'path',
             message: 'Worker entry point',
-            initial: entry || PH_ENTRY_PATH,
+            default: entry || PH_ENTRY_PATH,
             validate: (path: string) => !!path || `Enter any path`,
           },
         ])

@@ -15,8 +15,8 @@ export type ProjectConfig = {
   }
 }
 
-const PROJECT_CONFIG_FNAME = `pockethost.json`
-const PROJECT_CACHE_FNAME = '.pockethost'
+export const PROJECT_CONFIG_FNAME = `pockethost.json`
+export const PROJECT_CACHE_FNAME = '.pockethost'
 export const getProjectRoot = () => {
   const root = findUpSync(PROJECT_CONFIG_FNAME, {})
   if (!root) return cwd()
