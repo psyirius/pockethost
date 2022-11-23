@@ -6,13 +6,15 @@ declare global {
 }
 
 import 'cross-fetch/polyfill'
-import 'eventsource'
 import pkg from '../package.json'
 import { addDevCommand } from './commands/dev'
 import { addInitCommand } from './commands/init'
 import { addLoginCommand } from './commands/login'
 import { addPublishCommand } from './commands/publish'
+import { dbg } from './util/logger'
 console.log(`PocketHost CLI ${pkg.version}`)
+global.EventSource = require('eventsource')
+dbg(`EventSource registered`)
 
 program
   .name('pockethost')

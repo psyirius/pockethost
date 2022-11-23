@@ -79,6 +79,7 @@ export const createRpcService = async (config: RpcServiceConfig) => {
         const res = await run(rpc)
         await client.setRpcStatus(rpc, RpcStatus.FinishedSuccess, res)
       } catch (e) {
+        error(`Job failed with`, e)
         if (!(e instanceof Error)) {
           throw new Error(`Expected Error here but got ${typeof e}:${e}`)
         }

@@ -84,6 +84,7 @@ export const createRpcHelper = (config: RpcHelperConfig) => {
         let unsub: UnsubscribeFunc | undefined
         return new Promise<ConcreteRpcRecord['result']>(
           async (resolve, reject) => {
+            dbg(`Watching ${rpcIn.id}`)
             unsub = await watchById<ConcreteRpcRecord>(
               RPC_COLLECTION,
               rpcIn.id,
@@ -99,9 +100,11 @@ export const createRpcHelper = (config: RpcHelperConfig) => {
                   return
                 }
               },
-              false
+              { initialFetch: false, pollIntervalMs: 100 }
             )
-            await client.collection(RPC_COLLECTION).create(rpcIn)
+            dbg(`Creating ${rpcIn.id}`)
+            const newRpc = await client.collection(RPC_COLLECTION).create(rpcIn)
+            dbg(`Created ${newRpc.id}`)
           }
         ).finally(async () => {
           await unsub?.()

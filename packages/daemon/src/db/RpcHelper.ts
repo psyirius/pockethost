@@ -1,4 +1,5 @@
 import { RpcFields, RpcStatus, RPC_COLLECTION } from '@pockethost/schema'
+import { serializeError } from 'serialize-error'
 import { JsonObject } from 'type-fest'
 import { safeCatch } from '../util/promiseHelper'
 import { MixinContext } from './PbClient'
@@ -52,7 +53,7 @@ export const createRpcHelper = (config: RpcHelperConfig) => {
     async (rpc: RpcFields<any, any>, err: Error) => {
       const fields: Partial<RpcFields<any, any>> = {
         status: RpcStatus.FinishedError,
-        result: JSON.stringify(err),
+        result: JSON.stringify(serializeError(err)),
       }
       return client
         .collection(RPC_COLLECTION)

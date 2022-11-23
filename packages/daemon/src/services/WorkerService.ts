@@ -9,6 +9,7 @@ import { mkdirSync, writeFileSync } from 'fs'
 import { dirname, join } from 'path'
 import { DAEMON_PB_DATA_DIR } from '../constants'
 import { PocketbaseClientApi } from '../db/PbClient'
+import { dbg } from '../util/logger'
 import { RpcServiceApi } from './RpcService'
 
 export type WorkerServiceConfig = {
@@ -22,6 +23,7 @@ export const createWorkerService = async (config: WorkerServiceConfig) => {
     RpcCommands.PublishBundle,
     PublishBundlePayloadSchema,
     async (job) => {
+      dbg(`Got a publish job`, job)
       const { payload } = job
       const { instanceId, bundle } = payload
       const instance = await client.getInstance(instanceId)
@@ -31,6 +33,7 @@ export const createWorkerService = async (config: WorkerServiceConfig) => {
         `Instance ${instanceId} is not owned by user ${job.userId}`
       )
       const bundleId = newId()
+      dbg(`New bundle id is ${bundleId}`)
       const bundlePath = join(
         DAEMON_PB_DATA_DIR,
         instanceId,
@@ -38,6 +41,7 @@ export const createWorkerService = async (config: WorkerServiceConfig) => {
         'bundles',
         `${bundleId}.js`
       )
+      dbg(`Bundle path`, bundlePath)
       mkdirSync(dirname(bundlePath), { recursive: true })
       writeFileSync(bundlePath, bundle)
       return { bundleId }

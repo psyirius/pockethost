@@ -12,6 +12,7 @@ export enum RpcCommands {
 export const RPC_COMMANDS = [
   RpcCommands.BackupInstance,
   RpcCommands.CreateInstance,
+  RpcCommands.PublishBundle,
 ]
 
 export enum RpcStatus {
