@@ -7,7 +7,7 @@ import prompts from 'prompts'
 import { PH_ENTRY_PATH, PH_HOST } from '../env'
 import template from '../templates/ts/index.ts.txt'
 import { client } from '../util/client'
-import { error, info } from '../util/logger'
+import { dbg, error, info } from '../util/logger'
 import { getProject, getProjectRoot, setProject } from '../util/project'
 
 const authCheck = async () => {
@@ -59,16 +59,17 @@ export const addInitCommand = (program: Command) => {
           title: i.subdomain,
           value: i.id,
         })).sort((a, b) => (a.title < b.title ? -1 : 1))
-
+        dbg(`instanceid check`)
         const response = await prompts([
           {
             type: 'select',
             name: 'instanceId',
             message: 'Choose your instance:',
             choices,
-            initial: project.instanceId,
+            // initial: project.instanceId,
           },
         ])
+        dbg({ response })
         const { instanceId } = response
         setProject((project) => {
           project.instanceId = instanceId
@@ -113,5 +114,9 @@ export const addInitCommand = (program: Command) => {
           writeFileSync(fullPath, template)
         }
       }
+
+      info(
+        `Project has been initialized. You can change it in './pockethost.json'`
+      )
     })
 }

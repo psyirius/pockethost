@@ -1,7 +1,8 @@
 import { Command } from 'commander'
+import { PH_HOST } from '../env'
 import { client } from '../util/client'
 import { dbg, error, info } from '../util/logger'
-import { setProject } from '../util/project'
+import { getProject, setProject } from '../util/project'
 
 export const addLoginCommand = (program: Command) => {
   program
@@ -9,17 +10,13 @@ export const addLoginCommand = (program: Command) => {
     .description('Log in to PocketHost')
     .argument('<email>', 'Email')
     .argument('<password>', 'Password')
-    .option(
-      '-h|--host <endpoint>',
-      'PocketHost endpoint',
-      'pockethost-central.pockethost.io'
-    )
+
     .action(async (email, password, options) => {
       dbg(`Options`, options)
-      const { host } = options
       setProject((project) => {
-        project.host = host
+        project.host = project.host || PH_HOST
       })
+      const { host } = getProject()
       const { authViaEmail } = client(host)
       try {
         await authViaEmail(email, password)

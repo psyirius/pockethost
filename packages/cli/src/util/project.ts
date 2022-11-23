@@ -5,6 +5,7 @@ import { WritableDraft } from 'immer/dist/internal'
 import { LocalStorage } from 'node-localstorage'
 import { dirname, join } from 'path'
 import { cwd } from 'process'
+import { dbg } from './logger'
 
 export type ProjectConfig = {
   host: string
@@ -16,9 +17,8 @@ export type ProjectConfig = {
 
 const PROJECT_CONFIG_FNAME = `pockethost.json`
 const PROJECT_CACHE_FNAME = '.pockethost'
-
 export const getProjectRoot = () => {
-  const root = findUpSync(PROJECT_CONFIG_FNAME)
+  const root = findUpSync(PROJECT_CONFIG_FNAME, {})
   if (!root) return cwd()
   return dirname(root)
 }
@@ -27,12 +27,13 @@ export const localStorage = new LocalStorage(
   join(getProjectRoot(), PROJECT_CACHE_FNAME)
 )
 
-export const getProject = (): Partial<ProjectConfig> | null => {
+export const getProject = (): Partial<ProjectConfig> => {
   const path = join(getProjectRoot(), PROJECT_CONFIG_FNAME)
 
-  if (!existsSync(path)) return null
+  if (!existsSync(path)) return {}
   const json = readFileSync(path).toString()
   const project = JSON.parse(json) as ProjectConfig
+  dbg(project)
   return project
 }
 

@@ -1,0 +1,7 @@
+{
+  "host": "pockethost-central.pockethost.test",
+  "worker": {
+    "entry": "./src/index.ts"
+  },
+  "instanceId": "qyemnfjmhsv1oem"
+}

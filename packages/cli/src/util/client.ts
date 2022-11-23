@@ -2,7 +2,7 @@ import { createPocketbaseClient, PocketbaseClient } from '@pockethost/client'
 import { createPromiseHelper } from '@pockethost/tools'
 import { LocalStorage } from 'node-localstorage'
 import { join } from 'path'
-import { PH_HOST } from '../env'
+import { PH_CACHE_PATH, PH_HOST } from '../env'
 import { LocalStorageCompatibleAuthStore } from '../providers/LocalStorageCompatibleAuthStore'
 import { dbg, info, logger } from './logger'
 import { getProject, getProjectRoot } from './project'
@@ -11,7 +11,7 @@ export const client = (() => {
   let instance: PocketbaseClient | undefined
   return (host?: string) => {
     if (!host && instance) return instance
-    info(`Initializing pocketbase client`)
+    info(`Initializing pocketbase client`, getProject()?.host)
     const _host = host || getProject()?.host || PH_HOST
     const url = `https://${_host}`
     dbg(`Connecting to host ${url}`)
@@ -22,7 +22,7 @@ export const client = (() => {
       promiseHelper,
       storageProvider: new LocalStorageCompatibleAuthStore(
         `session`,
-        new LocalStorage(join(getProjectRoot()))
+        new LocalStorage(join(getProjectRoot(), PH_CACHE_PATH))
       ),
     })
     return instance

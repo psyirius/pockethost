@@ -23,7 +23,7 @@ export const createPromiseHelper = (config: PromiseHelperConfig) => {
       const pfx = `[safeCatch:${uuid}]`
       // dbg(uuid, ...args)
       const tid = setTimeout(() => {
-        warn(pfx, `timeout waiting for ${pfx}`)
+        dbg(pfx, `WARNING:`, `timeout waiting for ${pfx}`)
       }, 100)
 
       inside = pfx
