@@ -1,4 +1,4 @@
-import { PlatformId, VersionId } from '../releases'
+import { PlatformId, VersionId } from '@pockethost/releases'
 import { BaseFields, RecordId, Seconds, Subdomain, UserId } from './types'
 
 export enum InstanceStatus {
