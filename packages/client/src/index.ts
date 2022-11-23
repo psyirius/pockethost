@@ -114,8 +114,10 @@ export const createPocketbaseClient = (config: PocketbaseClientConfig) => {
 
   const authViaEmail = safeCatch(
     `authViaEmail`,
-    (email: string, password: string) =>
-      client.collection('users').authWithPassword(email, password)
+    (email: string, password: string) => {
+      dbg(url)
+      return client.collection('users').authWithPassword(email, password)
+    }
   )
 
   const refreshAuthToken = safeCatch(`refreshAuthToken`, () =>
@@ -241,8 +243,8 @@ export const createPocketbaseClient = (config: PocketbaseClientConfig) => {
      */
     refreshAuthToken()
       .catch((e) => {
-        dbg(`Clearing auth store: ${e}`)
-        client.authStore.clear()
+        dbg(`Not logged in`)
+        // client.authStore.clear()
       })
       .finally(() => {
         fireAuthChange(getAuthStoreProps())

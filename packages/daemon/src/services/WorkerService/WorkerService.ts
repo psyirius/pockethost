@@ -9,14 +9,16 @@ import {
   WorkerLogFields_Create,
 } from '@pockethost/schema'
 import { assertTruthy, newId, pocketNow } from '@pockethost/tools'
-import { existsSync, mkdirSync, writeFileSync } from 'fs'
+import { mkdirSync, writeFileSync } from 'fs'
 import knex from 'knex'
 import { dirname, join } from 'path'
-import { DAEMON_PB_DATA_DIR } from '../constants'
-import { PocketbaseClientApi } from '../db/PbClient'
-import { dbg } from '../util/logger'
-import { safeCatch } from '../util/promiseHelper'
-import { RpcServiceApi } from './RpcService'
+import { open } from 'sqlite'
+import sqlite3 from 'sqlite3'
+import { DAEMON_PB_DATA_DIR } from '../../constants'
+import { PocketbaseClientApi } from '../../db/PbClient'
+import { dbg } from '../../util/logger'
+import { safeCatch } from '../../util/promiseHelper'
+import { RpcServiceApi } from '../RpcService'
 
 export type WorkerServiceConfig = {
   client: PocketbaseClientApi
@@ -28,7 +30,7 @@ export const createWorkerService = async (config: WorkerServiceConfig) => {
   rpcService.registerCommand<PublishBundlePayload, PublishBundleResult>(
     RpcCommands.PublishBundle,
     PublishBundlePayloadSchema,
-    async (job) => {
+    safeCatch(`${RpcCommands.PublishBundle} handler`, async (job) => {
       dbg(`Got a publish job`, job)
       const { payload } = job
       const { instanceId, bundle } = payload
@@ -54,11 +56,19 @@ export const createWorkerService = async (config: WorkerServiceConfig) => {
         writeFileSync(bundlePath, bundle)
       }
       {
-        const logger = createWorkerLogger(instanceId)
-        logger.write(bundleId, `Bundle added`)
+        const logger = await createWorkerLogger(instanceId)
+        await logger.write(bundleId, `Bundle added`, StreamNames.System)
+        await client.updateInstance(instanceId, {
+          currentWorkerBundleId: bundleId,
+        })
+        await logger.write(
+          bundleId,
+          `Bundle is now the active bundle for instance ${instanceId}`,
+          StreamNames.System
+        )
       }
       return { bundleId }
-    }
+    })
   )
 
   const shutdown = () => {}
@@ -67,11 +77,9 @@ export const createWorkerService = async (config: WorkerServiceConfig) => {
   }
 }
 
-const createWorkerLogger = (instanceId: InstanceId) => {
-  const logDbPath = join(DAEMON_PB_DATA_DIR, instanceId, 'worker', 'logs.db')
-  dbg(`logs path`, logDbPath)
-  mkdirSync(dirname(logDbPath), { recursive: true })
+export type WorkerLogger = ReturnType<typeof mkApi>
 
+const mkApi = (logDbPath: string) => {
   const conn = knex({
     client: 'sqlite3',
     connection: {
@@ -79,14 +87,13 @@ const createWorkerLogger = (instanceId: InstanceId) => {
     },
   })
 
-  if (!existsSync(logDbPath)) {
-    dbg(`Log db does not exist, creating`)
-    await db
-  }
-
   const write = safeCatch(
     `workerLogger:write`,
-    async (bundleId: RecordId, message: string, stream: StreamNames) => {
+    async (
+      bundleId: RecordId,
+      message: string,
+      stream: StreamNames = StreamNames.Info
+    ) => {
       const _in: WorkerLogFields_Create = {
         id: newId(),
         bundleId,
@@ -101,3 +108,34 @@ const createWorkerLogger = (instanceId: InstanceId) => {
 
   return { write }
 }
+
+export const createWorkerLogger = (() => {
+  const instances: {
+    [instanceId: InstanceId]: Promise<WorkerLogger>
+  } = {}
+
+  return (instanceId: InstanceId) => {
+    if (instances[instanceId]) return instances[instanceId]!
+
+    const logDbPath = join(DAEMON_PB_DATA_DIR, instanceId, 'worker', 'logs.db')
+    dbg(`logs path`, logDbPath)
+    mkdirSync(dirname(logDbPath), { recursive: true })
+
+    instances[instanceId] = (async () => {
+      dbg(`Running migrations`)
+      const db = await open({
+        filename: logDbPath,
+        driver: sqlite3.Database,
+      })
+      await db.migrate({
+        migrationsPath: join(__dirname, 'migrations'),
+      })
+
+      const api = mkApi(logDbPath)
+      await api.write(`migration`, `Ran migrations`, StreamNames.System)
+      return api
+    })()
+
+    return instances[instanceId]!
+  }
+})()

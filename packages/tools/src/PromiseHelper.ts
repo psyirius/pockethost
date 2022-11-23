@@ -1,4 +1,4 @@
-import { ClientResponseError } from 'pocketbase'
+import { serializeError } from 'serialize-error'
 import { Logger } from './Logger'
 
 export type PromiseHelperConfig = {
@@ -21,10 +21,10 @@ export const createPromiseHelper = (config: PromiseHelperConfig) => {
       const _c = c++
       const uuid = `${name}:${_c}`
       const pfx = `[safeCatch:${uuid}]`
-      // dbg(uuid, ...args)
+      // dbg(pfx, ...args)
       const tid = setTimeout(() => {
         dbg(pfx, `WARNING:`, `timeout waiting for ${pfx}`)
-      }, 100)
+      }, 2000)
 
       inside = pfx
       return cb(...args)
@@ -35,39 +35,7 @@ export const createPromiseHelper = (config: PromiseHelperConfig) => {
           return res
         })
         .catch((e: any) => {
-          if (e instanceof ClientResponseError) {
-            switch (e.status) {
-              case 400:
-                dbg(
-                  pfx,
-
-                  `PocketBase API error: It looks like you don't have permission to make this request.`
-                )
-                break
-              case 0:
-                if (e.originalError?.cause?.code === 'ECONNREFUSED') {
-                  dbg(
-                    pfx,
-
-                    `PocketBase API error: Connection refused.`
-                  )
-                  break
-                }
-              default:
-                dbg(
-                  pfx,
-                  `ERROR:`,
-                  `Unknown PocketBase API error`,
-                  JSON.stringify(e, null, 2)
-                )
-            }
-          }
-          if (!(e instanceof Error)) {
-            if (!(e instanceof Error)) {
-              throw new Error(`Expected Error here, but got ${typeof e}: ${e}`)
-            }
-            dbg(pfx, `ERROR:`, e)
-          }
+          dbg(pfx, serializeError(e))
           throw e
         })
     }

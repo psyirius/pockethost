@@ -28,6 +28,7 @@
     "node-fetch": "^3.2.10",
     "pocketbase": "^0.8.0",
     "serialize-error": "^11.0.0",
+    "sqlite": "^4.1.2",
     "sqlite3": "^5.1.2",
     "tmp": "^0.2.1",
     "type-fest": "^3.1.0"

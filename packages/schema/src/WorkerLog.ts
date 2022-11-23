@@ -1,8 +1,11 @@
 import { BaseFields, RecordId } from './types'
 
 export enum StreamNames {
-  StdOut = 'stdio',
-  StdErr = 'stderr',
+  Info = 'info',
+  Warning = 'warning',
+  Debug = 'debug',
+  Error = 'error',
+  System = 'system',
 }
 
 export type WorkerLogFields = BaseFields & {

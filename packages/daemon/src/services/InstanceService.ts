@@ -62,6 +62,7 @@ export const createInstanceService = async (config: InstanceServiceConfig) => {
         platform: LATEST_PLATFORM,
         secondsThisMonth: 0,
         isBackupAllowed: false,
+        currentWorkerBundleId: '',
       })
       return { instance }
     }
