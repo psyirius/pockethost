@@ -55,7 +55,10 @@ export const addPublishCommand = (program: Command) => {
         const bundle = stdout.toString()
         const { publishBundle } = client()
         try {
-          const bundleId = await publishBundle(instance.id, bundle)
+          const { bundleId } = await publishBundle({
+            instanceId: instance.id,
+            bundle,
+          })
           console.log(`Bundle published as ${bundleId}`)
         } catch (e) {
           die(`Bundle publishing failed with error ${e}`)
