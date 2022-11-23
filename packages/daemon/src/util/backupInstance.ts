@@ -1,4 +1,4 @@
-import { BackupRecordId, InstanceId } from '@pockethost/common'
+import { BackupRecordId, InstanceId } from '@pockethost/schema'
 import { statSync } from 'fs'
 import { basename, resolve } from 'path'
 import { chdir, cwd } from 'process'

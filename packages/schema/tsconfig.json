@@ -17,9 +17,5 @@
     "types": []
   },
 
-  "include": [
-    "./src",
-    "../pockethost-utils/src/pocketNow.ts",
-    "../releases/src/releases.ts"
-  ]
+  "include": ["./src"]
 }

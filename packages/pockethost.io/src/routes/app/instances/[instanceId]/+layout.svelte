@@ -4,7 +4,7 @@
   import { client } from '$src/pocketbase'
   import { createCleanupManagerSync } from '$util/CleanupManager'
   import { dbg } from '$util/logger'
-  import { assertExists } from '@pockethost/common'
+  import { assertExists } from '@pockethost/tools'
   import { onDestroy, onMount } from 'svelte'
   import { instance } from './store'
 

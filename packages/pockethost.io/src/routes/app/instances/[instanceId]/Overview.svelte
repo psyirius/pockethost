@@ -2,8 +2,8 @@
   import ProvisioningStatus from '$components/ProvisioningStatus.svelte'
   import { PUBLIC_PB_PROTOCOL } from '$env/static/public'
   import { PUBLIC_PB_DOMAIN } from '$src/env'
-  import type { InstanceFields } from '@pockethost/common'
-  import { humanVersion } from '@pockethost/common'
+  import { humanVersion } from '@pockethost/releases'
+  import type { InstanceFields } from '@pockethost/schema'
 
   export let instance: InstanceFields
 

@@ -1,3 +1,4 @@
+#!/usr/bin/env tsx
 import { program } from 'commander'
 
 declare global {

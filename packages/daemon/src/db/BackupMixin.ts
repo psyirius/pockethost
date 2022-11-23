@@ -6,7 +6,7 @@ import {
   BackupStatus,
   InstanceFields,
   InstanceId,
-} from '@pockethost/common'
+} from '@pockethost/schema'
 import { safeCatch } from '../util/promiseHelper'
 import { MixinContext } from './PbClient'
 

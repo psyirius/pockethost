@@ -1,4 +1,4 @@
-import type { BaseFields, RecordId } from '@pockethost/common'
+import type { BaseFields, RecordId } from '@pockethost/schema'
 import type pocketbaseEs from 'pocketbase'
 import type { RecordSubscription, UnsubscribeFunc } from 'pocketbase'
 import { Logger } from '../Logger'

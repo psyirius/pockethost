@@ -1,10 +1,10 @@
 import {
-  assertTruthy,
   RpcCommands,
   RpcFields,
   RpcStatus,
   RPC_COMMANDS,
-} from '@pockethost/common'
+} from '@pockethost/schema'
+import { assertTruthy } from '@pockethost/tools'
 import { isObject } from '@s-libs/micro-dash'
 import Ajv, { JSONSchemaType, ValidateFunction } from 'ajv'
 import Bottleneck from 'bottleneck'

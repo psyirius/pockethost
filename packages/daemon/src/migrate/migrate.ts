@@ -1,4 +1,5 @@
-import { binFor, InstanceStatus } from '@pockethost/common'
+import { binFor } from '@pockethost/releases'
+import { InstanceStatus } from '@pockethost/schema'
 import { renameSync } from 'fs'
 import { resolve } from 'path'
 import {

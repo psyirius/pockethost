@@ -1,6 +1,6 @@
 <script lang="ts">
   import { browser } from '$app/environment'
-  import { assertTruthy } from '@pockethost/common'
+  import { assertTruthy } from '@pockethost/tools'
   import { find } from '@s-libs/micro-dash'
   import Cookies from 'js-cookie'
   import { onMount } from 'svelte'

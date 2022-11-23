@@ -1,6 +1,7 @@
 import { JsonObject } from 'type-fest'
 import { BaseFields, UserId } from '../types'
 
+export const RPC_COLLECTION = 'rpc'
 export enum RpcCommands {
   CreateInstance = 'create-instance',
   BackupInstance = 'backup-instance',

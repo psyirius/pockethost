@@ -1,4 +1,5 @@
-import { InstanceFields, InvocationFields, pocketNow } from '@pockethost/common'
+import { InstanceFields, InvocationFields } from '@pockethost/schema'
+import { pocketNow } from '@pockethost/tools'
 import { dbg } from '../util/logger'
 import { safeCatch } from '../util/promiseHelper'
 import { InstanceApi } from './InstanceMIxin'

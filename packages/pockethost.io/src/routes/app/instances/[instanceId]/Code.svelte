@@ -2,7 +2,7 @@
   import CodeSample from '$components/CodeSample.svelte'
   import { PUBLIC_PB_PROTOCOL } from '$env/static/public'
   import { PUBLIC_PB_DOMAIN } from '$src/env'
-  import type { InstanceFields } from '@pockethost/common'
+  import type { InstanceFields } from '@pockethost/schema'
 
   export let instance: InstanceFields
 

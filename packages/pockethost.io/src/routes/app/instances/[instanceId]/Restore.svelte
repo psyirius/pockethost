@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { InstanceFields } from '@pockethost/common'
+  import type { InstanceFields } from '@pockethost/schema'
 
   export let instance: InstanceFields
 </script>

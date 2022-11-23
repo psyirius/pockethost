@@ -7,7 +7,7 @@
     type BackupFields,
     type InstanceFields,
     type RecordId
-  } from '@pockethost/common'
+  } from '@pockethost/schema'
   import { reduce, sortBy } from '@s-libs/micro-dash'
   import { formatDistanceToNow } from 'date-fns'
   import prettyBytes from 'pretty-bytes'

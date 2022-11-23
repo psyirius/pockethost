@@ -20,7 +20,7 @@ export const createPromiseHelper = (config: PromiseHelperConfig) => {
     return (...args: TIn) => {
       const _c = c++
       const uuid = `${name}:${_c}`
-      const pfx = `[safeCatchxxx:${uuid}]`
+      const pfx = `[safeCatch:${uuid}]`
       // dbg(uuid, ...args)
       const tid = setTimeout(() => {
         warn(pfx, `timeout waiting for ${pfx}`)
@@ -35,23 +35,38 @@ export const createPromiseHelper = (config: PromiseHelperConfig) => {
           return res
         })
         .catch((e: any) => {
-          dbg(`[ERROR]`, pfx, JSON.stringify(e, null, 2))
           if (e instanceof ClientResponseError) {
-            if (e.status === 400) {
-              dbg(
-                `[ERROR]`,
-                pfx,
-                `PocketBase API error: It looks like you don't have permission to make this request.`
-              )
-            } else {
-              error(`[ERROR]`, pfx, `Unknown PocketBase API error`)
+            switch (e.status) {
+              case 400:
+                dbg(
+                  pfx,
+
+                  `PocketBase API error: It looks like you don't have permission to make this request.`
+                )
+                break
+              case 0:
+                if (e.originalError?.cause?.code === 'ECONNREFUSED') {
+                  dbg(
+                    pfx,
+
+                    `PocketBase API error: Connection refused.`
+                  )
+                  break
+                }
+              default:
+                dbg(
+                  pfx,
+                  `ERROR:`,
+                  `Unknown PocketBase API error`,
+                  JSON.stringify(e, null, 2)
+                )
             }
           }
           if (!(e instanceof Error)) {
             if (!(e instanceof Error)) {
               throw new Error(`Expected Error here, but got ${typeof e}: ${e}`)
             }
-            error(e)
+            dbg(pfx, `ERROR:`, e)
           }
           throw e
         })
