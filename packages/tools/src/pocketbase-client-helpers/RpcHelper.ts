@@ -1,3 +1,4 @@
+import { BaseFields, RpcCommands, UserId } from '@pockethost/schema'
 import { customAlphabet } from 'nanoid'
 import type pocketbaseEs from 'pocketbase'
 import {
@@ -8,7 +9,6 @@ import {
 import type { JsonObject } from 'type-fest'
 import { Logger } from '../Logger'
 import { PromiseHelper } from '../PromiseHelper'
-import { BaseFields, RpcCommands, UserId } from '../schema'
 import type { WatchHelper } from './WatchHelper'
 
 export const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz')

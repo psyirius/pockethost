@@ -6,6 +6,7 @@ export enum RpcCommands {
   CreateInstance = 'create-instance',
   BackupInstance = 'backup-instance',
   RestoreInstance = 'restore-instance',
+  PublishBundle = 'publish-bundle',
 }
 
 export const RPC_COMMANDS = [
@@ -43,4 +44,5 @@ export type RpcRecord_Create<TRecord extends RpcFields<any, any>> = Pick<
 
 export * from './BackupInstance'
 export * from './CreateInstance'
+export * from './PublishBundle'
 export * from './RestoreInstance'

@@ -11,6 +11,7 @@ import pkg from '../package.json'
 import { addDevCommand } from './commands/dev'
 import { addInitCommand } from './commands/init'
 import { addLoginCommand } from './commands/login'
+import { addPublishCommand } from './commands/publish'
 console.log(`PocketHost CLI ${pkg.version}`)
 
 program
@@ -20,5 +21,6 @@ program
 addLoginCommand(program)
 addInitCommand(program)
 addDevCommand(program)
+addPublishCommand(program)
 
 program.parse()

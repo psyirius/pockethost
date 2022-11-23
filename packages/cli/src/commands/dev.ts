@@ -1,14 +1,11 @@
 import { spawn } from 'child_process'
 import commandExists from 'command-exists'
 import { Command } from 'commander'
-import { existsSync } from 'fs'
-import { join } from 'path'
-import { PH_CONFIG_FNAME, PH_HOST } from '../env'
+import { PH_HOST } from '../env'
 import { authCheck } from '../util/authCheck'
-import { client } from '../util/client'
 import { die } from '../util/die'
+import { ensureWorker } from '../util/ensureWorker'
 import { dbg } from '../util/logger'
-import { getProject, getProjectRoot } from '../util/project'
 
 export const addDevCommand = (program: Command) => {
   program
@@ -18,33 +15,7 @@ export const addDevCommand = (program: Command) => {
     .argument('<admin_password>', 'PocketBase admin password used to log in')
     .action(async (email, password) => {
       await authCheck()
-      const { worker, instanceId } = getProject()
-
-      if (!instanceId) {
-        die(
-          `Instance not defined in ${PH_CONFIG_FNAME}. Use 'pockethost init' to fix`
-        )
-      }
-      const { getInstanceById } = client()
-      const instance = await (async () => {
-        try {
-          return await getInstanceById(instanceId)
-        } catch (e) {}
-      })()
-      if (!instance) {
-        die(`Unable to retrieve instance ${instanceId} from ${PH_HOST}.`)
-      }
-
-      const { entry } = worker || {}
-      if (!entry) {
-        die(
-          `Entry point not found in ${PH_CONFIG_FNAME}. Use 'pockethost init' to fix.`
-        )
-      }
-      const path = join(getProjectRoot(), entry)
-      if (!existsSync(path)) {
-        die(`Entry ${path} not found. Use 'pockethost init' to fix.`)
-      }
+      const { instance, path } = await ensureWorker()
 
       const cmd = `deno`
       const hasDeno = await commandExists(cmd)

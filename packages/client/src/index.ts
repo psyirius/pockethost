@@ -1,4 +1,6 @@
 import {
+  PublishBundlePayload,
+  PublishBundleResult,
   RpcCommands,
   type BackupFields,
   type BackupInstancePayload,
@@ -129,6 +131,10 @@ export const createPocketbaseClient = (config: PocketbaseClientConfig) => {
     logger,
   })
   const { mkRpc } = rpcMixin
+
+  const publishBundle = mkRpc<PublishBundlePayload, PublishBundleResult>(
+    RpcCommands.PublishBundle
+  )
 
   const createInstance = mkRpc<CreateInstancePayload, CreateInstanceResult>(
     RpcCommands.CreateInstance
@@ -302,5 +308,6 @@ export const createPocketbaseClient = (config: PocketbaseClientConfig) => {
     createInstanceRestoreJob,
     onReady,
     pReady,
+    publishBundle,
   }
 }
