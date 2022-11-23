@@ -16,11 +16,15 @@ import { backupInstance } from '../util/backupInstance'
 import { dbg } from '../util/logger'
 import { RpcServiceApi } from './RpcService'
 
-export const createBackupService = async (
-  client: PocketbaseClientApi,
-  jobService: RpcServiceApi
-) => {
-  jobService.registerCommand<BackupInstancePayload, BackupInstanceResult>(
+export type BackupServiceConfig = {
+  client: PocketbaseClientApi
+  rpcService: RpcServiceApi
+}
+
+export const createBackupService = async (config: BackupServiceConfig) => {
+  const { rpcService, client } = config
+
+  rpcService.registerCommand<BackupInstancePayload, BackupInstanceResult>(
     RpcCommands.BackupInstance,
     BackupInstancePayloadSchema,
     async (job) => {
@@ -37,7 +41,7 @@ export const createBackupService = async (
     }
   )
 
-  jobService.registerCommand<RestoreInstancePayload, RestoreInstanceResult>(
+  rpcService.registerCommand<RestoreInstancePayload, RestoreInstanceResult>(
     RpcCommands.RestoreInstance,
     RestoreInstancePayloadSchema,
     async (job) => {

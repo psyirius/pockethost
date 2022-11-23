@@ -12,6 +12,7 @@ import { createBackupService } from './services/BackupService'
 import { createInstanceService } from './services/InstanceService'
 import { createProxyService } from './services/ProxyService'
 import { createRpcService } from './services/RpcService'
+import { createWorkerService } from './services/WorkerService'
 import { mkInternalUrl } from './util/internal'
 import { dbg, error, info } from './util/logger'
 import { spawnInstance } from './util/spawnInstance'
@@ -46,8 +47,9 @@ global.EventSource = require('eventsource')
 
   const rpcService = await createRpcService({ client })
   const instanceService = await createInstanceService({ client, rpcService })
+  const workerService = await createWorkerService({ client, rpcService })
   const proxyService = await createProxyService(instanceService)
-  const backupService = await createBackupService(client, rpcService)
+  const backupService = await createBackupService({ client, rpcService })
 
   process.once('SIGUSR2', async () => {
     info(`SIGUSR2 detected`)

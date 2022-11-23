@@ -1,5 +1,4 @@
 import { BaseFields, RpcCommands, UserId } from '@pockethost/schema'
-import { customAlphabet } from 'nanoid'
 import type pocketbaseEs from 'pocketbase'
 import {
   ClientResponseError,
@@ -8,11 +7,9 @@ import {
 } from 'pocketbase'
 import type { JsonObject } from 'type-fest'
 import { Logger } from '../Logger'
+import { newId } from '../newId'
 import { PromiseHelper } from '../PromiseHelper'
 import type { WatchHelper } from './WatchHelper'
-
-export const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz')
-export const newId = () => nanoid(15)
 
 export type RpcHelperConfig = {
   client: pocketbaseEs
