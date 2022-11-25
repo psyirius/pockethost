@@ -7,6 +7,8 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
+      target: buildbox
+    platform: linux/amd64
     container_name: www
     restart: unless-stopped
     working_dir: /src
@@ -27,13 +29,17 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
+      target: buildbox
+    platform: linux/amd64
     container_name: daemon
     working_dir: /src
     command: bash -c "yarn dev:daemon"
     restart: unless-stopped
     volumes:
-      - ./mount/daemon/instances:/data
       - ..:/src
+      - ./mount/cache/yarn:/yarn-cache
+      - ./mount/cache/go-mod:/go-mod
+      - ./mount/cache/go-cache:/go-cache
       - ./mount/cache/node_modules:/src/node_modules
     networks:
       - app-network

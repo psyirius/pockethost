@@ -1,4 +1,3 @@
-import { assertExists } from '@pockethost/tools'
 import { find, last } from '@s-libs/micro-dash'
 
 export const GO_VERSION = `1.19.3`
@@ -34,11 +33,15 @@ export const versionFor = (platformId: PlatformId, version: VersionId) => {
   const platform = RELEASES[platformId]
   if (version === USE_LATEST_VERSION) {
     const _v = last(platform.versions)
-    assertExists(_v, `Expected ${platformId} to have versions (latest)`)
+    if (!_v) {
+      throw new Error(`Expected ${platformId} to have versions (latest)`)
+    }
     return _v
   }
   const _v = find(platform.versions, (v) => v === version)
-  assertExists(_v, `Expected ${platformId} to have version (${version})`)
+  if (!_v) {
+    throw new Error(`Expected ${platformId} to have version (${version})`)
+  }
   return _v
 }
 

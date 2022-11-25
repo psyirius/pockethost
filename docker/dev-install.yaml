@@ -11,7 +11,8 @@ services:
     working_dir: /src
     command: bash -c "yarn"
     volumes:
-      - ./mount/cache/go:/go
-      - ./mount/cache/yarn:/usr/local/share/.cache/yarn/v6
       - ..:/src
+      - ./mount/cache/yarn:/yarn-cache
+      - ./mount/cache/go-mod:/go-mod
+      - ./mount/cache/go-cache:/go-cache
       - ./mount/cache/node_modules:/src/node_modules

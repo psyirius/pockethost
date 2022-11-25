@@ -1,4 +1,5 @@
 export * from './assert'
+export * from './CleanupManager'
 export * from './env'
 export * from './events'
 export * from './Logger'

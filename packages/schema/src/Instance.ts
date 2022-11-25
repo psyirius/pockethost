@@ -10,6 +10,12 @@ export enum InstanceStatus {
   Failed = 'failed',
 }
 
+export type InstanceSecretKey = string
+export type InstanceSecretValue = string
+export type InstanceSecretCollection = {
+  [name: InstanceSecretKey]: InstanceSecretValue
+}
+
 export type InstanceFields = BaseFields & {
   subdomain: Subdomain
   uid: UserId
@@ -19,6 +25,7 @@ export type InstanceFields = BaseFields & {
   secondsThisMonth: Seconds
   isBackupAllowed: boolean
   currentWorkerBundleId: RecordId
+  secrets: InstanceSecretCollection
 }
 
 export type InstanceFields_Create = Omit<InstanceFields, keyof BaseFields>

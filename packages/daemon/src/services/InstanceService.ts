@@ -10,25 +10,34 @@ import {
   InstanceId,
   InstanceStatus,
   RpcCommands,
+  StreamNames,
 } from '@pockethost/schema'
-import { assertTruthy, createTimerManager } from '@pockethost/tools'
-import { forEachRight, map } from '@s-libs/micro-dash'
+import {
+  assertTruthy,
+  createCleanupManager,
+  createTimerManager,
+} from '@pockethost/tools'
+import { map, reduce } from '@s-libs/micro-dash'
 import Bottleneck from 'bottleneck'
+import { spawn } from 'child_process'
 import getPort from 'get-port'
+import { join } from 'path'
 import { AsyncReturnType } from 'type-fest'
 import {
+  DAEMON_PB_DATA_DIR,
   DAEMON_PB_IDLE_TTL,
   DAEMON_PB_PORT_BASE,
   PUBLIC_APP_DOMAIN,
   PUBLIC_APP_PROTOCOL,
 } from '../constants'
 import { PocketbaseClientApi } from '../db/PbClient'
-import { mkInternalUrl } from '../util/internal'
-import { dbg, error, warn } from '../util/logger'
+import { mkInternalAddress, mkInternalUrl } from '../util/internal'
+import { dbg, error, logger, warn } from '../util/logger'
 import { now } from '../util/now'
 import { safeCatch } from '../util/promiseHelper'
 import { PocketbaseProcess, spawnInstance } from '../util/spawnInstance'
 import { RpcServiceApi } from './RpcService'
+import { createWorkerLogger } from './WorkerService/WorkerService'
 
 type InstanceApi = {
   process: PocketbaseProcess
@@ -63,6 +72,7 @@ export const createInstanceService = async (config: InstanceServiceConfig) => {
         secondsThisMonth: 0,
         isBackupAllowed: false,
         currentWorkerBundleId: '',
+        secrets: {},
       })
       return { instance }
     }
@@ -87,8 +97,7 @@ export const createInstanceService = async (config: InstanceServiceConfig) => {
 
       const [instance, owner] = await client.getInstanceBySubdomain(subdomain)
       if (!instance) {
-        dbg(`${subdomain} not found`)
-        return
+        throw new Error(`${subdomain} not found`)
       }
 
       if (!owner?.verified) {
@@ -97,67 +106,157 @@ export const createInstanceService = async (config: InstanceServiceConfig) => {
         )
       }
 
-      await client.updateInstanceStatus(instance.id, InstanceStatus.Port)
-      dbg(`${subdomain} found in DB`)
-      const exclude = map(instances, (i) => i.port)
-      const newPort = await getPort({
-        port: DAEMON_PB_PORT_BASE,
-        exclude,
-      }).catch((e) => {
-        error(`Failed to get port for ${subdomain}`)
-        throw e
-      })
-      dbg(`Found port for ${subdomain}: ${newPort}`)
+      const shutdownManager = createCleanupManager({ logger })
+      try {
+        await client.updateInstanceStatus(instance.id, InstanceStatus.Port)
+        shutdownManager.add(() =>
+          client.updateInstanceStatus(instance.id, InstanceStatus.Idle)
+        )
 
-      await client.updateInstanceStatus(instance.id, InstanceStatus.Starting)
+        dbg(`${subdomain} found in DB`)
+        const exclude = map(instances, (i) => i.port)
+        const newPort = await getPort({
+          port: DAEMON_PB_PORT_BASE,
+          exclude,
+        }).catch((e) => {
+          error(`Failed to get port for ${subdomain}`)
+          throw e
+        })
+        dbg(`Found port for ${subdomain}: ${newPort}`)
 
-      const childProcess = await spawnInstance({
-        subdomain,
-        slug: instance.id,
-        port: newPort,
-        bin: binFor(instance.platform, instance.version),
-        onUnexpectedStop: (code) => {
-          warn(`${subdomain} exited unexpectedly with ${code}`)
-          api.shutdown()
-        },
-      })
+        await client.updateInstanceStatus(instance.id, InstanceStatus.Starting)
 
-      const { pid } = childProcess
-      assertTruthy(pid, `Expected PID here but got ${pid}`)
+        /**
+         * Spawn PocketBase instance
+         */
+        const pbChildProcess = await spawnInstance({
+          subdomain,
+          slug: instance.id,
+          port: newPort,
+          bin: binFor(instance.platform, instance.version),
+          onUnexpectedStop: (code) => {
+            warn(`${subdomain} exited unexpectedly with ${code}`)
+            _api.shutdown()
+          },
+        })
+        const { pid: pbPid } = pbChildProcess
+        assertTruthy(pbPid, `Expected PID here but got ${pbPid}`)
+        shutdownManager.add(() => {
+          const res = pbChildProcess.kill()
+          assertTruthy(
+            res,
+            `Expected child process to exit gracefully but got ${res}`
+          )
+        })
+        if (!instance.isBackupAllowed) {
+          await client.updateInstance(instance.id, { isBackupAllowed: true })
+        }
+        const invocation = await client.createInvocation(instance, pbPid)
+        shutdownManager.add(() => client.finalizeInvocation(invocation))
 
-      if (!instance.isBackupAllowed) {
-        await client.updateInstance(instance.id, { isBackupAllowed: true })
-      }
+        /**
+         * Spawn Deno worker if available
+         */
+        const cmd = `deno`
+        const instanceAddress = mkInternalAddress(newPort)
+        //  deno  index.ts
+        const args = [
+          `run`,
+          `--allow-env=POCKETBASE_URL,ADMIN_LOGIN,ADMIN_PASSWORD`,
+          `--allow-net=${mkInternalAddress}`,
+          join(
+            DAEMON_PB_DATA_DIR,
+            instance.id,
+            `worker`,
+            `bundles`,
+            `${instance.currentWorkerBundleId}.js`
+          ),
+        ]
 
-      const invocation = await client.createInvocation(instance, pid)
-      const tm = createTimerManager({})
-      const api: InstanceApi = (() => {
+        const denoLogger = await createWorkerLogger(instance.id)
+        const denoLogLimiter = new Bottleneck({ maxConcurrent: 1 })
+        const denoWrite = (
+          message: string,
+          stream: StreamNames = StreamNames.Info
+        ) =>
+          denoLogLimiter.schedule(() => {
+            dbg(
+              `[${instance.id}:${instance.currentWorkerBundleId}:${stream}] ${message}`
+            )
+            return denoLogger.write(
+              instance.currentWorkerBundleId,
+              message,
+              stream
+            )
+          })
+
+        const internalUrl = mkInternalUrl(newPort)
+        const env = {
+          ...process.env,
+          POCKETBASE_URL: internalUrl,
+          ADMIN_LOGIN: instance.secrets.ADMIN_LOGIN,
+          ADMIN_PASSWORD: instance.secrets.ADMIN_PASSWORD,
+        }
+        denoWrite(`Worker starting`, StreamNames.System)
+        const denoProcess = spawn(cmd, args, { env })
+        denoProcess.stderr.on('data', (buf: Buffer) => {
+          denoWrite(buf.toString(), StreamNames.Error)
+        })
+        denoProcess.stdout.on('data', (buf: Buffer) => {
+          denoWrite(buf.toString())
+        })
+        denoProcess.on('exit', async (code, signal) => {
+          if (code !== 0) {
+            denoWrite(
+              `Unexpected 'deno' exit code: ${code}.`,
+              StreamNames.Error
+            )
+          }
+          denoWrite(`Worker shutting down`, StreamNames.System)
+        })
+        shutdownManager.add(() => {
+          denoProcess.kill()
+        })
+
+        const tm = createTimerManager({})
+        shutdownManager.add(tm.shutdown)
+
         let openRequestCount = 0
         let lastRequest = now()
-        const internalUrl = mkInternalUrl(newPort)
-
         const RECHECK_TTL = 1000 // 1 second
+
+        tm.repeat(
+          safeCatch(`idleCheck`, async () => {
+            dbg(`${subdomain} idle check: ${openRequestCount} open requests`)
+            if (
+              openRequestCount === 0 &&
+              lastRequest + DAEMON_PB_IDLE_TTL < now()
+            ) {
+              dbg(`${subdomain} idle for ${DAEMON_PB_IDLE_TTL}, shutting down`)
+              await _api.shutdown()
+              return false
+            } else {
+              dbg(`${openRequestCount} requests remain open on ${subdomain}`)
+            }
+            return true
+          }),
+          RECHECK_TTL
+        )
+
+        tm.repeat(
+          safeCatch(`uptime`, async () => {
+            dbg(`${subdomain} uptime`)
+            await client.pingInvocation(invocation)
+            return true
+          }),
+          1000
+        )
+
         const _api: InstanceApi = {
-          process: childProcess,
+          process: pbChildProcess,
           internalUrl,
           port: newPort,
-          shutdown: safeCatch(
-            `Instance ${subdomain} invocation ${invocation.id} pid ${pid} shutdown`,
-            async () => {
-              tm.shutdown()
-              await client.finalizeInvocation(invocation)
-              const res = childProcess.kill()
-              delete instances[subdomain]
-              await client.updateInstanceStatus(
-                instance.id,
-                InstanceStatus.Idle
-              )
-              assertTruthy(
-                res,
-                `Expected child process to exit gracefully but got ${res}`
-              )
-            }
-          ),
+          shutdown: () => shutdownManager.shutdown(),
           startRequest: () => {
             lastRequest = now()
             openRequestCount++
@@ -170,54 +269,28 @@ export const createInstanceService = async (config: InstanceServiceConfig) => {
           },
         }
 
-        {
-          tm.repeat(
-            safeCatch(`idleCheck`, async () => {
-              dbg(`${subdomain} idle check: ${openRequestCount} open requests`)
-              if (
-                openRequestCount === 0 &&
-                lastRequest + DAEMON_PB_IDLE_TTL < now()
-              ) {
-                dbg(
-                  `${subdomain} idle for ${DAEMON_PB_IDLE_TTL}, shutting down`
-                )
-                await _api.shutdown()
-                return false
-              } else {
-                dbg(`${openRequestCount} requests remain open on ${subdomain}`)
-              }
-              return true
-            }),
-            RECHECK_TTL
-          )
-        }
-
-        {
-          tm.repeat(
-            safeCatch(`uptime`, async () => {
-              dbg(`${subdomain} uptime`)
-              await client.pingInvocation(invocation)
-              return true
-            }),
-            1000
-          )
-        }
-
-        return _api
-      })()
-
-      instances[subdomain] = api
-      await client.updateInstanceStatus(instance.id, InstanceStatus.Running)
-      dbg(`${api.internalUrl} is running`)
-      return instances[subdomain]
+        instances[subdomain] = _api
+        shutdownManager.add(() => {
+          delete instances[subdomain]
+        })
+        await client.updateInstanceStatus(instance.id, InstanceStatus.Running)
+        dbg(`${_api.internalUrl} is running`)
+        return instances[subdomain]
+      } catch {
+        await shutdownManager.shutdown()
+      }
     })
 
-  const shutdown = () => {
+  const shutdown = safeCatch(`InstanceManager:shutdown`, async () => {
     dbg(`Shutting down instance manager`)
-    forEachRight(instances, (instance) => {
-      instance.shutdown()
-    })
-  }
+    await reduce(
+      instances,
+      (p, instance) => {
+        return p.then(() => instance.shutdown())
+      },
+      Promise.resolve()
+    )
+  })
 
   const maintenance = async (instanceId: InstanceId) => {}
   return { getInstance, shutdown, maintenance }
