@@ -7,7 +7,7 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
-      target: buildbox
+      target: pockethost-base
     platform: linux/amd64
     container_name: www
     restart: unless-stopped
@@ -29,7 +29,7 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
-      target: buildbox
+      target: pockethost-base
     platform: linux/amd64
     container_name: daemon
     working_dir: /src

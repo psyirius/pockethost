@@ -56,7 +56,68 @@ CMD echo "Alpine" `cat /etc/alpine-release` && echo "Node" `node --version`
 FROM --platform=linux/amd64 node as deno
 RUN apk --no-cache add curl 
 RUN curl -fsSL https://deno.land/x/install/install.sh | sh
-CMD echo "Alpine" `cat /etc/alpine-release`  && echo "Node" `node --version` && echo "Deno" `/root/.deno/bin/deno --version`
+RUN cp /root/.deno/bin/deno /usr/bin/deno
+CMD echo "Alpine" `cat /etc/alpine-release`  && echo "Node" `node --version` && echo "Deno" `deno --version`
+
+FROM --platform=linux/amd64 deno as pockethost-base
+RUN apk --no-cache add python3 py3-pip make gcc musl-dev g++ go
+CMD echo "Alpine" `cat /etc/alpine-release` && echo "Node" `node --version` && echo "Deno" `deno --version`
+
+FROM --platform=linux/amd64 pockethost-base as build-base
+WORKDIR /src
+COPY package.json package.json 
+COPY yarn.lock yarn.lock
+COPY packages/client/package.json packages/client/package.json
+COPY packages/daemon/package.json packages/daemon/package.json
+COPY packages/pocketbase/package.json packages/pocketbase/package.json
+COPY packages/pockethost.io/package.json packages/pockethost.io/package.json
+COPY packages/releases/package.json packages/releases/package.json
+COPY packages/schema/package.json packages/schema/package.json
+COPY packages/tools/package.json packages/tools/package.json
+COPY patches patches
+RUN --mount=type=cache,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn yarn install
+COPY packages/releases packages/releases
+COPY packages/tools packages/tools
+COPY packages/schema packages/schema
+CMD echo "Alpine" `cat /etc/alpine-release` && echo "Node" `node --version` && echo "Deno" `deno --version`
+
+FROM --platform=linux/amd64 build-base as pocketbase-build
+WORKDIR /src
+COPY packages/pocketbase packages/pocketbase
+WORKDIR /src/packages/pocketbase
+RUN --mount=type=cache,target=/go-mod --mount=type=cache,target=/go-cache GOPATH=/go-mod GOCACHE=/go-cache yarn build
+CMD echo "Alpine" `cat /etc/alpine-release` && echo "Node" `node --version` && echo "Deno" `deno --version`
+
+FROM --platform=linux/amd64 build-base as www-build
+WORKDIR /src
+COPY packages/client packages/client
+COPY packages/pockethost.io packages/pockethost.io
+WORKDIR /src/packages/pockethost.io
+RUN yarn build
+CMD echo "Alpine" `cat /etc/alpine-release` && echo "Node" `node --version` && echo "Deno" `deno --version`
+
+FROM --platform=linux/amd64 build-base as daemon-build
+WORKDIR /src
+COPY packages/daemon packages/daemon
+RUN --mount=type=cache,target=/root/.yarn NODE_ENV=production YARN_CACHE_FOLDER=/root/.yarn yarn install
+CMD ls -R packages
+CMD echo "Alpine" `cat /etc/alpine-release` && echo "Node" `node --version` && echo "Deno" `deno --version`
+
+
+FROM --platform=linux/amd64 deno as prod-pockethost
+WORKDIR /pocketbase
+COPY --from=pocketbase-build /src/packages/pocketbase/dist pocketbase
+COPY --from=www-build /src/packages/pockethost.io/dist-server www
+COPY --from=daemon-build /src daemon
+CMD echo "Alpine" `cat /etc/alpine-release` && echo "Node" `node --version` && echo "Deno" `deno --version`
+
+
+
+
+# ========================================
+# ALTERNATE DENO BUILDS
+# ========================================
+
 
 FROM --platform=linux/amd64 alpine as deno-cargo-alpine
 RUN apk --no-cache add cargo
@@ -75,50 +136,3 @@ FROM --platform=linux/amd64 frolvlad/alpine-glibc as deno-alpine-glibc
 RUN apk --no-cache add nodejs npm yarn bash
 COPY --from=deno /bin/deno /usr/local/bin/deno
 CMD echo "Alpine" `cat /etc/alpine-release` && echo "Node" `node --version` && echo "Deno" `deno --version`
-
-FROM --platform=linux/amd64 node as buildbox
-RUN apk --no-cache add python3 py3-pip make gcc musl-dev g++ go
-
-FROM --platform=linux/amd64 buildbox as sourcebase
-WORKDIR /src
-COPY package.json package.json 
-COPY yarn.lock yarn.lock
-COPY packages/client/package.json packages/client/package.json
-COPY packages/daemon/package.json packages/daemon/package.json
-COPY packages/pocketbase/package.json packages/pocketbase/package.json
-COPY packages/pockethost.io/package.json packages/pockethost.io/package.json
-COPY packages/releases/package.json packages/releases/package.json
-COPY packages/schema/package.json packages/schema/package.json
-COPY packages/tools/package.json packages/tools/package.json
-COPY patches patches
-RUN --mount=type=cache,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn yarn install
-COPY packages/releases packages/releases
-COPY packages/tools packages/tools
-COPY packages/schema packages/schema
-
-FROM --platform=linux/amd64 sourcebase as pocketbase-build
-WORKDIR /src
-COPY packages/pocketbase packages/pocketbase
-WORKDIR /src/packages/pocketbase
-RUN --mount=type=cache,target=/go-mod --mount=type=cache,target=/go-cache GOPATH=/go-mod GOCACHE=/go-cache yarn build
-
-FROM --platform=linux/amd64 sourcebase as www-build
-WORKDIR /src
-COPY packages/client packages/client
-COPY packages/pockethost.io packages/pockethost.io
-WORKDIR /src/packages/pockethost.io
-RUN yarn build
-
-FROM --platform=linux/amd64 sourcebase as daemon-build
-WORKDIR /src
-COPY packages/daemon packages/daemon
-RUN --mount=type=cache,target=/root/.yarn NODE_ENV=production YARN_CACHE_FOLDER=/root/.yarn yarn install
-CMD ls -R packages
-
-FROM --platform=linux/amd64 deno as pockethost
-WORKDIR /pocketbase
-COPY --from=pocketbase-build /src/packages/pocketbase/dist pocketbase
-COPY --from=www-build /src/packages/pockethost.io/dist-server www
-COPY --from=daemon-build /src daemon
-CMD ls -R
-
