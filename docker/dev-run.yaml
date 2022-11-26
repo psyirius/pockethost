@@ -41,6 +41,7 @@ services:
       - ./mount/cache/go-mod:/go-mod
       - ./mount/cache/go-cache:/go-cache
       - ./mount/cache/node_modules:/src/node_modules
+      - ./mount/daemon/instances:/data
     networks:
       - app-network
     ports:
