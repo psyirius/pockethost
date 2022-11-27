@@ -19,7 +19,7 @@
     "migrate": "yarn migrate:daemon",
     "migrate:daemon": "cd packages/daemon && yarn migrate",
     "postinstall": "patch-package",
-    "docker:dev": "docker-compose -f docker/dev-run.yaml up --remove-orphans",
+    "docker:dev": "PH_DOMAIN=pockethost.test PH_NGINX=`pwd`/docker/mount/nginx PH_CACHE=`pwd`/docker/mount/cache PH_PB_BIN=`pwd`/packages/pocketbase/dist PH_DATA=`pwd`/docker/mount/daemon/instances docker-compose -f docker/dev-run.yaml up --remove-orphans",
     "docker:start": "docker-compose -f docker/prod-run.yaml up --remove-orphans",
     "docker:build": "docker build . --progress=plain --target=prod-pockethost -t benallfree/pockethost:latest -t benallfree/pockethost:0.5.3"
   },
