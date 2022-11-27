@@ -21,7 +21,7 @@ export const spawnInstance = safeCatch(`spawnInstance`, async (cfg: Config) => {
   const cmd = `${DAEMON_PB_BIN_DIR}/${bin}`
   if (!existsSync(cmd)) {
     throw new Error(
-      `PocketBase binary (${bin}) not found. Contact pockethost.io.`
+      `PocketBase binary (${cmd}) not found. Contact pockethost.io.`
     )
   }
 

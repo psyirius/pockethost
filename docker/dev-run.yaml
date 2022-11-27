@@ -42,6 +42,7 @@ services:
       - ./mount/cache/go-cache:/go-cache
       - ./mount/cache/node_modules:/src/node_modules
       - ./mount/daemon/instances:/data
+      - ../packages/pocketbase/dist:/pocketbase
     networks:
       - app-network
     ports:
