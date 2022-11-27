@@ -105,10 +105,13 @@ CMD echo "Alpine" `cat /etc/alpine-release` && echo "Node" `node --version` && e
 
 
 FROM --platform=linux/amd64 deno as prod-pockethost
-WORKDIR /pocketbase
+WORKDIR /pockethost
 COPY --from=pocketbase-build /src/packages/pocketbase/dist pocketbase
 COPY --from=www-build /src/packages/pockethost.io/dist-server www
 COPY --from=daemon-build /src daemon
+WORKDIR /pockethost/www
+RUN echo '{"type":"module"}' > package.json
+WORKDIR /pockethost
 CMD echo "Alpine" `cat /etc/alpine-release` && echo "Node" `node --version` && echo "Deno" `deno --version`
 
 

@@ -1,18 +1,14 @@
 version: '3'
-
 services:
   www:
+    image: benallfree/pockethost
     env_file:
       - .env.local
-    build:
-      context: ..
-      dockerfile: Dockerfile
-      target: prod-pocktbase
     platform: linux/amd64
     container_name: www
     restart: unless-stopped
-    working_dir: /src
-    command: bash -c "yarn start:www --host=www"
+    working_dir: /pockethost/www
+    command: node index.js --host=www
     networks:
       - app-network
     ports:
@@ -21,21 +17,18 @@ services:
       daemon:
         condition: service_started
   daemon:
+    image: benallfree/pockethost
     env_file:
       - .env.local
-    build:
-      context: ..
-      dockerfile: Dockerfile
-      target: prod-pocktbase
     platform: linux/amd64
     container_name: daemon
-    working_dir: /src
-    command: bash -c "yarn start:daemon"
+    working_dir: /pockethost/daemon/packages/daemon
+    command: yarn start
     restart: unless-stopped
     environment:
       - SHELL=/bin/bash
     volumes:
-      - ${PH_DATA}:/data
+      - '${PH_DATA:?PH_DATA Required}:/data'
     networks:
       - app-network
     ports:
@@ -51,9 +44,9 @@ services:
       - '80:80'
       - '443:443'
     volumes:
-      - ./mount/nginx/conf.d/prod:/etc/nginx/conf.d
-      - ./mount/nginx/logs:/mount/nginx/logs
-      - ./mount/nginx/ssl:/mount/nginx/ssl
+      - '${PH_NGINX:?PH_NGINX required}/conf.d/prod:/etc/nginx/conf.d'
+      - '${PH_NGINX}/logs:/mount/nginx/logs'
+      - '${PH_NGINX}/ssl:/mount/nginx/ssl'
     networks:
       - app-network
 
