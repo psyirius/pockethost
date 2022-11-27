@@ -21,10 +21,13 @@ environment: &environment
   - YARN_CACHE: /yarn-cache
   - SHELL: /bin/bash
 
+networks:
+  app-network:
+    driver: bridge
+
 base: &base
   image: benallfree/pockethost
-  environment:
-    <<: *environment
+  environment: *environment
   platform: linux/amd64
   networks:
     - app-network
@@ -48,7 +51,7 @@ mounts:
 
 services:
   www-dev:
-    <<: &base
+    <<: *base
     profiles: ['dev']
     restart: unless-stopped
     working_dir: /src/packages/pockethost.io
@@ -62,7 +65,7 @@ services:
       daemon-dev:
         condition: service_started
   www-prod:
-    <<: &base
+    <<: *base
     profiles: ['prod']
     restart: unless-stopped
     working_dir: /pockethost/www
@@ -73,7 +76,7 @@ services:
       daemon:
         condition: service_started
   daemon-dev:
-    <<: &base
+    <<: *base
     profiles: ['dev']
     container_name: daemon
     working_dir: /src/packages/daemon
@@ -87,7 +90,7 @@ services:
     ports:
       - '9001:3000'
   daemon-prod:
-    <<: &base
+    <<: *base
     profiles: ['prod']
     container_name: daemon
     working_dir: /pockethost/daemon/packages/daemon
@@ -101,7 +104,7 @@ services:
     ports:
       - '9001:3000'
   nginx:
-    <<: &base
+    <<: *base
     profiles: ['prod', 'dev']
     restart: unless-stopped
     depends_on:
@@ -112,7 +115,3 @@ services:
       - '443:443'
     volumes:
       - *nginx-mount
-
-networks:
-  app-network:
-    driver: bridge
