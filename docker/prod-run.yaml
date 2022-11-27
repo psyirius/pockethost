@@ -7,13 +7,12 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
+      target: prod-pocktbase
+    platform: linux/amd64
     container_name: www
     restart: unless-stopped
     working_dir: /src
     command: bash -c "yarn start:www --host=www"
-    volumes:
-      - ..:/src
-      - ./mount/cache/node_modules:/src/node_modules
     networks:
       - app-network
     ports:
@@ -27,6 +26,8 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
+      target: prod-pocktbase
+    platform: linux/amd64
     container_name: daemon
     working_dir: /src
     command: bash -c "yarn start:daemon"
@@ -34,9 +35,7 @@ services:
     environment:
       - SHELL=/bin/bash
     volumes:
-      - /home/pockethost/data:/data
-      - ..:/src
-      - ./mount/cache/node_modules:/src/node_modules
+      - ${PH_DATA}:/data
     networks:
       - app-network
     ports:

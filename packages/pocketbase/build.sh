@@ -13,10 +13,6 @@ DIR=$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )
 export CGO_ENABLED=0 
 export GOOS=linux
 export GOARCH=amd64
-CACHE_ROOT=$DIR/../../docker/mount/cache/
-export GOPATH=$CACHE_ROOT/go-mod
-export GOCACHE=$CACHE_ROOT/go-cache
-
 
 SRC=src
 TARGET=build/$PLATFORM/$VERSION

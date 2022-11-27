@@ -7,18 +7,21 @@
   "scripts": {
     "lint": "prettier -c \"./**/*.ts\"",
     "lint:fix": "prettier -w \"./**/*.ts\"",
-    "build": "concurrently 'yarn build:pocketbase' 'yarn build:daemon' 'yarn build:www'",
+    "build": "concurrently -r 'yarn build:pocketbase' 'yarn build:daemon' 'yarn build:www'",
     "build:pocketbase": "cd packages/pocketbase && yarn build",
     "build:daemon": "cd packages/daemon && yarn build",
     "build:www": "cd packages/pockethost.io && yarn build",
     "dev:www": "cd packages/pockethost.io && yarn dev",
     "dev:daemon": "cd packages/daemon && yarn dev",
-    "start": "concurrently 'yarn start:www' 'yarn start:daemon'",
+    "start": "concurrently -r 'yarn start:www' 'yarn start:daemon'",
     "start:www": "cd packages/pockethost.io && yarn start",
     "start:daemon": "cd packages/daemon && yarn start",
     "migrate": "yarn migrate:daemon",
     "migrate:daemon": "cd packages/daemon && yarn migrate",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "docker:dev": "docker-compose -f docker/dev-run.yaml up --remove-orphans",
+    "docker:start": "docker-compose -f docker/prod-run.yaml up --remove-orphans",
+    "docker:build": "docker build . --progress=plain --target=prod-pockethost -t benallfree/pockethost:latest -t benallfree/pockethost:0.5.3"
   },
   "workspaces": {
     "packages": [
