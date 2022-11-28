@@ -1,63 +1,54 @@
 version: '3'
 
-environment: &environment
-  - NODE_ENV: '${NODE_ENV:-development}'
-  - DEBUG: '${DEBUG:-true}'
-  - PUBLIC_APP_PROTOCOL: https
-  - PUBLIC_APP_DOMAIN: '${PUBLIC_APP_DOMAIN:-pockethost.test}'
-  - PUBLIC_PB_PROTOCOL: https
-  - PUBLIC_PB_DOMAIN: '${PUBLIC_PB_DOMAIN:-pockethost.test}'
-  - PUBLIC_PB_SUBDOMAIN: pockethost-central
-  - DAEMON_PB_BIN_DIR: /pockethost/pocketbase
-  - DAEMON_PB_DATA_DIR: /data
-  - DAEMON_PB_USERNAME: '${DAEMON_PB_USERNAME:?DAEMON_PB_USERNAME required}'
-  - DAEMON_PB_PASSWORD: '${DAEMON_PB_PASSWORD:?DAEMON_PB_PASSWORD required}'
-  - DAEMON_PB_PORT: 8090
-  - DAEMON_IDLE_TTL: 5000
-  - DAEMON_PB_BACKUP_SLEEP: 100
-  - DAEMON_PB_BACKUP_PAGE_COUNT: 5
-  - GOPATH: /go-mod
-  - GOCACHE: /go-cache
-  - YARN_CACHE: /yarn-cache
-  - SHELL: /bin/bash
-
 networks:
   app-network:
     driver: bridge
 
-base: &base
-  image: benallfree/pockethost
-  environment: *environment
-  platform: linux/amd64
-  networks:
-    - app-network
-
-mounts:
-  src: &src-mount
-    - ..:/src
-  data: &data-mount
-    - '${PH_DATA:?PH_DATA Required}:/data'
-  cache: &cache-mount
-    - '${PH_CACHE:?PH_CACHE required}/yarn:/yarn-cache'
-    - '${PH_CACHE:?PH_CACHE required}/go-mod:/go-mod'
-    - '${PH_CACHE:?PH_CACHE required}/go-cache:/go-cache'
-    - '${PH_CACHE:?PH_CACHE required}/node_modules:/src/node_modules'
-  pocketbase-bin: &pocketbase-bin-mount
-    - '${PH_PB_BIN:?PH_PB_BIN Required}:/pocketbase'
-  nginx: &nginx-mount
-    - '${PH_NGINX:?PH_NGINX required}/templates:/etc/nginx/templates'
-    - '${PH_NGINX}/logs:/mount/nginx/logs'
-    - '${PH_NGINX}/ssl:/mount/nginx/ssl'
-
 services:
+  base:
+    environment:
+      - NODE_ENV: '${NODE_ENV:-development}'
+      - DEBUG: '${DEBUG:-true}'
+      - PUBLIC_APP_PROTOCOL: https
+      - PUBLIC_APP_DOMAIN: '${PUBLIC_APP_DOMAIN:-pockethost.test}'
+      - PUBLIC_PB_PROTOCOL: https
+      - PUBLIC_PB_DOMAIN: '${PUBLIC_PB_DOMAIN:-pockethost.test}'
+      - PUBLIC_PB_SUBDOMAIN: pockethost-central
+      - DAEMON_PB_BIN_DIR: /pockethost/pocketbase
+      - DAEMON_PB_DATA_DIR: /data
+      - DAEMON_PB_USERNAME: '${DAEMON_PB_USERNAME:?DAEMON_PB_USERNAME required}'
+      - DAEMON_PB_PASSWORD: '${DAEMON_PB_PASSWORD:?DAEMON_PB_PASSWORD required}'
+      - DAEMON_PB_PORT: 8090
+      - DAEMON_IDLE_TTL: 5000
+      - DAEMON_PB_BACKUP_SLEEP: 100
+      - DAEMON_PB_BACKUP_PAGE_COUNT: 5
+      - GOPATH: /go-mod
+      - GOCACHE: /go-cache
+      - YARN_CACHE: /yarn-cache
+      - SHELL: /bin/bash
+    image: benallfree/pockethost
+    platform: linux/amd64
+    networks:
+      - app-network
+    volumes: ..:/mount/src
+      '${PH_DATA:?PH_DATA Required}:/mount/data'
+      '${PH_CACHE:?PH_CACHE required}/yarn:/mount/yarn-cache'
+      '${PH_CACHE:?PH_CACHE required}/go-mod:/go-mod'
+      '${PH_CACHE:?PH_CACHE required}/go-cache:/go-cache'
+      '${PH_CACHE:?PH_CACHE required}/node_modules:/src/node_modules'
+      '${PH_PB_BIN:?PH_PB_BIN Required}:/pocketbase'
+      '${PH_NGINX:?PH_NGINX required}/templates:/etc/nginx/templates'
+      '${PH_NGINX}/logs:/mount/nginx/logs'
+      '${PH_NGINX}/ssl:/mount/nginx/ssl'
+
   www-dev:
-    <<: *base
+    # <<: *base
     profiles: ['dev']
     restart: unless-stopped
     working_dir: /src/packages/pockethost.io
-    volumes:
-      - *src-mount
-      - *cache-mount
+    # volumes:
+    #   - *src-mount
+    #   - *cache-mount
     command: yarn dev --host=www
     ports:
       - '9000:5173'
@@ -65,7 +56,7 @@ services:
       daemon-dev:
         condition: service_started
   www-prod:
-    <<: *base
+    # <<: *base
     profiles: ['prod']
     restart: unless-stopped
     working_dir: /pockethost/www
@@ -76,21 +67,24 @@ services:
       daemon:
         condition: service_started
   daemon-dev:
-    <<: *base
+    # <<: *base
     profiles: ['dev']
     container_name: daemon
     working_dir: /src/packages/daemon
     command: yarn dev
     restart: unless-stopped
-    volumes:
-      - *src-mount
-      - *cache-mount
-      - *data-mount
-      - *pocketbase-bin-mount
+    # volumes:
+    #   - ..:/src
+    #   - '${PH_CACHE:?PH_CACHE required}/yarn:/yarn-cache'
+    #   - '${PH_CACHE:?PH_CACHE required}/go-mod:/go-mod'
+    #   - '${PH_CACHE:?PH_CACHE required}/go-cache:/go-cache'
+    #   - '${PH_CACHE:?PH_CACHE required}/node_modules:/src/node_modules'
+    #   - '${PH_DATA:?PH_DATA Required}:/data'
+    #   - '${PH_PB_BIN:?PH_PB_BIN Required}:/pocketbase'
     ports:
       - '9001:3000'
   daemon-prod:
-    <<: *base
+    # <<: *base
     profiles: ['prod']
     container_name: daemon
     working_dir: /pockethost/daemon/packages/daemon
@@ -98,13 +92,18 @@ services:
     restart: unless-stopped
     environment:
       - SHELL=/bin/bash
-    volumes:
-      - *pocketbase-bin-mount
-      - *data-mount
+    # volumes:
+    #   - ..:/src
+    #   - '${PH_CACHE:?PH_CACHE required}/yarn:/yarn-cache'
+    #   - '${PH_CACHE:?PH_CACHE required}/go-mod:/go-mod'
+    #   - '${PH_CACHE:?PH_CACHE required}/go-cache:/go-cache'
+    #   - '${PH_CACHE:?PH_CACHE required}/node_modules:/src/node_modules'
+    #   - '${PH_DATA:?PH_DATA Required}:/data'
+    #   - '${PH_PB_BIN:?PH_PB_BIN Required}:/pocketbase'
     ports:
       - '9001:3000'
   nginx:
-    <<: *base
+    # <<: *base
     profiles: ['prod', 'dev']
     restart: unless-stopped
     depends_on:
@@ -113,5 +112,11 @@ services:
     ports:
       - '80:80'
       - '443:443'
-    volumes:
-      - *nginx-mount
+    # volumes:
+    #   - ..:/src
+    #   - '${PH_CACHE:?PH_CACHE required}/yarn:/yarn-cache'
+    #   - '${PH_CACHE:?PH_CACHE required}/go-mod:/go-mod'
+    #   - '${PH_CACHE:?PH_CACHE required}/go-cache:/go-cache'
+    #   - '${PH_CACHE:?PH_CACHE required}/node_modules:/src/node_modules'
+    #   - '${PH_DATA:?PH_DATA Required}:/data'
+    #   - '${PH_PB_BIN:?PH_PB_BIN Required}:/pocketbase'
