@@ -9,7 +9,7 @@ import {
 } from './constants'
 import { createPbClient } from './db/PbClient'
 import { createBackupService } from './services/BackupService'
-import { createInstanceService } from './services/InstanceService'
+import { createInstanceService } from './services/InstanceService/InstanceService'
 import { createProxyService } from './services/ProxyService'
 import { createRpcService } from './services/RpcService'
 import { createWorkerService } from './services/WorkerService/WorkerService'

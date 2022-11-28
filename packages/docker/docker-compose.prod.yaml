@@ -29,7 +29,7 @@ services:
       DAEMON_PB_BACKUP_PAGE_COUNT: 5
       GOPATH: /go-mod
       GOCACHE: /go-cache
-      YARN_CACHE: /yarn-cache
+      YARN_CACHE_FOLDER: /yarn-cache
       SHELL: /bin/bash
     image: benallfree/pockethost
     platform: linux/amd64

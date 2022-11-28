@@ -1,0 +1,43 @@
+#############################
+# cd packages/docker
+# npx tsx src/compose.ts
+#############################
+
+version: '3'
+networks:
+  app-network:
+    driver: bridge
+services:
+  prepbox:
+    environment:
+      NODE_ENV: '${NODE_ENV:-development}'
+      DEBUG: '${DEBUG:-true}'
+      PUBLIC_APP_PROTOCOL: https
+      PUBLIC_APP_DOMAIN: '${PUBLIC_APP_DOMAIN:-pockethost.test}'
+      PUBLIC_PB_PROTOCOL: https
+      PUBLIC_PB_DOMAIN: '${PUBLIC_PB_DOMAIN:-pockethost.test}'
+      PUBLIC_PB_SUBDOMAIN: pockethost-central
+      DAEMON_PB_BIN_DIR: /pockethost/pocketbase
+      DAEMON_PB_DATA_DIR: /data
+      DAEMON_PB_USERNAME: '${DAEMON_PB_USERNAME:?DAEMON_PB_USERNAME required}'
+      DAEMON_PB_PASSWORD: '${DAEMON_PB_PASSWORD:?DAEMON_PB_PASSWORD required}'
+      DAEMON_PB_PORT: 8090
+      DAEMON_IDLE_TTL: 5000
+      DAEMON_PB_BACKUP_SLEEP: 100
+      DAEMON_PB_BACKUP_PAGE_COUNT: 5
+      GOPATH: /go-mod
+      GOCACHE: /go-cache
+      YARN_CACHE_FOLDER: /yarn-cache
+      SHELL: /bin/bash
+    image: benallfree/pockethost
+    platform: linux/amd64
+    networks:
+      - app-network
+    working_dir: /src
+    command: yarn
+    volumes:
+      - '${PH_SRC:?PH_SRC required}:/src'
+      - '${PH_CACHE:?PH_CACHE required}/yarn:/yarn-cache'
+      - '${PH_CACHE:?PH_CACHE required}/go-mod:/go-mod'
+      - '${PH_CACHE:?PH_CACHE required}/go-cache:/go-cache'
+      - '${PH_CACHE:?PH_CACHE required}/node_modules:/src/node_modules'

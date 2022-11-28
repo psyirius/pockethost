@@ -23,7 +23,7 @@ const environment = {
   DAEMON_PB_BACKUP_PAGE_COUNT: 5,
   GOPATH: '/go-mod',
   GOCACHE: '/go-cache',
-  YARN_CACHE: '/yarn-cache',
+  YARN_CACHE_FOLDER: '/yarn-cache',
   SHELL: '/bin/bash',
 }
 
@@ -131,6 +131,18 @@ const files = {
       www,
       daemon,
       nginx,
+    },
+  },
+  'dev-install': {
+    version: '3',
+    networks,
+    services: {
+      prepbox: {
+        ...base,
+        working_dir: '/src',
+        command: 'yarn',
+        volumes: [...volumes.src, ...volumes.cache],
+      },
     },
   },
   prod: {

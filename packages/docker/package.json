@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsx src/compose.ts",
     "watch": "tsx watch src/compose.ts",
+    "dev:install": "docker compose -f docker-compose.dev-install.yaml up --remove-orphans",
     "dev": "docker compose -f docker-compose.dev.yaml up --remove-orphans",
     "prod": ""
   },
