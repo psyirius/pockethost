@@ -10,7 +10,6 @@ import {
   InstanceId,
   InstanceStatus,
   RpcCommands,
-  StreamNames,
 } from '@pockethost/schema'
 import {
   assertTruthy,
@@ -19,25 +18,22 @@ import {
 } from '@pockethost/tools'
 import { map, reduce } from '@s-libs/micro-dash'
 import Bottleneck from 'bottleneck'
-import { spawn } from 'child_process'
 import getPort from 'get-port'
-import { join } from 'path'
 import { AsyncReturnType } from 'type-fest'
 import {
-  DAEMON_PB_DATA_DIR,
   DAEMON_PB_IDLE_TTL,
   DAEMON_PB_PORT_BASE,
   PUBLIC_APP_DOMAIN,
   PUBLIC_APP_PROTOCOL,
-} from '../constants'
-import { PocketbaseClientApi } from '../db/PbClient'
-import { mkInternalAddress, mkInternalUrl } from '../util/internal'
-import { dbg, error, logger, warn } from '../util/logger'
-import { now } from '../util/now'
-import { safeCatch } from '../util/promiseHelper'
-import { PocketbaseProcess, spawnInstance } from '../util/spawnInstance'
-import { RpcServiceApi } from './RpcService'
-import { createWorkerLogger } from './WorkerService/WorkerService'
+} from '../../constants'
+import { PocketbaseClientApi } from '../../db/PbClient'
+import { mkInternalUrl } from '../../util/internal'
+import { dbg, error, logger, warn } from '../../util/logger'
+import { now } from '../../util/now'
+import { safeCatch } from '../../util/promiseHelper'
+import { PocketbaseProcess, spawnInstance } from '../../util/spawnInstance'
+import { RpcServiceApi } from '../RpcService'
+import { createDenoProcess } from './DenoProcess'
 
 type InstanceApi = {
   process: PocketbaseProcess
@@ -160,67 +156,11 @@ export const createInstanceService = async (config: InstanceServiceConfig) => {
         const { currentWorkerBundleId } = instance
         const internalUrl = mkInternalUrl(newPort)
         if (currentWorkerBundleId) {
-          const cmd = `deno`
-          const instanceAddress = mkInternalAddress(newPort)
-          //  deno  index.ts
-          const args = [
-            `run`,
-            `--allow-env=POCKETBASE_URL,ADMIN_LOGIN,ADMIN_PASSWORD`,
-            `--allow-net=${instanceAddress}`,
-            join(
-              DAEMON_PB_DATA_DIR,
-              instance.id,
-              `worker`,
-              `bundles`,
-              `${currentWorkerBundleId}.js`
-            ),
-          ]
-
-          const denoLogger = await createWorkerLogger(instance.id)
-          const denoLogLimiter = new Bottleneck({ maxConcurrent: 1 })
-          const denoWrite = (
-            message: string,
-            stream: StreamNames = StreamNames.Info
-          ) =>
-            denoLogLimiter.schedule(() => {
-              dbg(
-                `[${instance.id}:${currentWorkerBundleId}:${stream}] ${message}`
-              )
-              return denoLogger.write(currentWorkerBundleId, message, stream)
-            })
-
-          const secrets = instance.secrets || {}
-          const env = {
-            /**
-             * MAJOR SECURITY WARNING. DO NOT PASS process.env OR THE INSTANCE WILL
-             * GET FULL ADMIN CONTROL
-             */
-            POCKETBASE_URL: internalUrl,
-            ADMIN_LOGIN: secrets.ADMIN_LOGIN,
-            ADMIN_PASSWORD: secrets.ADMIN_PASSWORD,
-            NO_COLOR: '1', // This is so error messages don't contain terminal color codes
-          }
-          denoWrite(`Worker starting`, StreamNames.System)
-          dbg(`Worker starting`, cmd, args, env)
-          const denoProcess = spawn(cmd, args, { env })
-          denoProcess.stderr.on('data', (buf: Buffer) => {
-            denoWrite(buf.toString(), StreamNames.Error)
+          const { shutdown } = await createDenoProcess({
+            port: newPort,
+            instance,
           })
-          denoProcess.stdout.on('data', (buf: Buffer) => {
-            denoWrite(buf.toString())
-          })
-          denoProcess.on('exit', async (code, signal) => {
-            if (code !== 0) {
-              denoWrite(
-                `Unexpected 'deno' exit code: ${code}.`,
-                StreamNames.Error
-              )
-            }
-            denoWrite(`Worker shutting down`, StreamNames.System)
-          })
-          shutdownManager.add(() => {
-            denoProcess.kill()
-          })
+          shutdownManager.add(shutdown)
         }
 
         const tm = createTimerManager({})
