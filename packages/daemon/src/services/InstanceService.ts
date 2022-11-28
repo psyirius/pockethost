@@ -157,67 +157,71 @@ export const createInstanceService = async (config: InstanceServiceConfig) => {
         /**
          * Spawn Deno worker if available
          */
-        const cmd = `deno`
-        const instanceAddress = mkInternalAddress(newPort)
-        //  deno  index.ts
-        const args = [
-          `run`,
-          `--allow-env=POCKETBASE_URL,ADMIN_LOGIN,ADMIN_PASSWORD`,
-          `--allow-net=${mkInternalAddress}`,
-          join(
-            DAEMON_PB_DATA_DIR,
-            instance.id,
-            `worker`,
-            `bundles`,
-            `${instance.currentWorkerBundleId}.js`
-          ),
-        ]
-
-        const denoLogger = await createWorkerLogger(instance.id)
-        const denoLogLimiter = new Bottleneck({ maxConcurrent: 1 })
-        const denoWrite = (
-          message: string,
-          stream: StreamNames = StreamNames.Info
-        ) =>
-          denoLogLimiter.schedule(() => {
-            dbg(
-              `[${instance.id}:${instance.currentWorkerBundleId}:${stream}] ${message}`
-            )
-            return denoLogger.write(
-              instance.currentWorkerBundleId,
-              message,
-              stream
-            )
-          })
-
+        const { currentWorkerBundleId } = instance
         const internalUrl = mkInternalUrl(newPort)
-        const secrets = instance.secrets || {}
-        const env = {
-          ...process.env,
-          POCKETBASE_URL: internalUrl,
-          ADMIN_LOGIN: secrets.ADMIN_LOGIN,
-          ADMIN_PASSWORD: secrets.ADMIN_PASSWORD,
-        }
-        denoWrite(`Worker starting`, StreamNames.System)
-        const denoProcess = spawn(cmd, args, { env })
-        denoProcess.stderr.on('data', (buf: Buffer) => {
-          denoWrite(buf.toString(), StreamNames.Error)
-        })
-        denoProcess.stdout.on('data', (buf: Buffer) => {
-          denoWrite(buf.toString())
-        })
-        denoProcess.on('exit', async (code, signal) => {
-          if (code !== 0) {
-            denoWrite(
-              `Unexpected 'deno' exit code: ${code}.`,
-              StreamNames.Error
-            )
+        if (currentWorkerBundleId) {
+          const cmd = `deno`
+          const instanceAddress = mkInternalAddress(newPort)
+          //  deno  index.ts
+          const args = [
+            `run`,
+            `--allow-env=POCKETBASE_URL,ADMIN_LOGIN,ADMIN_PASSWORD`,
+            `--allow-net=${instanceAddress}`,
+            join(
+              DAEMON_PB_DATA_DIR,
+              instance.id,
+              `worker`,
+              `bundles`,
+              `${currentWorkerBundleId}.js`
+            ),
+          ]
+
+          const denoLogger = await createWorkerLogger(instance.id)
+          const denoLogLimiter = new Bottleneck({ maxConcurrent: 1 })
+          const denoWrite = (
+            message: string,
+            stream: StreamNames = StreamNames.Info
+          ) =>
+            denoLogLimiter.schedule(() => {
+              dbg(
+                `[${instance.id}:${currentWorkerBundleId}:${stream}] ${message}`
+              )
+              return denoLogger.write(currentWorkerBundleId, message, stream)
+            })
+
+          const secrets = instance.secrets || {}
+          const env = {
+            /**
+             * MAJOR SECURITY WARNING. DO NOT PASS process.env OR THE INSTANCE WILL
+             * GET FULL ADMIN CONTROL
+             */
+            POCKETBASE_URL: internalUrl,
+            ADMIN_LOGIN: secrets.ADMIN_LOGIN,
+            ADMIN_PASSWORD: secrets.ADMIN_PASSWORD,
+            NO_COLOR: '1', // This is so error messages don't contain terminal color codes
           }
-          denoWrite(`Worker shutting down`, StreamNames.System)
-        })
-        shutdownManager.add(() => {
-          denoProcess.kill()
-        })
+          denoWrite(`Worker starting`, StreamNames.System)
+          dbg(`Worker starting`, cmd, args, env)
+          const denoProcess = spawn(cmd, args, { env })
+          denoProcess.stderr.on('data', (buf: Buffer) => {
+            denoWrite(buf.toString(), StreamNames.Error)
+          })
+          denoProcess.stdout.on('data', (buf: Buffer) => {
+            denoWrite(buf.toString())
+          })
+          denoProcess.on('exit', async (code, signal) => {
+            if (code !== 0) {
+              denoWrite(
+                `Unexpected 'deno' exit code: ${code}.`,
+                StreamNames.Error
+              )
+            }
+            denoWrite(`Worker shutting down`, StreamNames.System)
+          })
+          shutdownManager.add(() => {
+            denoProcess.kill()
+          })
+        }
 
         const tm = createTimerManager({})
         shutdownManager.add(tm.shutdown)
