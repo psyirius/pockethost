@@ -6,10 +6,11 @@
   "scripts": {
     "build": "tsx src/compose.ts",
     "watch": "tsx watch src/compose.ts",
-    "dev": "docker compose --profile dev up --remove-orphans",
+    "dev": "docker compose -f docker-compose.dev.yaml up --remove-orphans",
     "prod": ""
   },
   "devDependencies": {
+    "@s-libs/micro-dash": "^14.1.0",
     "@types/node": "^18.11.9",
     "tsx": "^3.12.1",
     "yaml": "^2.1.3"

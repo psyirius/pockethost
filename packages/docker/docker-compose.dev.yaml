@@ -3,13 +3,13 @@
 # cd packages/docker
 # npx tsx src/compose.ts
 #############################
-
+  
 version: "3"
 networks:
   app-network:
     driver: bridge
 services:
-  www-dev:
+  www:
     environment:
       &a1
       NODE_ENV: "${NODE_ENV:-development}"
@@ -36,38 +36,29 @@ services:
     networks:
       &a2
       - app-network
+    container_name: www
     volumes:
       - "${PH_SRC:?PH_SRC required}:/src"
       - "${PH_CACHE:?PH_CACHE required}/yarn:/yarn-cache"
       - "${PH_CACHE:?PH_CACHE required}/go-mod:/go-mod"
       - "${PH_CACHE:?PH_CACHE required}/go-cache:/go-cache"
       - "${PH_CACHE:?PH_CACHE required}/node_modules:/src/node_modules"
-    profiles:
-      - dev
     restart: unless-stopped
     working_dir: /src/packages/pockethost.io
     command: yarn dev --host=www
     ports:
-      - 9000:5173
-    depends_on:
-      daemon-dev:
-        condition: service_started
-  www-prod:
-    environment: *a1
-    image: benallfree/pockethost
-    platform: linux/amd64
-    networks: *a2
-    profiles:
-      - prod
-    restart: unless-stopped
-    working_dir: /pockethost/www
-    command: node index.js --host=www
-    ports:
-      - 9000:5173
-    depends_on:
-      daemon-prod:
-        condition: service_started
-  daemon-dev:
+      - 9000:3000
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://www:3000
+      interval: 5s
+      timeout: 2s
+      retries: 300
+      start_period: 10s
+  daemon:
     environment: *a1
     image: benallfree/pockethost
     platform: linux/amd64
@@ -80,59 +71,39 @@ services:
       - "${PH_CACHE:?PH_CACHE required}/node_modules:/src/node_modules"
       - "${PH_DATA:?PH_DATA required}:/data"
       - "${PH_PB_BIN:?PH_PB_BIN required}:/pocketbase"
-    profiles:
-      - dev
     container_name: daemon
     working_dir: /src/packages/daemon
     command: yarn dev
     restart: unless-stopped
     ports:
       - 9001:3000
-  daemon-prod:
-    environment: *a1
-    image: benallfree/pockethost
-    platform: linux/amd64
-    networks: *a2
-    volumes:
-      - "${PH_DATA:?PH_DATA required}:/data"
-      - "${PH_PB_BIN:?PH_PB_BIN required}:/pocketbase"
-    profiles:
-      - prod
-    container_name: daemon
-    working_dir: /pockethost/daemon/packages/daemon
-    command: yarn start
-    restart: unless-stopped
-    ports:
-      - 9001:3000
-  nginx-dev:
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://daemon:3000/ping
+      interval: 5s
+      timeout: 2s
+      retries: 300
+      start_period: 10s
+  nginx:
     image: nginx:mainline-alpine
+    container_name: nginx
     environment: *a1
     volumes:
       - "${PH_NGINX_TEMPLATES:?PH_NGINX_TEMPLATES required}:/etc/nginx/templates"
       - "${PH_NGINX_LOGS:?PH_NGINX_LOGS required}:/mount/nginx/logs"
       - "${PH_NGINX_SSL:?PH_NGINX_SSL required}:/mount/nginx/ssl"
-    profiles:
-      - dev
+      - "${PH_NGINX_LOGS:?PH_NGINX_LOGS required}/../conf.d:/etc/nginx/conf.d"
     restart: unless-stopped
     depends_on:
-      - www-dev
-      - daemon-dev
+      daemon:
+        condition: service_healthy
+      www:
+        condition: service_healthy
     ports:
       - 80:80
       - 443:443
-  nginx-prod:
-    image: nginx:mainline-alpine
-    environment: *a1
-    volumes:
-      - "${PH_NGINX_TEMPLATES:?PH_NGINX_TEMPLATES required}:/etc/nginx/templates"
-      - "${PH_NGINX_LOGS:?PH_NGINX_LOGS required}:/mount/nginx/logs"
-      - "${PH_NGINX_SSL:?PH_NGINX_SSL required}:/mount/nginx/ssl"
-    profiles:
-      - prod
-    restart: unless-stopped
-    depends_on:
-      - www-prod
-      - daemon-prod
-    ports:
-      - 80:80
-      - 443:443
+    networks:
+      - app-network

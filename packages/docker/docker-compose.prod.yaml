@@ -1,0 +1,98 @@
+
+#############################
+# cd packages/docker
+# npx tsx src/compose.ts
+#############################
+  
+version: "3"
+networks:
+  app-network:
+    driver: bridge
+services:
+  www:
+    environment:
+      &a1
+      NODE_ENV: "${NODE_ENV:-development}"
+      DEBUG: "${DEBUG:-true}"
+      PUBLIC_APP_PROTOCOL: https
+      PUBLIC_APP_DOMAIN: "${PUBLIC_APP_DOMAIN:-pockethost.test}"
+      PUBLIC_PB_PROTOCOL: https
+      PUBLIC_PB_DOMAIN: "${PUBLIC_PB_DOMAIN:-pockethost.test}"
+      PUBLIC_PB_SUBDOMAIN: pockethost-central
+      DAEMON_PB_BIN_DIR: /pockethost/pocketbase
+      DAEMON_PB_DATA_DIR: /data
+      DAEMON_PB_USERNAME: "${DAEMON_PB_USERNAME:?DAEMON_PB_USERNAME required}"
+      DAEMON_PB_PASSWORD: "${DAEMON_PB_PASSWORD:?DAEMON_PB_PASSWORD required}"
+      DAEMON_PB_PORT: 8090
+      DAEMON_IDLE_TTL: 5000
+      DAEMON_PB_BACKUP_SLEEP: 100
+      DAEMON_PB_BACKUP_PAGE_COUNT: 5
+      GOPATH: /go-mod
+      GOCACHE: /go-cache
+      YARN_CACHE: /yarn-cache
+      SHELL: /bin/bash
+    image: benallfree/pockethost
+    platform: linux/amd64
+    networks:
+      &a2
+      - app-network
+    container_name: www
+    restart: unless-stopped
+    working_dir: /pockethost/www
+    command: node index.js --host=www
+    ports:
+      - 9000:3000
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://www:3000
+      interval: 5s
+      timeout: 2s
+      retries: 300
+      start_period: 10s
+  daemon:
+    environment: *a1
+    image: benallfree/pockethost
+    platform: linux/amd64
+    networks: *a2
+    volumes:
+      - "${PH_DATA:?PH_DATA required}:/data"
+      - "${PH_PB_BIN:?PH_PB_BIN required}:/pocketbase"
+    container_name: daemon
+    working_dir: /pockethost/daemon/packages/daemon
+    command: yarn start
+    restart: unless-stopped
+    ports:
+      - 9001:3000
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://daemon:3000/ping
+      interval: 5s
+      timeout: 2s
+      retries: 300
+      start_period: 10s
+  nginx:
+    image: nginx:mainline-alpine
+    container_name: nginx
+    environment: *a1
+    volumes:
+      - "${PH_NGINX_TEMPLATES:?PH_NGINX_TEMPLATES required}:/etc/nginx/templates"
+      - "${PH_NGINX_LOGS:?PH_NGINX_LOGS required}:/mount/nginx/logs"
+      - "${PH_NGINX_SSL:?PH_NGINX_SSL required}:/mount/nginx/ssl"
+      - "${PH_NGINX_LOGS:?PH_NGINX_LOGS required}/../conf.d:/etc/nginx/conf.d"
+    restart: unless-stopped
+    depends_on:
+      daemon:
+        condition: service_healthy
+      www:
+        condition: service_healthy
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - app-network

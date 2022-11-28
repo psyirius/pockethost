@@ -19,7 +19,7 @@ export const createProxyService = async (
   const proxy = httpProxy.createProxyServer({})
 
   const server = createServer(async (req, res) => {
-    dbg(`Incoming request ${req.headers.host}/${req.url}`)
+    dbg(`Incoming request ${req.headers.host}${req.url}`)
 
     const die = (msg: string) => {
       error(msg)
@@ -33,6 +33,21 @@ export const createProxyService = async (
     if (!host) {
       throw new Error(`Host not found`)
     }
+
+    /**
+     * Docker health check
+     */
+    if (host === `daemon:3000`) {
+      if (req.url === `/ping`) {
+        res.writeHead(200, {
+          'Content-Type': `text/plain`,
+        })
+        res.end(`pong`)
+        return
+      }
+      die(`Got an invalid Docker request: ${req.url}`)
+    }
+
     const [subdomain, ...junk] = host.split('.')
     if (!subdomain) {
       throw new Error(`${host} has no subdomain.`)

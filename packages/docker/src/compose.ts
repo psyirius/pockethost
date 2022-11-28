@@ -1,3 +1,4 @@
+import { forEach, omit } from '@s-libs/micro-dash'
 import { writeFileSync } from 'fs'
 import { stringify } from 'yaml'
 
@@ -48,6 +49,7 @@ const volumes = {
     `${PH_NGINX_TEMPLATES}:/etc/nginx/templates`,
     `${PH_NGINX_LOGS}:/mount/nginx/logs`,
     `${PH_NGINX_SSL}:/mount/nginx/ssl`,
+    `${PH_NGINX_LOGS}/../conf.d:/etc/nginx/conf.d`,
   ],
 }
 
@@ -58,93 +60,106 @@ const base = {
   networks: ['app-network'],
 }
 
-const out = {
-  version: '3',
-  networks: {
-    'app-network': {
-      driver: 'bridge',
+const www = {
+  ...base,
+  container_name: 'www',
+  volumes: [...volumes.src, ...volumes.cache],
+  restart: 'unless-stopped',
+  working_dir: '/src/packages/pockethost.io',
+  command: 'yarn dev --host=www',
+  ports: ['9000:3000'],
+  healthcheck: {
+    test: ['CMD', 'curl', '-f', 'http://www:3000'],
+    interval: `5s`,
+    timeout: `2s`,
+    retries: 300,
+    start_period: `10s`,
+  },
+}
+
+const daemon = {
+  ...base,
+  volumes: [
+    ...volumes.src,
+    ...volumes.cache,
+    ...volumes.data,
+    ...volumes.pocketbaseBin,
+  ],
+  container_name: 'daemon',
+  working_dir: '/src/packages/daemon',
+  command: 'yarn dev',
+  restart: 'unless-stopped',
+  ports: ['9001:3000'],
+  healthcheck: {
+    test: ['CMD', 'curl', '-f', 'http://daemon:3000/ping'],
+    interval: `5s`,
+    timeout: `2s`,
+    retries: 300,
+    start_period: `10s`,
+  },
+}
+
+const nginx = {
+  image: 'nginx:mainline-alpine',
+  container_name: 'nginx',
+  environment,
+  volumes: [...volumes.nginx],
+  restart: 'unless-stopped',
+  depends_on: {
+    daemon: {
+      condition: 'service_healthy',
+    },
+    www: {
+      condition: 'service_healthy',
     },
   },
-  services: {
-    'www-dev': {
-      ...base,
-      volumes: [...volumes.src, ...volumes.cache],
-      profiles: ['dev'],
-      restart: 'unless-stopped',
-      working_dir: '/src/packages/pockethost.io',
-      command: 'yarn dev --host=www',
-      ports: ['9000:5173'],
-      depends_on: {
-        'daemon-dev': {
-          condition: 'service_started',
-        },
+  ports: ['80:80', '443:443'],
+  networks: ['app-network'],
+}
+
+const networks = {
+  'app-network': {
+    driver: 'bridge',
+  },
+}
+
+const files = {
+  dev: {
+    version: '3',
+    networks,
+    services: {
+      www,
+      daemon,
+      nginx,
+    },
+  },
+  prod: {
+    version: '3',
+    networks,
+    services: {
+      www: {
+        ...omit(www, 'volumes'),
+        working_dir: '/pockethost/www',
+        command: 'node index.js --host=www',
       },
-    },
-    'www-prod': {
-      ...base,
-      profiles: ['prod'],
-      restart: 'unless-stopped',
-      working_dir: '/pockethost/www',
-      command: 'node index.js --host=www',
-      ports: ['9000:5173'],
-      depends_on: {
-        [`daemon-prod`]: {
-          condition: 'service_started',
-        },
+      daemon: {
+        ...daemon,
+        volumes: [...volumes.data, ...volumes.pocketbaseBin],
+        working_dir: '/pockethost/daemon/packages/daemon',
+        command: 'yarn start',
       },
-    },
-    'daemon-dev': {
-      ...base,
-      volumes: [
-        ...volumes.src,
-        ...volumes.cache,
-        ...volumes.data,
-        ...volumes.pocketbaseBin,
-      ],
-      profiles: ['dev'],
-      container_name: 'daemon',
-      working_dir: '/src/packages/daemon',
-      command: 'yarn dev',
-      restart: 'unless-stopped',
-      ports: ['9001:3000'],
-    },
-    'daemon-prod': {
-      ...base,
-      volumes: [...volumes.data, ...volumes.pocketbaseBin],
-      profiles: ['prod'],
-      container_name: 'daemon',
-      working_dir: '/pockethost/daemon/packages/daemon',
-      command: 'yarn start',
-      restart: 'unless-stopped',
-      ports: ['9001:3000'],
-    },
-    [`nginx-dev`]: {
-      image: 'nginx:mainline-alpine',
-      environment,
-      volumes: [...volumes.nginx],
-      profiles: ['dev'],
-      restart: 'unless-stopped',
-      depends_on: ['www-dev', 'daemon-dev'],
-      ports: ['80:80', '443:443'],
-    },
-    [`nginx-prod`]: {
-      image: 'nginx:mainline-alpine',
-      environment,
-      volumes: [...volumes.nginx],
-      profiles: ['prod'],
-      restart: 'unless-stopped',
-      depends_on: ['www-prod', 'daemon-prod'],
-      ports: ['80:80', '443:443'],
+      nginx,
     },
   },
 }
 
-const yaml = `
+forEach(files, (out, pfx) => {
+  const yaml = `
 #############################
 # cd packages/docker
 # npx tsx src/compose.ts
 #############################
-
+  
 ${stringify(out)
   .split(/\n/)
   .map((line) => {
@@ -152,6 +167,7 @@ ${stringify(out)
   })
   .join('\n')}`
 
-console.log(yaml)
+  console.log(yaml)
 
-writeFileSync('./docker-compose.yaml', yaml)
+  writeFileSync(`./docker-compose.${pfx}.yaml`, yaml)
+})

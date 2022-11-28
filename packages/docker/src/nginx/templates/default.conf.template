@@ -6,14 +6,14 @@ server {
 }
 
 server {
-    server_name www.${PH_DOMAIN};
-    return 301 $scheme://${PH_DOMAIN}$request_uri;  
+    server_name www.${PUBLIC_APP_DOMAIN};
+    return 301 $scheme://${PUBLIC_APP_DOMAIN}$request_uri;  
 }
 
 server {
     listen       443 ssl;  
 
-    server_name  ${PH_DOMAIN};
+    server_name  ${PUBLIC_APP_DOMAIN};
     ssl_certificate     /mount/nginx/ssl/fullchain.pem;
     ssl_certificate_key /mount/nginx/ssl/privkey.pem;
 
@@ -40,7 +40,7 @@ server {
 server {
     listen       443 ssl;
 
-    server_name  *.${PH_DOMAIN};  
+    server_name  *.${PUBLIC_PB_DOMAIN};  
     ssl_certificate     /mount/nginx/ssl/fullchain.pem;
     ssl_certificate_key /mount/nginx/ssl/privkey.pem;
 
