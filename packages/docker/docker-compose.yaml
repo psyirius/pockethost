@@ -1,0 +1,138 @@
+
+#############################
+# cd packages/docker
+# npx tsx src/compose.ts
+#############################
+
+version: "3"
+networks:
+  app-network:
+    driver: bridge
+services:
+  www-dev:
+    environment:
+      &a1
+      NODE_ENV: "${NODE_ENV:-development}"
+      DEBUG: "${DEBUG:-true}"
+      PUBLIC_APP_PROTOCOL: https
+      PUBLIC_APP_DOMAIN: "${PUBLIC_APP_DOMAIN:-pockethost.test}"
+      PUBLIC_PB_PROTOCOL: https
+      PUBLIC_PB_DOMAIN: "${PUBLIC_PB_DOMAIN:-pockethost.test}"
+      PUBLIC_PB_SUBDOMAIN: pockethost-central
+      DAEMON_PB_BIN_DIR: /pockethost/pocketbase
+      DAEMON_PB_DATA_DIR: /data
+      DAEMON_PB_USERNAME: "${DAEMON_PB_USERNAME:?DAEMON_PB_USERNAME required}"
+      DAEMON_PB_PASSWORD: "${DAEMON_PB_PASSWORD:?DAEMON_PB_PASSWORD required}"
+      DAEMON_PB_PORT: 8090
+      DAEMON_IDLE_TTL: 5000
+      DAEMON_PB_BACKUP_SLEEP: 100
+      DAEMON_PB_BACKUP_PAGE_COUNT: 5
+      GOPATH: /go-mod
+      GOCACHE: /go-cache
+      YARN_CACHE: /yarn-cache
+      SHELL: /bin/bash
+    image: benallfree/pockethost
+    platform: linux/amd64
+    networks:
+      &a2
+      - app-network
+    volumes:
+      - "${PH_SRC:?PH_SRC required}:/src"
+      - "${PH_CACHE:?PH_CACHE required}/yarn:/yarn-cache"
+      - "${PH_CACHE:?PH_CACHE required}/go-mod:/go-mod"
+      - "${PH_CACHE:?PH_CACHE required}/go-cache:/go-cache"
+      - "${PH_CACHE:?PH_CACHE required}/node_modules:/src/node_modules"
+    profiles:
+      - dev
+    restart: unless-stopped
+    working_dir: /src/packages/pockethost.io
+    command: yarn dev --host=www
+    ports:
+      - 9000:5173
+    depends_on:
+      daemon-dev:
+        condition: service_started
+  www-prod:
+    environment: *a1
+    image: benallfree/pockethost
+    platform: linux/amd64
+    networks: *a2
+    profiles:
+      - prod
+    restart: unless-stopped
+    working_dir: /pockethost/www
+    command: node index.js --host=www
+    ports:
+      - 9000:5173
+    depends_on:
+      daemon-prod:
+        condition: service_started
+  daemon-dev:
+    environment: *a1
+    image: benallfree/pockethost
+    platform: linux/amd64
+    networks: *a2
+    volumes:
+      - "${PH_SRC:?PH_SRC required}:/src"
+      - "${PH_CACHE:?PH_CACHE required}/yarn:/yarn-cache"
+      - "${PH_CACHE:?PH_CACHE required}/go-mod:/go-mod"
+      - "${PH_CACHE:?PH_CACHE required}/go-cache:/go-cache"
+      - "${PH_CACHE:?PH_CACHE required}/node_modules:/src/node_modules"
+      - "${PH_DATA:?PH_DATA required}:/data"
+      - "${PH_PB_BIN:?PH_PB_BIN required}:/pocketbase"
+    profiles:
+      - dev
+    container_name: daemon
+    working_dir: /src/packages/daemon
+    command: yarn dev
+    restart: unless-stopped
+    ports:
+      - 9001:3000
+  daemon-prod:
+    environment: *a1
+    image: benallfree/pockethost
+    platform: linux/amd64
+    networks: *a2
+    volumes:
+      - "${PH_DATA:?PH_DATA required}:/data"
+      - "${PH_PB_BIN:?PH_PB_BIN required}:/pocketbase"
+    profiles:
+      - prod
+    container_name: daemon
+    working_dir: /pockethost/daemon/packages/daemon
+    command: yarn start
+    restart: unless-stopped
+    ports:
+      - 9001:3000
+  nginx-dev:
+    image: nginx:mainline-alpine
+    environment: *a1
+    volumes:
+      - "${PH_NGINX_TEMPLATES:?PH_NGINX_TEMPLATES required}:/etc/nginx/templates"
+      - "${PH_NGINX_LOGS:?PH_NGINX_LOGS required}:/mount/nginx/logs"
+      - "${PH_NGINX_SSL:?PH_NGINX_SSL required}:/mount/nginx/ssl"
+    profiles:
+      - dev
+    restart: unless-stopped
+    depends_on:
+      - www-dev
+      - daemon-dev
+    ports:
+      - 80:80
+      - 443:443
+  nginx-prod:
+    image: nginx:mainline-alpine
+    environment: *a1
+    volumes:
+      - "${PH_NGINX_TEMPLATES:?PH_NGINX_TEMPLATES required}:/etc/nginx/templates"
+      - "${PH_NGINX_LOGS:?PH_NGINX_LOGS required}:/mount/nginx/logs"
+      - "${PH_NGINX_SSL:?PH_NGINX_SSL required}:/mount/nginx/ssl"
+    profiles:
+      - prod
+    restart: unless-stopped
+    depends_on:
+      - www-prod
+      - daemon-prod
+    ports:
+      - 80:80
+      - 443:443
