@@ -191,11 +191,12 @@ export const createInstanceService = async (config: InstanceServiceConfig) => {
           })
 
         const internalUrl = mkInternalUrl(newPort)
+        const secrets = instance.secrets || {}
         const env = {
           ...process.env,
           POCKETBASE_URL: internalUrl,
-          ADMIN_LOGIN: instance.secrets.ADMIN_LOGIN,
-          ADMIN_PASSWORD: instance.secrets.ADMIN_PASSWORD,
+          ADMIN_LOGIN: secrets.ADMIN_LOGIN,
+          ADMIN_PASSWORD: secrets.ADMIN_PASSWORD,
         }
         denoWrite(`Worker starting`, StreamNames.System)
         const denoProcess = spawn(cmd, args, { env })
@@ -276,7 +277,8 @@ export const createInstanceService = async (config: InstanceServiceConfig) => {
         await client.updateInstanceStatus(instance.id, InstanceStatus.Running)
         dbg(`${_api.internalUrl} is running`)
         return instances[subdomain]
-      } catch {
+      } catch (e) {
+        error(e)
         await shutdownManager.shutdown()
       }
     })

@@ -25,7 +25,7 @@ export type InstanceFields = BaseFields & {
   secondsThisMonth: Seconds
   isBackupAllowed: boolean
   currentWorkerBundleId: RecordId
-  secrets: InstanceSecretCollection
+  secrets: InstanceSecretCollection | null
 }
 
 export type InstanceFields_Create = Omit<InstanceFields, keyof BaseFields>

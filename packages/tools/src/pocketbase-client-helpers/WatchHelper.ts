@@ -34,8 +34,8 @@ export const createWatchHelper = (config: WatchHelperConfig) => {
       options?: Partial<WatchConfig>
     ): Promise<UnsubscribeFunc> => {
       const config: WatchConfig = {
-        initialFetch: false,
-        pollIntervalMs: 100,
+        initialFetch: true,
+        pollIntervalMs: 0,
         ...options,
       }
       const { initialFetch, pollIntervalMs } = config
