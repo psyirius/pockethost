@@ -11,8 +11,8 @@ import Bottleneck from 'bottleneck'
 import { default as knexFactory } from 'knex'
 import pocketbaseEs from 'pocketbase'
 import { AsyncReturnType, JsonObject } from 'type-fest'
-import { PocketbaseClientApi } from '../db/PbClient'
-import { dbg, error } from '../util/logger'
+import { PocketbaseClientApi } from '../../db/PbClient'
+import { dbg, error } from '../../util/logger'
 
 export type RpcServiceApi = AsyncReturnType<typeof createRpcService>
 
