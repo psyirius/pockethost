@@ -1,9 +1,8 @@
-
 import {
+  RpcCommands,
   SaveSecretsPayload,
   SaveSecretsPayloadSchema,
   SaveSecretsResult,
-  RpcCommands,
 } from '@pockethost/schema'
 import { RpcHandlerFactory } from '..'
 
@@ -16,8 +15,9 @@ export const registerSaveSecretsHandler: RpcHandlerFactory = ({
     SaveSecretsPayloadSchema,
     async (job) => {
       const { payload } = job
-      
-      return { }
+      const { instanceId, secrets } = payload
+      await client.updateInstance(instanceId, { secrets })
+      return { status: 'saved' }
     }
   )
 }

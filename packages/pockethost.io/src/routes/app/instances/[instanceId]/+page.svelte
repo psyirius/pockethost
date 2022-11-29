@@ -6,6 +6,7 @@
   import Code from './Code.svelte'
   import Overview from './Overview.svelte'
   import Restore from './Restore.svelte'
+  import Secrets from './Secrets/Secrets.svelte'
   import { instance } from './store'
 
   assertExists($instance, `Expected instance here`)
@@ -20,6 +21,7 @@
 {#if $instance}
   <Overview instance={$instance} />
   <Code instance={$instance} />
+  <Secrets instance={$instance} />
   <Backup instance={$instance} />
   <Restore instance={$instance} />
 {/if}

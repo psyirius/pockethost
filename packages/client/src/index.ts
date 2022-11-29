@@ -1,8 +1,13 @@
 import {
+  BackupInstancePayloadSchema,
+  CreateInstancePayloadSchema,
   PublishBundlePayload,
+  PublishBundlePayloadSchema,
   PublishBundleResult,
+  RestoreInstancePayloadSchema,
   RpcCommands,
   SaveSecretsPayload,
+  SaveSecretsPayloadSchema,
   SaveSecretsResult,
   // gen:rpc:import
   type BackupFields,
@@ -141,21 +146,24 @@ export const createPocketbaseClient = (config: PocketbaseClientConfig) => {
    * RPC calls
    */
   const publishBundle = mkRpc<PublishBundlePayload, PublishBundleResult>(
-    RpcCommands.PublishBundle
+    RpcCommands.PublishBundle,
+    PublishBundlePayloadSchema
   )
   const createInstance = mkRpc<CreateInstancePayload, CreateInstanceResult>(
-    RpcCommands.CreateInstance
+    RpcCommands.CreateInstance,
+    CreateInstancePayloadSchema
   )
   const createInstanceBackupJob = mkRpc<
     BackupInstancePayload,
     BackupInstanceResult
-  >(RpcCommands.BackupInstance)
+  >(RpcCommands.BackupInstance, BackupInstancePayloadSchema)
   const createInstanceRestoreJob = mkRpc<
     RestoreInstancePayload,
     RestoreInstanceResult
-  >(RpcCommands.RestoreInstance)
+  >(RpcCommands.RestoreInstance, RestoreInstancePayloadSchema)
   const saveSecrets = mkRpc<SaveSecretsPayload, SaveSecretsResult>(
-    RpcCommands.SaveSecrets
+    RpcCommands.SaveSecrets,
+    SaveSecretsPayloadSchema
   )
   // gen:rpc:wrapper
 

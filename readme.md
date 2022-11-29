@@ -142,6 +142,7 @@ open https://pockethost.io
 - [ ] Restart Deno process on script update
 - [ ] Live log viewer
 - [ ] Reboot deno on secrets update
+- [ ] Shut down when only Deno worker is connected
 
 **0.5.3**
 

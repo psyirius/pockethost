@@ -325,7 +325,7 @@ export const schema: Collection_Serialized[] = [
     listRule: 'userId = @request.auth.id',
     viewRule: 'userId = @request.auth.id',
     createRule:
-      "userId = @request.auth.id && status='' && (cmd='backup-instance' || cmd='restore-instance' || cmd='create-instance' || cmd='publish-bundle' ) && payload!='' && result=''",
+      "userId = @request.auth.id && status='' && (cmd='backup-instance' || cmd='restore-instance' || cmd='create-instance' || cmd='publish-bundle' || cmd='save-secrets' ) && payload!='' && result=''",
     updateRule: null,
     deleteRule: null,
     options: {},

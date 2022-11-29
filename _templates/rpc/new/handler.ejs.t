@@ -10,8 +10,8 @@ const NAME_NAME = upper(snake(NameName))
 const NameDashName = lower(snake(NameName)).replace('_','-')
 h.replace('./packages/daemon/src/services/RpcService/index.ts', /(\/\/ gen:handler)/, `register${NameName}Handler({ client, rpcService })\n  $1`);
 h.replace('./packages/daemon/src/services/RpcService/index.ts', /(\/\/ gen:import)/, `import { register${NameName}Handler } from './handlers/${NameName}'\n$1`);
-h.replace('./packages/client/src/index.ts', /(\/\/ gen:rpc:import)/, `${NameName}Payload,${NameName}Result,\n$1`);
-h.replace('./packages/client/src/index.ts', /(\/\/ gen:rpc:wrapper)/, `const ${nameName} = mkRpc<${NameName}Payload, ${NameName}Result>(RpcCommands.${NameName})\n$1`);
+h.replace('./packages/client/src/index.ts', /(\/\/ gen:rpc:import)/, `${NameName}Payload,${NameName}Result,${NameName}PayloadSchema,\n$1`);
+h.replace('./packages/client/src/index.ts', /(\/\/ gen:rpc:wrapper)/, `const ${nameName} = mkRpc<${NameName}Payload, ${NameName}Result>(RpcCommands.${NameName}, ${NameName}Schema)\n$1`);
 h.replace('./packages/client/src/index.ts', /(\/\/ gen:rpc:export)/, `${nameName},\n$1`);
 %>
 import {

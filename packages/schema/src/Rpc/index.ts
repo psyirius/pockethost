@@ -1,3 +1,4 @@
+import Ajv from 'ajv'
 import { JsonObject } from 'type-fest'
 import { BaseFields, UserId } from '../types'
 
@@ -7,7 +8,7 @@ export enum RpcCommands {
   BackupInstance = 'backup-instance',
   RestoreInstance = 'restore-instance',
   PublishBundle = 'publish-bundle',
-  SaveSecrets = 'save-secrets'
+  SaveSecrets = 'save-secrets',
   // gen:enum
 }
 
@@ -38,6 +39,8 @@ export type RpcRecord_Create<TRecord extends RpcFields<any, any>> = Pick<
   TRecord,
   'id' | 'userId' | 'payload' | 'cmd'
 >
+
+export const ajv = new Ajv()
 
 export * from './BackupInstance'
 export * from './CreateInstance'
