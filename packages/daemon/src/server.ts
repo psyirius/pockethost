@@ -47,9 +47,9 @@ global.EventSource = require('eventsource')
 
   const rpcService = await createRpcService({ client })
   const instanceService = await createInstanceService({ client, rpcService })
-  const workerService = await createWorkerService({ client, rpcService })
+  const workerService = await createWorkerService({ client })
   const proxyService = await createProxyService(instanceService)
-  const backupService = await createBackupService({ client, rpcService })
+  const backupService = await createBackupService({ client })
 
   process.once('SIGUSR2', async () => {
     info(`SIGUSR2 detected`)

@@ -1,16 +1,5 @@
-import {
-  binFor,
-  LATEST_PLATFORM,
-  USE_LATEST_VERSION,
-} from '@pockethost/releases'
-import {
-  CreateInstancePayload,
-  CreateInstancePayloadSchema,
-  CreateInstanceResult,
-  InstanceId,
-  InstanceStatus,
-  RpcCommands,
-} from '@pockethost/schema'
+import { binFor } from '@pockethost/releases'
+import { InstanceId, InstanceStatus } from '@pockethost/schema'
 import {
   assertTruthy,
   createCleanupManager,
@@ -52,27 +41,6 @@ export type InstanceServiceApi = AsyncReturnType<typeof createInstanceService>
 export const createInstanceService = async (config: InstanceServiceConfig) => {
   const { client, rpcService } = config
   const { registerCommand } = rpcService
-
-  registerCommand<CreateInstancePayload, CreateInstanceResult>(
-    RpcCommands.CreateInstance,
-    CreateInstancePayloadSchema,
-    async (rpc) => {
-      const { payload } = rpc
-      const { subdomain } = payload
-      const instance = await client.createInstance({
-        subdomain,
-        uid: rpc.userId,
-        version: USE_LATEST_VERSION,
-        status: InstanceStatus.Idle,
-        platform: LATEST_PLATFORM,
-        secondsThisMonth: 0,
-        isBackupAllowed: false,
-        currentWorkerBundleId: '',
-        secrets: {},
-      })
-      return { instance }
-    }
-  )
 
   const instances: { [_: string]: InstanceApi } = {}
 

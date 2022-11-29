@@ -10,13 +10,6 @@ export enum RpcCommands {
   // gen:enum
 }
 
-export const RPC_COMMANDS = [
-  RpcCommands.BackupInstance,
-  RpcCommands.CreateInstance,
-  RpcCommands.PublishBundle,
-  // gen:array
-]
-
 export enum RpcStatus {
   New = 'new',
   Queued = 'queued',

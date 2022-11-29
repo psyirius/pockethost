@@ -1,74 +1,16 @@
-import {
-  BackupFields,
-  BackupInstancePayload,
-  BackupInstancePayloadSchema,
-  BackupInstanceResult,
-  BackupStatus,
-  RestoreInstancePayload,
-  RestoreInstancePayloadSchema,
-  RestoreInstanceResult,
-  RpcCommands,
-} from '@pockethost/schema'
-import { assertTruthy, createTimerManager } from '@pockethost/tools'
+import { BackupFields, BackupStatus } from '@pockethost/schema'
+import { createTimerManager } from '@pockethost/tools'
 import Bottleneck from 'bottleneck'
 import { PocketbaseClientApi } from '../db/PbClient'
 import { backupInstance } from '../util/backupInstance'
 import { dbg } from '../util/logger'
-import { RpcServiceApi } from './RpcService'
 
 export type BackupServiceConfig = {
   client: PocketbaseClientApi
-  rpcService: RpcServiceApi
 }
 
 export const createBackupService = async (config: BackupServiceConfig) => {
-  const { rpcService, client } = config
-
-  rpcService.registerCommand<BackupInstancePayload, BackupInstanceResult>(
-    RpcCommands.BackupInstance,
-    BackupInstancePayloadSchema,
-    async (job) => {
-      const { payload } = job
-      const { instanceId } = payload
-      const instance = await client.getInstance(instanceId)
-      assertTruthy(instance, `Instance ${instanceId} not found`)
-      assertTruthy(
-        instance.uid === job.userId,
-        `Instance ${instanceId} is not owned by user ${job.userId}`
-      )
-      const backup = await client.createBackup(instance.id)
-      return { backupId: backup.id }
-    }
-  )
-
-  rpcService.registerCommand<RestoreInstancePayload, RestoreInstanceResult>(
-    RpcCommands.RestoreInstance,
-    RestoreInstancePayloadSchema,
-    async (job) => {
-      const { payload } = job
-      const { backupId } = payload
-      const backup = await client.getBackupJob(backupId)
-      assertTruthy(backup, `Backup ${backupId} not found`)
-      const instance = await client.getInstance(backup.instanceId)
-      assertTruthy(instance, `Instance ${backup.instanceId} not found`)
-      assertTruthy(
-        instance.uid === job.userId,
-        `Backup ${backupId} is not owned by user ${job.userId}`
-      )
-
-      /**
-       * Restore strategy:
-       *
-       * 1. Place instance in maintenance mode
-       * 2. Shut down instance
-       * 3. Back up
-       * 4. Restore
-       * 5. Lift maintenance mode
-       */
-      const restore = await client.createBackup(instance.id)
-      return { restoreId: restore.id }
-    }
-  )
+  const { client } = config
 
   const tm = createTimerManager({})
   const limiter = new Bottleneck({ maxConcurrent: 1 })

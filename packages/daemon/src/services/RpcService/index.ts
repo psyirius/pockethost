@@ -1,11 +1,6 @@
-import {
-  RpcCommands,
-  RpcFields,
-  RpcStatus,
-  RPC_COMMANDS,
-} from '@pockethost/schema'
+import { RpcCommands, RpcFields, RpcStatus } from '@pockethost/schema'
 import { assertTruthy } from '@pockethost/tools'
-import { isObject } from '@s-libs/micro-dash'
+import { isObject, keys } from '@s-libs/micro-dash'
 import Ajv, { JSONSchemaType, ValidateFunction } from 'ajv'
 import Bottleneck from 'bottleneck'
 import { default as knexFactory } from 'knex'
@@ -13,6 +8,9 @@ import pocketbaseEs from 'pocketbase'
 import { AsyncReturnType, JsonObject } from 'type-fest'
 import { PocketbaseClientApi } from '../../db/PbClient'
 import { dbg, error } from '../../util/logger'
+import { registerBackupInstanceHandler } from './handlers/BackupInstance'
+import { registerCreateInstanceHandler } from './handlers/CreateInstance'
+import { registerPublishBundleHandler } from './handlers/PublishBundle'
 
 export type RpcServiceApi = AsyncReturnType<typeof createRpcService>
 
@@ -28,10 +26,10 @@ export type RpcRunner<
   TResult extends JsonObject
 > = (job: RpcFields<TPayload, TResult>) => Promise<TResult>
 
-export type RpcRunnerFactory<
-  TPayload extends JsonObject,
-  TResult extends JsonObject
-> = (config: { client: PocketbaseClientApi }) => RpcRunner<TPayload, TResult>
+export type RpcHandlerFactory = (config: {
+  client: PocketbaseClientApi
+  rpcService: RpcServiceApi
+}) => void
 
 export type RpcServiceConfig = { client: PocketbaseClientApi }
 
@@ -55,11 +53,11 @@ export const createRpcService = async (config: RpcServiceConfig) => {
         await client.setRpcStatus(rpc, RpcStatus.Starting)
         const cmd = (() => {
           const { cmd } = rpc
-          if (!RPC_COMMANDS.find((c) => c === cmd)) {
+          if (!jobHandlers[cmd as RpcCommands]) {
             throw new Error(
-              `RPC command '${cmd}' is invalid. It must be one of: ${RPC_COMMANDS.join(
-                '|'
-              )}.`
+              `RPC command '${cmd}' is invalid. It must be one of: ${keys(
+                jobHandlers
+              ).join('|')}.`
             )
           }
           return cmd as RpcCommands
@@ -124,8 +122,15 @@ export const createRpcService = async (config: RpcServiceConfig) => {
     }
   }
 
-  return {
+  const rpcService = {
     registerCommand,
     shutdown,
   }
+
+  registerBackupInstanceHandler({ client, rpcService })
+  registerCreateInstanceHandler({ client, rpcService })
+  registerPublishBundleHandler({ client, rpcService })
+  // registerRestoreInstanceHandler({ client, rpcService })
+
+  return rpcService
 }
