@@ -8,7 +8,7 @@ const nameName = camel(name)
 const NameName = pascal(name)
 const NAME_NAME = upper(snake(NameName))
 const NameDashName = lower(snake(NameName)).replace('_','-')
-h.replace('./packages/daemon/src/services/RpcService/index.ts', /(\/\/ gen:handler)/, `${NameName} = '${NameDashName}'\n  $1`);
+h.replace('./packages/daemon/src/services/RpcService/index.ts', /(\/\/ gen:handler)/, `register${NameName}Handler({ client, rpcService })\n  $1`);
 h.replace('./packages/daemon/src/services/RpcService/index.ts', /(\/\/ gen:import)/, `import { register${NameName}Handler } from './handlers/${NameName}'$1`);
 %>
 import {
