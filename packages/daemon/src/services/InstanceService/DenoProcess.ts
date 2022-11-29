@@ -48,8 +48,7 @@ export const createDenoProcess = async (config: DenoProcessConfig) => {
      * GET FULL ADMIN CONTROL
      */
     POCKETBASE_URL: internalUrl,
-    ADMIN_LOGIN: secrets.ADMIN_LOGIN,
-    ADMIN_PASSWORD: secrets.ADMIN_PASSWORD,
+    ...secrets,
     NO_COLOR: '1',
   }
   denoWrite(`Worker starting`, StreamNames.System)
