@@ -2,6 +2,8 @@ import {
   PublishBundlePayload,
   PublishBundleResult,
   RpcCommands,
+  SaveSecretsPayload,
+  SaveSecretsResult,
   // gen:rpc:import
   type BackupFields,
   type BackupInstancePayload,
@@ -152,6 +154,9 @@ export const createPocketbaseClient = (config: PocketbaseClientConfig) => {
     RestoreInstancePayload,
     RestoreInstanceResult
   >(RpcCommands.RestoreInstance)
+  const saveSecrets = mkRpc<SaveSecretsPayload, SaveSecretsResult>(
+    RpcCommands.SaveSecrets
+  )
   // gen:rpc:wrapper
 
   const getInstanceById = safeCatch(
@@ -318,6 +323,7 @@ export const createPocketbaseClient = (config: PocketbaseClientConfig) => {
      */
     publishBundle,
     createInstance,
+    saveSecrets,
     // gen:rpc:export
   }
 }

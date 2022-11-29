@@ -7,6 +7,7 @@ export enum RpcCommands {
   BackupInstance = 'backup-instance',
   RestoreInstance = 'restore-instance',
   PublishBundle = 'publish-bundle',
+  SaveSecrets = 'save-secrets'
   // gen:enum
 }
 
@@ -42,4 +43,5 @@ export * from './BackupInstance'
 export * from './CreateInstance'
 export * from './PublishBundle'
 export * from './RestoreInstance'
+export * from './SaveSecrets'
 // gen:export
