@@ -1,4 +1,5 @@
 <script lang="ts">
+  import CodeSample from '$components/CodeSample.svelte'
   import { client } from '$src/pocketbase'
   import { logger } from '$util/logger'
   import type { InstanceFields, SaveSecretsPayload } from '@pockethost/schema'
@@ -40,6 +41,12 @@
 <div class="py-4">
   <div class="secrets">
     <h2>Secrets</h2>
+    <p>These secrets are passed into your Deno cloud worker as environment variables.</p>
+    <CodeSample
+      code={$items
+        .map((secret) => `const ${secret.name} = Deno.env.get('${secret.name}')`)
+        .join('\n')}
+    />
 
     <SvgIcons />
     <Form />

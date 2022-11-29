@@ -18,7 +18,7 @@ export type SecretsArray = SecretItem[]
 // function to sort the input array and add a color according to the sorted values
 function formatInput(input: SecretsArray): SecretsArray {
   return input
-    .sort((a, b) => (a.value < b.value ? 1 : -1))
+    .sort((a, b) => (a.name < b.name ? -1 : 1))
     .map(({ name, value }, index) => ({
       name,
       value,
