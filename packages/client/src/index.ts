@@ -2,6 +2,7 @@ import {
   PublishBundlePayload,
   PublishBundleResult,
   RpcCommands,
+  // gen:rpc:import
   type BackupFields,
   type BackupInstancePayload,
   type BackupInstanceResult,
@@ -134,10 +135,12 @@ export const createPocketbaseClient = (config: PocketbaseClientConfig) => {
   })
   const { mkRpc } = rpcMixin
 
+  /**
+   * RPC calls
+   */
   const publishBundle = mkRpc<PublishBundlePayload, PublishBundleResult>(
     RpcCommands.PublishBundle
   )
-
   const createInstance = mkRpc<CreateInstancePayload, CreateInstanceResult>(
     RpcCommands.CreateInstance
   )
@@ -145,11 +148,11 @@ export const createPocketbaseClient = (config: PocketbaseClientConfig) => {
     BackupInstancePayload,
     BackupInstanceResult
   >(RpcCommands.BackupInstance)
-
   const createInstanceRestoreJob = mkRpc<
     RestoreInstancePayload,
     RestoreInstanceResult
   >(RpcCommands.RestoreInstance)
+  // gen:rpc:wrapper
 
   const getInstanceById = safeCatch(
     `getInstanceById`,
@@ -291,7 +294,6 @@ export const createPocketbaseClient = (config: PocketbaseClientConfig) => {
     getAuthStoreProps,
     parseError,
     getInstanceById,
-    createInstance,
     authViaEmail,
     createUser,
     requestPasswordReset,
@@ -310,6 +312,12 @@ export const createPocketbaseClient = (config: PocketbaseClientConfig) => {
     createInstanceRestoreJob,
     onReady,
     pReady,
+
+    /**
+     * RPC
+     */
     publishBundle,
+    createInstance,
+    // gen:rpc:export
   }
 }
