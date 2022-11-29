@@ -33,7 +33,7 @@ import { now } from '../../util/now'
 import { safeCatch } from '../../util/promiseHelper'
 import { PocketbaseProcess, spawnInstance } from '../../util/spawnInstance'
 import { RpcServiceApi } from '../RpcService'
-import { createDenoProcess } from './createDenoProcess'
+import { createDenoProcess } from './DenoProcess'
 
 type InstanceApi = {
   process: PocketbaseProcess
