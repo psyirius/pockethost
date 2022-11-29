@@ -5,7 +5,7 @@ import { join } from 'path'
 import { DAEMON_PB_DATA_DIR } from '../../constants'
 import { mkInternalAddress, mkInternalUrl } from '../../util/internal'
 import { dbg } from '../../util/logger'
-import { createWorkerLogger } from '../WorkerService/WorkerService'
+import { createWorkerLogger } from '../WorkerService/WorkerLogger'
 
 export type DenoProcessConfig = {
   port: number

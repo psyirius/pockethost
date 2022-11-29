@@ -28,6 +28,11 @@ export type RpcRunner<
   TResult extends JsonObject
 > = (job: RpcFields<TPayload, TResult>) => Promise<TResult>
 
+export type RpcRunnerFactory<
+  TPayload extends JsonObject,
+  TResult extends JsonObject
+> = (config: { client: PocketbaseClientApi }) => RpcRunner<TPayload, TResult>
+
 export type RpcServiceConfig = { client: PocketbaseClientApi }
 
 export const createRpcService = async (config: RpcServiceConfig) => {
