@@ -11,6 +11,7 @@ import { dbg, error } from '../../util/logger'
 import { registerBackupInstanceHandler } from './handlers/BackupInstance'
 import { registerCreateInstanceHandler } from './handlers/CreateInstance'
 import { registerPublishBundleHandler } from './handlers/PublishBundle'
+// gen:import
 
 export type RpcServiceApi = AsyncReturnType<typeof createRpcService>
 
@@ -131,6 +132,7 @@ export const createRpcService = async (config: RpcServiceConfig) => {
   registerCreateInstanceHandler({ client, rpcService })
   registerPublishBundleHandler({ client, rpcService })
   // registerRestoreInstanceHandler({ client, rpcService })
+  // gen:handler
 
   return rpcService
 }
