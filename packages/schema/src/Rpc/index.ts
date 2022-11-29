@@ -7,12 +7,14 @@ export enum RpcCommands {
   BackupInstance = 'backup-instance',
   RestoreInstance = 'restore-instance',
   PublishBundle = 'publish-bundle',
+  // gen:enum
 }
 
 export const RPC_COMMANDS = [
   RpcCommands.BackupInstance,
   RpcCommands.CreateInstance,
   RpcCommands.PublishBundle,
+  // gen:array
 ]
 
 export enum RpcStatus {
@@ -47,3 +49,4 @@ export * from './BackupInstance'
 export * from './CreateInstance'
 export * from './PublishBundle'
 export * from './RestoreInstance'
+// gen:export

@@ -134,6 +134,15 @@ open https://pockethost.io
 
 # Release History
 
+**next**
+
+- [ ] Hygen templates for starter kits (TS/JS/React/Svelte)
+- [ ] Update docker docs
+- [ ] Secrets UI and backend validation
+- [ ] Restart Deno process on script update
+- [ ] Live log viewer
+- [ ] Reboot deno on secrets update
+
 **0.5.3**
 
 - [x] fix: incorrect instance information displaying on dashboard details in some cases
