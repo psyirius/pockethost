@@ -13,13 +13,16 @@
     "@pockethost/schema": "0.0.1",
     "@pockethost/tools": "0.0.1",
     "@s-libs/micro-dash": "^14.1.0",
+    "@types/cookie": "^0.5.1",
     "@types/http-proxy": "^1.17.9",
+    "@types/knex": "^0.16.1",
     "@types/node": "^18.11.9",
     "@types/tmp": "^0.2.1",
     "ajv": "^8.11.2",
     "boolean": "^3.2.0",
     "bottleneck": "^2.19.5",
     "concurrently": "^7.6.0",
+    "cookie": "^0.5.0",
     "date-fns": "^2.29.3",
     "event-source-polyfill": "^1.0.31",
     "eventsource": "^2.0.2",
@@ -32,8 +35,8 @@
     "sqlite": "^4.1.2",
     "sqlite3": "^5.1.2",
     "tmp": "^0.2.1",
-    "type-fest": "^3.1.0",
-    "tsx": "^3.11.0"
+    "tsx": "^3.11.0",
+    "type-fest": "^3.1.0"
   },
   "devDependencies": {}
 }

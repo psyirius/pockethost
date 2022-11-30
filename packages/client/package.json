@@ -6,6 +6,8 @@
   "dependencies": {
     "@pockethost/schema": "0.0.1",
     "@pockethost/tools": "0.0.1",
+    "@types/js-cookie": "^3.0.2",
+    "js-cookie": "^3.0.1",
     "pocketbase": "^0.8.0"
   }
 }

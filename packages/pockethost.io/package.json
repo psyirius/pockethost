@@ -20,9 +20,13 @@
     "@sveltejs/adapter-node": "^1.0.0-next.99",
     "@sveltejs/kit": "next",
     "@types/bootstrap": "^5.2.6",
+    "@types/d3-scale": "^4.0.2",
+    "@types/d3-scale-chromatic": "^3.0.0",
     "@types/js-cookie": "^3.0.2",
     "boolean": "^3.2.0",
     "chokidar-cli": "^3.0.0",
+    "d3-scale": "^4.0.2",
+    "d3-scale-chromatic": "^3.0.0",
     "date-fns": "^2.29.3",
     "js-cookie": "^3.0.1",
     "pocketbase": "^0.8.0",
@@ -36,11 +40,7 @@
     "tslib": "^2.3.1",
     "type-fest": "^3.2.0",
     "typescript": "^4.8.0",
-    "vite": "^3.1.0",
-    "@types/d3-scale": "^4.0.2",
-    "@types/d3-scale-chromatic": "^3.0.0",
-    "d3-scale": "^4.0.2",
-    "d3-scale-chromatic": "^3.0.0"
+    "vite": "^3.1.0"
   },
   "type": "module",
   "dependencies": {}

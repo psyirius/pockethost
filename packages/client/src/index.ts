@@ -1,14 +1,10 @@
 import {
   BackupInstancePayloadSchema,
   CreateInstancePayloadSchema,
-  PublishBundlePayload,
   PublishBundlePayloadSchema,
-  PublishBundleResult,
   RestoreInstancePayloadSchema,
   RpcCommands,
-  SaveSecretsPayload,
   SaveSecretsPayloadSchema,
-  SaveSecretsResult,
   // gen:rpc:import
   type BackupFields,
   type BackupInstancePayload,
@@ -18,9 +14,14 @@ import {
   type InstanceFields,
   type InstanceId,
   type InstanceRecordsById,
+  type PublishBundlePayload,
+  type PublishBundleResult,
   type RestoreInstancePayload,
   type RestoreInstanceResult,
+  type SaveSecretsPayload,
+  type SaveSecretsResult,
   type UserFields,
+  type WorkerLogFields,
 } from '@pockethost/schema'
 import {
   assertExists,
@@ -31,6 +32,7 @@ import {
   type PromiseHelper,
 } from '@pockethost/tools'
 import { keys, map } from '@s-libs/micro-dash'
+import Cookie from 'js-cookie'
 import PocketBase, {
   Admin,
   BaseAuthStore,
@@ -303,6 +305,27 @@ export const createPocketbaseClient = (config: PocketbaseClientConfig) => {
     })
   })
 
+  const watchInstanceLog = (
+    instanceId: InstanceId,
+    update: (newLogs: WorkerLogFields[]) => void,
+    nInitial = 100
+  ): (() => void) => {
+    const cookie = client.authStore.exportToCookie()
+    Cookie.set(`token`, cookie, { domain: 'pockethost.test' })
+
+    const events = new EventSource(`${url}/logs/${instanceId}`, {
+      withCredentials: true,
+    })
+
+    events.onmessage = (event) => {
+      const parsedData = JSON.parse(event.data)
+    }
+
+    return () => {
+      events.close()
+    }
+  }
+
   return {
     getAuthStoreProps,
     parseError,
@@ -325,6 +348,7 @@ export const createPocketbaseClient = (config: PocketbaseClientConfig) => {
     createInstanceRestoreJob,
     onReady,
     pReady,
+    watchInstanceLog,
 
     /**
      * RPC

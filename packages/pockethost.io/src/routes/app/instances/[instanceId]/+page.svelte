@@ -4,6 +4,7 @@
   import { assertExists } from '@pockethost/tools'
   import Backup from './Backup.svelte'
   import Code from './Code.svelte'
+  import Logging from './Logging.svelte'
   import Overview from './Overview.svelte'
   import Restore from './Restore.svelte'
   import Secrets from './Secrets/Secrets.svelte'
@@ -22,6 +23,7 @@
   <Overview instance={$instance} />
   <Code instance={$instance} />
   <Secrets instance={$instance} />
+  <Logging instance={$instance} />
   <Backup instance={$instance} />
   <Restore instance={$instance} />
 {/if}
