@@ -9,6 +9,7 @@ import {
   PUBLIC_PB_SUBDOMAIN,
 } from './constants'
 import { createPbClient } from './db/PbClient'
+import { services } from './services'
 import { createBackupService } from './services/BackupService'
 import { createInstanceService } from './services/InstanceService/InstanceService'
 import { createDockerHealthCheckMiddleware } from './services/ProxyService/middleware/DockerHealthCheck'
@@ -48,12 +49,15 @@ global.EventSource = require('eventsource')
     error(`***WARNING*** LOG IN MANUALLY, ADJUST .env, AND RESTART DOCKER`)
   }
 
+  services({ client })
+
   const sqliteService = await createSqliteService({})
+  const instanceService = await createInstanceService({ client })
 
   /**
    * Top level proxy and all middleware
    */
-  const proxyService = await createProxyService({})
+  const proxyService = await createProxyService({ instanceService })
   const dockerHealthMiddleware = await createDockerHealthCheckMiddleware({
     proxyService,
   })
@@ -67,7 +71,6 @@ global.EventSource = require('eventsource')
   })
 
   const rpcService = await createRpcService({ client })
-  const instanceService = await createInstanceService({ client, rpcService })
   const backupService = await createBackupService({ client })
 
   process.once('SIGUSR2', async () => {
