@@ -2,10 +2,10 @@ import { InstanceFields, StreamNames } from '@pockethost/schema'
 import Bottleneck from 'bottleneck'
 import { spawn } from 'child_process'
 import { join } from 'path'
-import { DAEMON_PB_DATA_DIR } from '../../constants'
-import { mkInternalAddress, mkInternalUrl } from '../../util/internal'
-import { dbg } from '../../util/logger'
-import { createWorkerLogger } from '../WorkerService/WorkerLogger'
+import { DAEMON_PB_DATA_DIR } from '../../../constants'
+import { mkInternalAddress, mkInternalUrl } from '../../../util/internal'
+import { dbg } from '../../../util/logger'
+import { createWorkerLogger } from './WorkerLogger'
 
 export type DenoProcessConfig = {
   port: number

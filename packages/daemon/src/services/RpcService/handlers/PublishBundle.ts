@@ -13,7 +13,7 @@ import { mkdirSync, writeFileSync } from 'fs'
 import { dirname, join } from 'path'
 import { DAEMON_PB_DATA_DIR } from '../../../constants'
 import { dbg } from '../../../util/logger'
-import { createWorkerLogger } from '../../WorkerService/WorkerLogger'
+import { createWorkerLogger } from '../../InstanceService/Deno/WorkerLogger'
 
 export const registerPublishBundleHandler: RpcHandlerFactory = ({
   client,

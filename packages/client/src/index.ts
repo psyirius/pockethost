@@ -25,7 +25,7 @@ import {
 } from '@pockethost/schema'
 import {
   assertExists,
-  createGenericSyncEvent,
+  createEvent,
   createRpcHelper,
   createWatchHelper,
   type Logger,
@@ -236,13 +236,12 @@ export const createPocketbaseClient = (config: PocketbaseClientConfig) => {
    * Use synthetic event for authStore changers so we can broadcast just
    * the props we want and not the actual authStore object.
    */
-  const [onAuthChange, fireAuthChange] =
-    createGenericSyncEvent<AuthStoreProps>()
+  const [onAuthChange, fireAuthChange] = createEvent<AuthStoreProps>()
 
   /**
    * Fired when ready
    */
-  const [onReady, fireReady] = createGenericSyncEvent<{}>()
+  const [onReady, fireReady] = createEvent<{}>()
 
   /**
    * This section is for initialization

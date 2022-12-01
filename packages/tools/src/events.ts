@@ -1,49 +1,48 @@
-import { forEach, reduce } from '@s-libs/micro-dash'
+import { values } from '@s-libs/micro-dash'
 
 export type Unsubscribe = () => void
 
-export const createGenericAsyncEvent = <TPayload>(): [
-  (cb: (payload: TPayload) => Promise<void>) => Unsubscribe,
-  (payload: TPayload) => Promise<void>
-] => {
+export type EventSubscriber<TPayload> = (
+  cb: EventHandler<TPayload>
+) => Unsubscribe
+export type EventEmitter<TPayload> = (payload: TPayload) => Promise<boolean>
+export type EventHandler<TPayload> = (
+  payload: TPayload,
+  isHandled: boolean
+) => boolean | void | Promise<boolean | void>
+
+/**
+ *
+ * @param defaultHandler Optional handler to call if no handler calls `handled()`
+ * @returns void
+ */
+export const createEvent = <TPayload>(
+  defaultHandler?: EventHandler<TPayload>
+): [EventSubscriber<TPayload>, EventEmitter<TPayload>] => {
   let i = 0
   const callbacks: any = {}
-  const onEvent = (cb: (payload: TPayload) => Promise<void>) => {
+  let callbacksArray: EventHandler<TPayload>[]
+  const onEvent = (cb: EventHandler<TPayload>) => {
     const id = i++
     callbacks[id] = cb
+    callbacksArray = values(callbacks)
     return () => {
       delete callbacks[id]
     }
   }
 
-  const fireEvent = (payload: TPayload) =>
-    reduce(
-      callbacks,
-      (c, cb) => {
-        return c.then(cb(payload))
-      },
-      Promise.resolve()
-    )
-
-  return [onEvent, fireEvent]
-}
-
-export const createGenericSyncEvent = <TPayload>(): [
-  (cb: (payload: TPayload) => void) => Unsubscribe,
-  (payload: TPayload) => void
-] => {
-  let i = 0
-  const callbacks: any = {}
-  const onEvent = (cb: (payload: TPayload) => void) => {
-    const id = i++
-    callbacks[id] = cb
-    return () => {
-      delete callbacks[id]
+  const fireEvent = async (payload: TPayload) => {
+    let _handled = false
+    for (let i = 0; i < callbacksArray.length; i++) {
+      const cb = callbacksArray[i]
+      if (!cb) continue
+      const res: boolean = !!(await cb(payload, _handled))
+      _handled = _handled || res
     }
-  }
-
-  const fireEvent = (payload: TPayload) => {
-    forEach(callbacks, (cb) => cb(payload))
+    if (!_handled) {
+      await defaultHandler?.(payload, false)
+    }
+    return _handled
   }
 
   return [onEvent, fireEvent]

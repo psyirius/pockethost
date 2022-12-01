@@ -1,3 +1,6 @@
+import { DAEMON_PB_DATA_DIR } from '$src/constants'
+import { dbg } from '$util/logger'
+import { safeCatch } from '$util/promiseHelper'
 import {
   InstanceId,
   RecordId,
@@ -10,9 +13,6 @@ import knex from 'knex'
 import { dirname, join } from 'path'
 import { open } from 'sqlite'
 import sqlite3 from 'sqlite3'
-import { DAEMON_PB_DATA_DIR } from '../../../constants'
-import { dbg } from '../../../util/logger'
-import { safeCatch } from '../../../util/promiseHelper'
 
 export type WorkerLogger = ReturnType<typeof mkApi>
 const mkApi = (logDbPath: string) => {
@@ -45,19 +45,22 @@ const mkApi = (logDbPath: string) => {
   return { write }
 }
 
-export const createWorkerLogger = (() => {
-  const instances: {
-    [instanceId: InstanceId]: Promise<WorkerLogger>
-  } = {}
+const instances: {
+  [instanceId: InstanceId]: Promise<WorkerLogger>
+} = {}
 
-  return (instanceId: InstanceId) => {
-    if (instances[instanceId]) return instances[instanceId]!
+export const createWorkerLogger = (instanceId: InstanceId) => {
+  if (!instances[instanceId]) {
+    instances[instanceId] = new Promise<WorkerLogger>(async (resolve) => {
+      const logDbPath = join(
+        DAEMON_PB_DATA_DIR,
+        instanceId,
+        'worker',
+        'logs.db'
+      )
+      dbg(`logs path`, logDbPath)
+      mkdirSync(dirname(logDbPath), { recursive: true })
 
-    const logDbPath = join(DAEMON_PB_DATA_DIR, instanceId, 'worker', 'logs.db')
-    dbg(`logs path`, logDbPath)
-    mkdirSync(dirname(logDbPath), { recursive: true })
-
-    instances[instanceId] = (async () => {
       dbg(`Running migrations`)
       const db = await open({
         filename: logDbPath,
@@ -69,9 +72,9 @@ export const createWorkerLogger = (() => {
 
       const api = mkApi(logDbPath)
       await api.write(`migration`, `Ran migrations`, StreamNames.System)
-      return api
-    })()
-
-    return instances[instanceId]!
+      resolve(api)
+    })
   }
-})()
+
+  return instances[instanceId]!
+}

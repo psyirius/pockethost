@@ -1,3 +1,4 @@
+import { createRealtimeLogMiddleware } from '$services/ProxyService/middleware/Mothership/middleware/RealtimeLog'
 import { binFor } from '@pockethost/releases'
 import {
   DAEMON_PB_PASSWORD,
@@ -10,9 +11,11 @@ import {
 import { createPbClient } from './db/PbClient'
 import { createBackupService } from './services/BackupService'
 import { createInstanceService } from './services/InstanceService/InstanceService'
-import { createProxyService } from './services/ProxyService'
+import { createDockerHealthCheckMiddleware } from './services/ProxyService/middleware/DockerHealthCheck'
+import { createMothershipMiddleware } from './services/ProxyService/middleware/Mothership/Mothership'
+import { createProxyService } from './services/ProxyService/ProxyService'
 import { createRpcService } from './services/RpcService'
-import { createWorkerService } from './services/WorkerService/WorkerService'
+import { createSqliteService } from './services/SqliteService/SqliteService'
 import { mkInternalUrl } from './util/internal'
 import { dbg, error, info } from './util/logger'
 import { spawnInstance } from './util/spawnInstance'
@@ -45,17 +48,40 @@ global.EventSource = require('eventsource')
     error(`***WARNING*** LOG IN MANUALLY, ADJUST .env, AND RESTART DOCKER`)
   }
 
+  const sqliteService = await createSqliteService({})
+
+  /**
+   * Top level proxy and all middleware
+   */
+  const proxyService = await createProxyService({})
+  const dockerHealthMiddleware = await createDockerHealthCheckMiddleware({
+    proxyService,
+  })
+  const mothershipMiddleware = await createMothershipMiddleware({
+    proxyService,
+  })
+
+  const realtimeLogMiddleware = await createRealtimeLogMiddleware({
+    mothershipMiddleware,
+    sqliteService,
+  })
+
   const rpcService = await createRpcService({ client })
   const instanceService = await createInstanceService({ client, rpcService })
-  const workerService = await createWorkerService({ client })
-  const proxyService = await createProxyService(instanceService)
   const backupService = await createBackupService({ client })
 
   process.once('SIGUSR2', async () => {
     info(`SIGUSR2 detected`)
-    proxyService.shutdown()
-    instanceService.shutdown()
-    rpcService.shutdown()
-    backupService.shutdown()
+    await Promise.all([
+      sqliteService.shutdown(),
+      instanceService.shutdown(),
+      proxyService.shutdown(),
+      rpcService.shutdown(),
+      backupService.shutdown(),
+      mainProcess.kill(),
+      dockerHealthMiddleware.shutdown(),
+      realtimeLogMiddleware.shutdown(),
+      mothershipMiddleware.shutdown(),
+    ])
   })
 })()
