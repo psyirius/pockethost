@@ -6,6 +6,7 @@ import Bottleneck from 'bottleneck'
 import { default as knexFactory } from 'knex'
 import pocketbaseEs from 'pocketbase'
 import { AsyncReturnType, JsonObject } from 'type-fest'
+import { ServicesConfig } from '..'
 import { PocketbaseClientApi } from '../../db/PbClient'
 import { dbg, error } from '../../util/logger'
 import { registerBackupInstanceHandler } from './handlers/BackupInstance'
@@ -137,4 +138,16 @@ export const createRpcService = async (config: RpcServiceConfig) => {
   // gen:handler
 
   return rpcService
+}
+
+let _service: RpcServiceApi | undefined
+export const getRpcService = async (config?: ServicesConfig) => {
+  if (config) {
+    _service?.shutdown()
+    _service = await createRpcService(config)
+  }
+  if (!_service) {
+    throw new Error(`Attempt to use Rpc service before initialization`)
+  }
+  return _service
 }

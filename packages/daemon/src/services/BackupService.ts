@@ -1,6 +1,8 @@
 import { BackupFields, BackupStatus } from '@pockethost/schema'
 import { createTimerManager } from '@pockethost/tools'
 import Bottleneck from 'bottleneck'
+import { AsyncReturnType } from 'type-fest'
+import { ServicesConfig } from '.'
 import { PocketbaseClientApi } from '../db/PbClient'
 import { backupInstance } from '../util/backupInstance'
 import { dbg } from '../util/logger'
@@ -8,6 +10,8 @@ import { dbg } from '../util/logger'
 export type BackupServiceConfig = {
   client: PocketbaseClientApi
 }
+
+export type BackupService = AsyncReturnType<typeof createBackupService>
 
 export const createBackupService = async (config: BackupServiceConfig) => {
   const { client } = config
@@ -65,4 +69,16 @@ export const createBackupService = async (config: BackupServiceConfig) => {
   return {
     shutdown,
   }
+}
+
+let _service: BackupService | undefined
+export const getBackupService = async (config?: ServicesConfig) => {
+  if (config) {
+    _service?.shutdown()
+    _service = await createBackupService({ ...config })
+  }
+  if (!_service) {
+    throw new Error(`Attempt to use backup service before initialization`)
+  }
+  return _service
 }

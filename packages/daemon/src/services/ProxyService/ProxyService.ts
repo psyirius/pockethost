@@ -2,8 +2,8 @@ import { createEvent } from '@pockethost/tools'
 import { createServer, IncomingMessage, ServerResponse } from 'http'
 import httpProxy from 'http-proxy'
 import { AsyncReturnType } from 'type-fest'
-import { PUBLIC_APP_DOMAIN, PUBLIC_APP_PROTOCOL } from '../../constants'
-import { dbg, error, info } from '../../util/logger'
+import { ServicesConfig } from '..'
+import { error, info } from '../../util/logger'
 
 export type ProxyServiceApi = AsyncReturnType<typeof createProxyService>
 
@@ -43,26 +43,8 @@ export const createProxyService = async (config: ProxyServiceConfig) => {
       if (!subdomain) {
         throw new Error(`${host} has no subdomain.`)
       }
-      const handled = await fireRequest({ host, subdomain, req, res })
-
-      const instance = await instanceManager.getInstance(subdomain)
-      if (!instance) {
-        throw new Error(
-          `${host} not found. Please check the instance URL and try again, or create one at ${PUBLIC_APP_PROTOCOL}://${PUBLIC_APP_DOMAIN}.`
-        )
-      }
-
-      if (req.closed) {
-        throw new Error(`Request already closed.`)
-      }
-
-      dbg(
-        `Forwarding proxy request for ${req.url} to instance ${instance.internalUrl}`
-      )
-
-      const endRequest = instance.startRequest()
-      req.on('close', endRequest)
-      proxy.web(req, res, { target: instance.internalUrl })
+      const handled = await fireRequest({ host, subdomain, req, res }, true)
+      if (!handled) throw new Error(`No handler for ${req.url}`)
     } catch (e) {
       const msg = `${e}`
       error(msg)
@@ -82,4 +64,16 @@ export const createProxyService = async (config: ProxyServiceConfig) => {
   }
 
   return { shutdown, onRequest, proxy }
+}
+
+let _service: ProxyServiceApi | undefined
+export const getProxyService = async (config?: ServicesConfig) => {
+  if (config) {
+    _service?.shutdown()
+    _service = await createProxyService(config)
+  }
+  if (!_service) {
+    throw new Error(`Attempt to use proxy service before initialization`)
+  }
+  return _service
 }

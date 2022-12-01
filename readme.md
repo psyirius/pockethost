@@ -136,13 +136,8 @@ open https://pockethost.io
 
 **next**
 
-- [ ] Hygen templates for starter kits (TS/JS/React/Svelte)
-- [ ] Update docker docs
-- [ ] Secrets UI and backend validation
-- [ ] Restart Deno process on script update
-- [ ] Live log viewer
-- [ ] Reboot deno on secrets update
-- [ ] Shut down when only Deno worker is connected
+- [ ] Cloud function support
+- [ ] PocketHost CLI updated to support cloud functions
 
 **0.5.3**
 

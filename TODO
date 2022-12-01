@@ -1,0 +1,12 @@
+    // TODO - send initial batch of logs
+    // TODO - parse token from querystring
+    // TODO - build URL correctly, passing cookie contents is messy
+    // TODO - shut down connection when idle
+
+- [ ] Hygen templates for starter kits (TS/JS/React/Svelte)
+- [ ] Update docker docs
+- [ ] Secrets UI and backend validation
+- [ ] Restart Deno process on script update
+- [ ] Live log viewer
+- [ ] Reboot deno on secrets update
+- [ ] Shut down when only Deno worker is connected

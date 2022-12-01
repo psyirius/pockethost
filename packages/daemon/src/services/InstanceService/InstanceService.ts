@@ -9,6 +9,7 @@ import { map, reduce } from '@s-libs/micro-dash'
 import Bottleneck from 'bottleneck'
 import getPort from 'get-port'
 import { AsyncReturnType } from 'type-fest'
+import { ServicesConfig } from '..'
 import {
   DAEMON_PB_IDLE_TTL,
   DAEMON_PB_PORT_BASE,
@@ -21,7 +22,6 @@ import { dbg, error, logger, warn } from '../../util/logger'
 import { now } from '../../util/now'
 import { safeCatch } from '../../util/promiseHelper'
 import { PocketbaseProcess, spawnInstance } from '../../util/spawnInstance'
-import { RpcServiceApi } from '../RpcService'
 import { createDenoProcess } from './Deno/DenoProcess'
 
 type InstanceApi = {
@@ -34,13 +34,11 @@ type InstanceApi = {
 
 export type InstanceServiceConfig = {
   client: PocketbaseClientApi
-  rpcService: RpcServiceApi
 }
 
 export type InstanceServiceApi = AsyncReturnType<typeof createInstanceService>
 export const createInstanceService = async (config: InstanceServiceConfig) => {
-  const { client, rpcService } = config
-  const { registerCommand } = rpcService
+  const { client } = config
 
   const instances: { [_: string]: InstanceApi } = {}
 
@@ -208,4 +206,16 @@ export const createInstanceService = async (config: InstanceServiceConfig) => {
 
   const maintenance = async (instanceId: InstanceId) => {}
   return { getInstance, shutdown, maintenance }
+}
+
+let _service: InstanceServiceApi | undefined
+export const getInstanceService = async (config?: ServicesConfig) => {
+  if (config) {
+    _service?.shutdown()
+    _service = await createInstanceService(config)
+  }
+  if (!_service) {
+    throw new Error(`Attempt to use proxy service before initialization`)
+  }
+  return _service
 }

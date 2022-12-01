@@ -25,7 +25,7 @@ export const createMothershipMiddleware = (config: MothershipConfig) => {
     const { subdomain, req, res } = e
     if (subdomain !== PUBLIC_PB_SUBDOMAIN) return
     const internalPocketbaseUrl = mkInternalUrl(DAEMON_PB_PORT_BASE)
-    const handled = await fireRequest({ ...e, internalPocketbaseUrl })
+    const handled = await fireRequest({ ...e, internalPocketbaseUrl }, true)
     if (handled) return true
     dbg(
       `Forwarding proxy request for ${req.url} to instance ${internalPocketbaseUrl}`

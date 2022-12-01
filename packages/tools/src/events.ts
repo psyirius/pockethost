@@ -5,7 +5,10 @@ export type Unsubscribe = () => void
 export type EventSubscriber<TPayload> = (
   cb: EventHandler<TPayload>
 ) => Unsubscribe
-export type EventEmitter<TPayload> = (payload: TPayload) => Promise<boolean>
+export type EventEmitter<TPayload> = (
+  payload: TPayload,
+  stopOnHandled?: boolean
+) => Promise<boolean>
 export type EventHandler<TPayload> = (
   payload: TPayload,
   isHandled: boolean
@@ -31,13 +34,14 @@ export const createEvent = <TPayload>(
     }
   }
 
-  const fireEvent = async (payload: TPayload) => {
+  const fireEvent = async (payload: TPayload, stopOnHandled = false) => {
     let _handled = false
     for (let i = 0; i < callbacksArray.length; i++) {
       const cb = callbacksArray[i]
       if (!cb) continue
       const res: boolean = !!(await cb(payload, _handled))
       _handled = _handled || res
+      if (stopOnHandled && _handled) break
     }
     if (!_handled) {
       await defaultHandler?.(payload, false)

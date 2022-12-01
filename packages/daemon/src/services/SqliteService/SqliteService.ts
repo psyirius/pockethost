@@ -3,6 +3,7 @@ import Bottleneck from 'bottleneck'
 import { open } from 'sqlite'
 import { Database } from 'sqlite3'
 import { JsonObject } from 'type-fest'
+import { ServicesConfig } from '..'
 import { logger } from '../../util/logger'
 
 export type SqliteUnsubscribe = () => void
@@ -74,4 +75,16 @@ export const createSqliteService = (config: SqliteServiceConfig) => {
     getDatabase,
     shutdown,
   }
+}
+
+let _service: SqliteService | undefined
+export const getSqliteService = async (config?: ServicesConfig) => {
+  if (config) {
+    _service?.shutdown()
+    _service = await createSqliteService(config)
+  }
+  if (!_service) {
+    throw new Error(`Attempt to use Sqlite service before initialization`)
+  }
+  return _service
 }

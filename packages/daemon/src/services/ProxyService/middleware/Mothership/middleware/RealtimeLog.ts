@@ -5,11 +5,16 @@ import { InstanceFields } from '@pockethost/schema'
 import cookie from 'cookie'
 import { join } from 'path'
 import pocketbaseEs from 'pocketbase'
+import { JsonifiableObject } from 'type-fest/source/jsonifiable'
 import { Mothership } from '../Mothership'
 
 export type RealtimeLogConfig = {
   mothershipMiddleware: Mothership
   sqliteService: SqliteService
+}
+
+const mkEvent = (name: string, data: JsonifiableObject) => {
+  return [`event: ${name}`, `data: ${JSON.stringify(data)}`, '', ''].join('\n')
 }
 
 export type RealtimeLog = ReturnType<typeof createRealtimeLogMiddleware>
@@ -18,7 +23,7 @@ export const createRealtimeLogMiddleware = (config: RealtimeLogConfig) => {
   const { onRequest } = mothershipMiddleware
 
   const unsub = onRequest(async (e) => {
-    const { req, internalPocketbaseUrl } = e
+    const { req, internalPocketbaseUrl, res } = e
     if (!req.url?.startsWith('/logs')) return
 
     dbg(`Got a log request`)
@@ -63,11 +68,29 @@ export const createRealtimeLogMiddleware = (config: RealtimeLogConfig) => {
     dbg(`Attempting to load ${logDbPath}`)
 
     const api = await sqliteService.getDatabase(logDbPath)
-    api.subscribe((e) => {
-      const { table } = e
-      if (table !== 'logs') return
-      // TODO
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      Connection: 'keep-alive',
+      'Cache-Control': 'no-cache',
     })
+    const unsub = api.subscribe((e) => {
+      const { table, record } = e
+      if (table !== 'logs') return
+      const evt = mkEvent(`log`, record)
+      dbg(
+        `Dispatching SSE log event from ${instance.subdomain} (${instance.id})`,
+        evt
+      )
+      res.write(evt)
+    })
+    req.on('close', () => {
+      dbg(
+        `SSE request for ${instance.subdomain} (${instance.id}) closed. Unsubscribing.`
+      )
+      unsub()
+    })
+
+    return true
   })
 
   return {

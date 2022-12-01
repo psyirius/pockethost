@@ -32,7 +32,6 @@ import {
   type PromiseHelper,
 } from '@pockethost/tools'
 import { keys, map } from '@s-libs/micro-dash'
-import Cookie from 'js-cookie'
 import PocketBase, {
   Admin,
   BaseAuthStore,
@@ -306,22 +305,23 @@ export const createPocketbaseClient = (config: PocketbaseClientConfig) => {
 
   const watchInstanceLog = (
     instanceId: InstanceId,
-    update: (newLogs: WorkerLogFields[]) => void,
+    update: (logs: WorkerLogFields) => void,
     nInitial = 100
   ): (() => void) => {
     const cookie = client.authStore.exportToCookie()
-    Cookie.set(`token`, cookie, { domain: 'pockethost.test' })
 
-    const events = new EventSource(`${url}/logs/${instanceId}`, {
-      withCredentials: true,
-    })
+    const stream = new EventSource(
+      `${url}/logs/${instanceId}/${nInitial}?token=${cookie}`
+    )
 
-    events.onmessage = (event) => {
-      const parsedData = JSON.parse(event.data)
+    stream.onmessage = (event) => {
+      const {} = event
+      const log = JSON.parse(event.data) as WorkerLogFields
+      update(log)
     }
 
     return () => {
-      events.close()
+      stream.close()
     }
   }
 

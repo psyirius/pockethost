@@ -26,6 +26,7 @@ export const createDockerHealthCheckMiddleware = (
       'Content-Type': `text/plain`,
     })
     res.end(`pong`)
+    return true
   })
 
   const shutdown = async () => {
