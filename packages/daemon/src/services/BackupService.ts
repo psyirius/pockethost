@@ -2,19 +2,19 @@ import { BackupFields, BackupStatus } from '@pockethost/schema'
 import { createTimerManager } from '@pockethost/tools'
 import Bottleneck from 'bottleneck'
 import { AsyncReturnType } from 'type-fest'
-import { ServicesConfig } from '.'
-import { PocketbaseClientApi } from '../db/PbClient'
+import { DaemonService, ServicesConfig } from '.'
 import { backupInstance } from '../util/backupInstance'
 import { dbg } from '../util/logger'
+import { getClientService } from './ClientService'
 
-export type BackupServiceConfig = {
-  client: PocketbaseClientApi
-}
+export type BackupServiceConfig = {}
 
 export type BackupService = AsyncReturnType<typeof createBackupService>
 
-export const createBackupService = async (config: BackupServiceConfig) => {
-  const { client } = config
+export const createBackupService = async (
+  config: BackupServiceConfig
+): Promise<DaemonService> => {
+  const client = await getClientService()
 
   const tm = createTimerManager({})
   const limiter = new Bottleneck({ maxConcurrent: 1 })
@@ -63,7 +63,8 @@ export const createBackupService = async (config: BackupServiceConfig) => {
     return true
   }, 1000)
 
-  const shutdown = () => {
+  const shutdown = async () => {
+    await limiter.stop()
     tm.shutdown()
   }
   return {
@@ -75,7 +76,7 @@ let _service: BackupService | undefined
 export const getBackupService = async (config?: ServicesConfig) => {
   if (config) {
     _service?.shutdown()
-    _service = await createBackupService({ ...config })
+    _service = await createBackupService(config)
   }
   if (!_service) {
     throw new Error(`Attempt to use backup service before initialization`)

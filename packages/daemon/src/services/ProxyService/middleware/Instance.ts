@@ -1,20 +1,21 @@
 import { getInstanceService } from '$services/InstanceService/InstanceService'
 import { PUBLIC_APP_DOMAIN, PUBLIC_APP_PROTOCOL } from '$src/constants'
 import { dbg } from '$util/logger'
-import { getProxyService } from '../ProxyService'
+import { ProxyEventHandler, ProxyMiddleware } from '../ProxyService'
 
 export type InstanceConfig = {}
 
-export type Instance = ReturnType<typeof createInstanceMiddleware>
-export const createInstanceMiddleware = async (config: InstanceConfig) => {
-  const proxyService = await getProxyService()
-  const instanceService = await getInstanceService()
-
-  const { onRequest, proxy } = proxyService
-
-  const unsub = onRequest(async ({ host, req, res, subdomain }, isHandled) => {
+export type Instance = ReturnType<typeof instance>
+export const instance = async (
+  config?: InstanceConfig
+): Promise<ProxyMiddleware> => {
+  const handle: ProxyEventHandler = async (
+    { host, req, res, subdomain, proxy },
+    isHandled
+  ) => {
     if (isHandled) return // Already handled, do not process
 
+    const instanceService = await getInstanceService()
     const instance = await instanceService.getInstance(subdomain)
     if (!instance) {
       throw new Error(
@@ -34,12 +35,9 @@ export const createInstanceMiddleware = async (config: InstanceConfig) => {
     req.on('close', endRequest)
     proxy.web(req, res, { target: instance.internalUrl })
     return true
-  })
-
-  const shutdown = async () => {
-    await unsub()
   }
+
   return {
-    shutdown,
+    handle,
   }
 }

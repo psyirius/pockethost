@@ -1,4 +1,4 @@
-import { SqliteService } from '$services/SqliteService/SqliteService'
+import { getSqliteService } from '$services/SqliteService/SqliteService'
 import { DAEMON_PB_DATA_DIR } from '$src/constants'
 import { dbg } from '$util/logger'
 import { InstanceFields } from '@pockethost/schema'
@@ -6,23 +6,19 @@ import cookie from 'cookie'
 import { join } from 'path'
 import pocketbaseEs from 'pocketbase'
 import { JsonifiableObject } from 'type-fest/source/jsonifiable'
-import { Mothership } from '../Mothership'
+import { MothershipEventHandler, MothershipMiddleware } from '../Mothership'
 
-export type RealtimeLogConfig = {
-  mothershipMiddleware: Mothership
-  sqliteService: SqliteService
-}
+export type RealtimeLogConfig = {}
 
 const mkEvent = (name: string, data: JsonifiableObject) => {
   return [`event: ${name}`, `data: ${JSON.stringify(data)}`, '', ''].join('\n')
 }
 
-export type RealtimeLog = ReturnType<typeof createRealtimeLogMiddleware>
-export const createRealtimeLogMiddleware = (config: RealtimeLogConfig) => {
-  const { sqliteService, mothershipMiddleware } = config
-  const { onRequest } = mothershipMiddleware
-
-  const unsub = onRequest(async (e) => {
+export type RealtimeLog = ReturnType<typeof realtimeLog>
+export const realtimeLog = (
+  config?: RealtimeLogConfig
+): MothershipMiddleware => {
+  const handle: MothershipEventHandler = async (e) => {
     const { req, internalPocketbaseUrl, res } = e
     if (!req.url?.startsWith('/logs')) return
 
@@ -67,6 +63,7 @@ export const createRealtimeLogMiddleware = (config: RealtimeLogConfig) => {
     const logDbPath = join(DAEMON_PB_DATA_DIR, instanceId, 'worker', 'logs.db')
     dbg(`Attempting to load ${logDbPath}`)
 
+    const sqliteService = await getSqliteService()
     const api = await sqliteService.getDatabase(logDbPath)
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
@@ -91,9 +88,9 @@ export const createRealtimeLogMiddleware = (config: RealtimeLogConfig) => {
     })
 
     return true
-  })
+  }
 
   return {
-    shutdown: unsub,
+    handle,
   }
 }

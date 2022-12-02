@@ -1,3 +1,4 @@
+import { getSqliteService } from '$services/SqliteService/SqliteService'
 import { DAEMON_PB_DATA_DIR } from '$src/constants'
 import { dbg } from '$util/logger'
 import { safeCatch } from '$util/promiseHelper'
@@ -11,8 +12,6 @@ import { newId, pocketNow } from '@pockethost/tools'
 import { mkdirSync } from 'fs'
 import knex from 'knex'
 import { dirname, join } from 'path'
-import { open } from 'sqlite'
-import sqlite3 from 'sqlite3'
 
 export type WorkerLogger = ReturnType<typeof mkApi>
 const mkApi = (logDbPath: string) => {
@@ -62,10 +61,8 @@ export const createWorkerLogger = (instanceId: InstanceId) => {
       mkdirSync(dirname(logDbPath), { recursive: true })
 
       dbg(`Running migrations`)
-      const db = await open({
-        filename: logDbPath,
-        driver: sqlite3.Database,
-      })
+      const sqliteService = await getSqliteService()
+      const db = await sqliteService.getDatabase(logDbPath)
       await db.migrate({
         migrationsPath: join(__dirname, 'migrations'),
       })

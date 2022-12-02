@@ -1,6 +1,6 @@
 import { createCleanupManager, createEvent } from '@pockethost/tools'
 import Bottleneck from 'bottleneck'
-import { open } from 'sqlite'
+import { Database as SqliteDatabase, open } from 'sqlite'
 import { Database } from 'sqlite3'
 import { JsonObject } from 'type-fest'
 import { ServicesConfig } from '..'
@@ -15,6 +15,7 @@ export type SqliteChangeEvent = {
   record: JsonObject
 }
 export type SqliteServiceApi = {
+  migrate: SqliteDatabase['migrate']
   subscribe: (cb: SqliteChangeHandler) => SqliteUnsubscribe
 }
 export type SqliteServiceConfig = {}
@@ -57,9 +58,11 @@ export const createSqliteService = (config: SqliteServiceConfig) => {
           db.db.removeAllListeners()
           db.close()
         })
+        db.migrate
 
         const [onChange, fireChange] = createEvent<SqliteChangeEvent>()
         const api: SqliteServiceApi = {
+          migrate: db.migrate.bind(db),
           subscribe: onChange,
         }
         resolve(api)
@@ -69,6 +72,7 @@ export const createSqliteService = (config: SqliteServiceConfig) => {
   }
 
   const shutdown = async () => {
+    await limiter.stop()
     await cm.shutdown()
   }
   return {

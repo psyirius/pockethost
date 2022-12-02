@@ -1,3 +1,5 @@
+import { getClientService } from '$services/ClientService'
+import { PocketbaseClientApi } from '$src/db/PbClient'
 import { RpcCommands, RpcFields, RpcStatus } from '@pockethost/schema'
 import { assertTruthy } from '@pockethost/tools'
 import { isObject, keys } from '@s-libs/micro-dash'
@@ -7,7 +9,6 @@ import { default as knexFactory } from 'knex'
 import pocketbaseEs from 'pocketbase'
 import { AsyncReturnType, JsonObject } from 'type-fest'
 import { ServicesConfig } from '..'
-import { PocketbaseClientApi } from '../../db/PbClient'
 import { dbg, error } from '../../util/logger'
 import { registerBackupInstanceHandler } from './handlers/BackupInstance'
 import { registerCreateInstanceHandler } from './handlers/CreateInstance'
@@ -34,10 +35,10 @@ export type RpcHandlerFactory = (config: {
   rpcService: RpcServiceApi
 }) => void
 
-export type RpcServiceConfig = { client: PocketbaseClientApi }
+export type RpcServiceConfig = {}
 
 export const createRpcService = async (config: RpcServiceConfig) => {
-  const { client } = config
+  const client = await getClientService()
 
   const limiter = new Bottleneck({ maxConcurrent: 1 })
 

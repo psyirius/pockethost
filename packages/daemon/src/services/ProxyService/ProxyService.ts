@@ -1,9 +1,16 @@
-import { createEvent } from '@pockethost/tools'
+import { createEvent, EventHandler, EventSubscriber } from '@pockethost/tools'
 import { createServer, IncomingMessage, ServerResponse } from 'http'
 import httpProxy from 'http-proxy'
 import { AsyncReturnType } from 'type-fest'
-import { ServicesConfig } from '..'
+import { DaemonService, ServicesConfig } from '..'
 import { error, info } from '../../util/logger'
+
+export type MiddlewareProvider<TEvent> = { use: EventSubscriber<TEvent> }
+
+export type ProxyEventHandler = EventHandler<ProxyRequestEvent>
+export type ProxyMiddleware = {
+  handle: ProxyEventHandler
+}
 
 export type ProxyServiceApi = AsyncReturnType<typeof createProxyService>
 
@@ -12,10 +19,13 @@ export type ProxyRequestEvent = {
   subdomain: string
   req: IncomingMessage
   res: ServerResponse<IncomingMessage>
+  proxy: httpProxy
 }
 
 export type ProxyServiceConfig = {}
-export const createProxyService = async (config: ProxyServiceConfig) => {
+export const createProxyService = async (
+  config: ProxyServiceConfig
+): Promise<DaemonService & MiddlewareProvider<ProxyRequestEvent>> => {
   const {} = config
 
   const proxy = httpProxy.createProxyServer({})
@@ -43,7 +53,10 @@ export const createProxyService = async (config: ProxyServiceConfig) => {
       if (!subdomain) {
         throw new Error(`${host} has no subdomain.`)
       }
-      const handled = await fireRequest({ host, subdomain, req, res }, true)
+      const handled = await fireRequest(
+        { host, subdomain, req, res, proxy },
+        true
+      )
       if (!handled) throw new Error(`No handler for ${req.url}`)
     } catch (e) {
       const msg = `${e}`
@@ -58,12 +71,12 @@ export const createProxyService = async (config: ProxyServiceConfig) => {
   info('daemon on port 3000')
   server.listen(3000)
 
-  const shutdown = () => {
+  const shutdown = async () => {
     info(`Shutting down proxy server`)
     server.close()
   }
 
-  return { shutdown, onRequest, proxy }
+  return { shutdown, use: onRequest }
 }
 
 let _service: ProxyServiceApi | undefined

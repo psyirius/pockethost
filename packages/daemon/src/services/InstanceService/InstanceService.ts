@@ -1,3 +1,4 @@
+import { getClientService } from '$services/ClientService'
 import { binFor } from '@pockethost/releases'
 import { InstanceId, InstanceStatus } from '@pockethost/schema'
 import {
@@ -16,7 +17,6 @@ import {
   PUBLIC_APP_DOMAIN,
   PUBLIC_APP_PROTOCOL,
 } from '../../constants'
-import { PocketbaseClientApi } from '../../db/PbClient'
 import { mkInternalUrl } from '../../util/internal'
 import { dbg, error, logger, warn } from '../../util/logger'
 import { now } from '../../util/now'
@@ -32,14 +32,10 @@ type InstanceApi = {
   startRequest: () => () => void
 }
 
-export type InstanceServiceConfig = {
-  client: PocketbaseClientApi
-}
+export type InstanceServiceConfig = {}
 
 export type InstanceServiceApi = AsyncReturnType<typeof createInstanceService>
 export const createInstanceService = async (config: InstanceServiceConfig) => {
-  const { client } = config
-
   const instances: { [_: string]: InstanceApi } = {}
 
   const limiter = new Bottleneck({ maxConcurrent: 1 })
@@ -57,6 +53,7 @@ export const createInstanceService = async (config: InstanceServiceConfig) => {
 
       dbg(`Checking ${subdomain} for permission`)
 
+      const client = await getClientService()
       const [instance, owner] = await client.getInstanceBySubdomain(subdomain)
       if (!instance) {
         throw new Error(`${subdomain} not found`)
