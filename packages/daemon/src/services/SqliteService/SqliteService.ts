@@ -7,16 +7,22 @@ import { ServicesConfig } from '..'
 import { logger } from '../../util/logger'
 
 export type SqliteUnsubscribe = () => void
-export type SqliteChangeHandler = (e: SqliteChangeEvent) => void
+export type SqliteChangeHandler<TRecord extends JsonObject> = (
+  e: SqliteChangeEvent<TRecord>
+) => void
 export type SqliteEventType = 'update' | 'insert' | 'delete'
-export type SqliteChangeEvent = {
+export type SqliteChangeEvent<TRecord extends JsonObject> = {
   table: string
   action: SqliteEventType
-  record: JsonObject
+  record: TRecord
 }
 export type SqliteServiceApi = {
+  all: SqliteDatabase['all']
+  get: SqliteDatabase['get']
   migrate: SqliteDatabase['migrate']
-  subscribe: (cb: SqliteChangeHandler) => SqliteUnsubscribe
+  subscribe: <TRecord extends JsonObject>(
+    cb: SqliteChangeHandler<TRecord>
+  ) => SqliteUnsubscribe
 }
 export type SqliteServiceConfig = {}
 
@@ -48,7 +54,11 @@ export const createSqliteService = (config: SqliteServiceConfig) => {
               const record = await db.get(
                 `select * from ${table} where rowid = '${rowId}'`
               )
-              const e: SqliteChangeEvent = { table, action: eventType, record }
+              const e: SqliteChangeEvent<any> = {
+                table,
+                action: eventType,
+                record,
+              }
               fireChange(e)
             })
           }
@@ -60,8 +70,10 @@ export const createSqliteService = (config: SqliteServiceConfig) => {
         })
         db.migrate
 
-        const [onChange, fireChange] = createEvent<SqliteChangeEvent>()
+        const [onChange, fireChange] = createEvent<SqliteChangeEvent<any>>()
         const api: SqliteServiceApi = {
+          all: db.all.bind(db),
+          get: db.get.bind(db),
           migrate: db.migrate.bind(db),
           subscribe: onChange,
         }

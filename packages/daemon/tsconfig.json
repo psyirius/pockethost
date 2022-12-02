@@ -13,15 +13,16 @@
     "noUncheckedIndexedAccess": true,
     "strictNullChecks": true,
     "noEmit": true,
+    "baseUrl": "./src",
     "paths": {
-      "$util/*": ["src/util/*"],
-      "$services/*": ["src/services/*"],
-      "$src/*": ["src/*"]
+      "$util/*": ["util/*"],
+      "$services/*": ["services/*"],
+      "$src/*": ["*"]
     }
   },
 
   "ts-node": {
     "esm": true
   },
-  "include": ["./src"]
+  "include": ["."]
 }

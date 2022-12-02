@@ -581,6 +581,11 @@ buffer@^6.0.3:
     base64-js "^1.3.1"
     ieee754 "^1.2.1"
 
+build-url-ts@^6.1.3:
+  version "6.1.3"
+  resolved "https://registry.yarnpkg.com/build-url-ts/-/build-url-ts-6.1.3.tgz#333d2a599d69bae9c8ae858ccb256c2b9ceb8465"
+  integrity sha512-XBTfeMbWWAMuDiSryb9B9add1pxyKsnJk/ZabC8mt/SfOLKu/8Xo6+0uusRSQsfZ2X5iijquFDbGFiT1QE0XIg==
+
 builtin-modules@^3.3.0:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/builtin-modules/-/builtin-modules-3.3.0.tgz#cae62812b89801e9656336e46223e030386be7b6"

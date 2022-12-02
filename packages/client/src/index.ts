@@ -40,6 +40,8 @@ import PocketBase, {
   type UnsubscribeFunc,
 } from 'pocketbase'
 
+import { buildUrl } from 'build-url-ts'
+
 export type AuthChangeHandler = (user: BaseAuthStore) => void
 
 export type AuthToken = string
@@ -308,11 +310,19 @@ export const createPocketbaseClient = (config: PocketbaseClientConfig) => {
     update: (logs: WorkerLogFields) => void,
     nInitial = 100
   ): (() => void) => {
-    const cookie = client.authStore.exportToCookie()
+    const auth = client.authStore.exportToCookie()
 
-    const stream = new EventSource(
-      `${url}/logs/${instanceId}/${nInitial}?token=${cookie}`
-    )
+    const _url = buildUrl(url, {
+      path: `/logs`,
+      queryParams: {
+        instanceId,
+        n: nInitial,
+        auth,
+      },
+    })
+    dbg(`Subscribing to ${url}`)
+
+    const stream = new EventSource(_url)
 
     stream.onmessage = (event) => {
       const {} = event
