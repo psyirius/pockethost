@@ -1,6 +1,6 @@
 import { getSqliteService } from '$services/SqliteService/SqliteService'
 import { DAEMON_PB_DATA_DIR } from '$src/constants'
-import { dbg } from '$util/logger'
+import { logger } from '$util/logger'
 import { InstanceFields, RecordId, WorkerLogFields } from '@pockethost/schema'
 import Bottleneck from 'bottleneck'
 import { join } from 'path'
@@ -19,6 +19,7 @@ export const realtimeLog = (
   config?: RealtimeLogConfig
 ): MothershipMiddleware => {
   const handle: MothershipEventHandler = async (e) => {
+    const { dbg } = logger.create(`realtimeLog`)
     const { req, internalPocketbaseUrl, res } = e
     if (!req.url?.startsWith('/logs')) return
 
@@ -26,7 +27,9 @@ export const realtimeLog = (
      * Extract query params
      */
     dbg(`Got a log request`)
-    const parsed = new URL(req.url)
+    const parsed = new URL(req.url, `https://${req.headers.host}`)
+    dbg(`Parsed URL is`, parsed)
+
     const { searchParams } = parsed
     const instanceId = searchParams.get('instanceId')
     if (!instanceId) {
@@ -84,6 +87,7 @@ export const realtimeLog = (
       Connection: 'keep-alive',
       'Cache-Control': 'no-cache',
     })
+    res.flushHeaders()
 
     /**
      * Track the IDs we send so we don't accidentally send old

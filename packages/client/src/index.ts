@@ -61,7 +61,7 @@ export type PocketbaseClient = ReturnType<typeof createPocketbaseClient>
 
 export const createPocketbaseClient = (config: PocketbaseClientConfig) => {
   const { url, logger, promiseHelper, storageProvider } = config
-  const { dbg, error } = logger
+  const { dbg, error } = logger.create(`PocketbaseClient`)
   const { safeCatch } = promiseHelper
 
   const client = new PocketBase(url, storageProvider)
@@ -320,14 +320,21 @@ export const createPocketbaseClient = (config: PocketbaseClientConfig) => {
         auth,
       },
     })
-    dbg(`Subscribing to ${url}`)
+    dbg(`Subscribing to ${_url}`)
 
     const stream = new EventSource(_url)
 
     stream.onmessage = (event) => {
+      dbg(`Got stream event`, event)
       const {} = event
       const log = JSON.parse(event.data) as WorkerLogFields
       update(log)
+    }
+    stream.onopen = () => {
+      dbg(`Stream is open`)
+    }
+    stream.onerror = () => {
+      dbg(`Stream error`)
     }
 
     return () => {
