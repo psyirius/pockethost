@@ -1,6 +1,6 @@
-- parse token from querystring
-- send initial batch of logs
-- build URL correctly, passing cookie contents is messy
+- DONE - parse token from querystring
+- DONE - send initial batch of logs
+- DONE - build URL correctly, passing cookie contents is messy
 - shut down connection when idle
 - Hygen templates for starter kits (TS/JS/React/Svelte)
 - Update docker docs
