@@ -138,6 +138,7 @@ open https://pockethost.io
 
 - [ ] Cloud function support
 - [ ] PocketHost CLI updated to support cloud functions
+- [x] fix: create instance cancel button does not work
 
 **0.5.3**
 
