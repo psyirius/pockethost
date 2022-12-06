@@ -106,7 +106,7 @@ export const createRpcHelper = (config: RpcHelperConfig) => {
                     return
                   }
                 },
-                { initialFetch: false, pollIntervalMs: 100 }
+                { initialFetch: false }
               )
               dbg(`Creating ${rpcIn.id}`)
               const newRpc = await client

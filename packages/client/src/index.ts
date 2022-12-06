@@ -1,3 +1,4 @@
+import { fetchEventSource } from '@microsoft/fetch-event-source'
 import {
   BackupInstancePayloadSchema,
   CreateInstancePayloadSchema,
@@ -39,8 +40,6 @@ import PocketBase, {
   type RecordSubscription,
   type UnsubscribeFunc,
 } from 'pocketbase'
-
-import { buildUrl } from 'build-url-ts'
 
 export type AuthChangeHandler = (user: BaseAuthStore) => void
 
@@ -307,38 +306,43 @@ export const createPocketbaseClient = (config: PocketbaseClientConfig) => {
 
   const watchInstanceLog = (
     instanceId: InstanceId,
-    update: (logs: WorkerLogFields) => void,
+    update: (log: WorkerLogFields) => void,
     nInitial = 100
   ): (() => void) => {
     const auth = client.authStore.exportToCookie()
 
-    const _url = buildUrl(url, {
-      path: `/logs`,
-      queryParams: {
+    dbg(`Subscribing to ${url}`)
+
+    const controller = new AbortController()
+    const signal = controller.signal
+    fetchEventSource(`${url}/logs`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         instanceId,
         n: nInitial,
         auth,
+      }),
+      onmessage: (event) => {
+        dbg(`Got stream event`, event)
+        const {} = event
+        const log = JSON.parse(event.data) as WorkerLogFields
+        dbg(`Log is`, log)
+        update(log)
       },
+      onopen: async (response) => {
+        dbg(`Stream is open`, response)
+      },
+      onerror: (e) => {
+        dbg(`Stream error`, e)
+      },
+      signal,
     })
-    dbg(`Subscribing to ${_url}`)
-
-    const stream = new EventSource(_url)
-
-    stream.onmessage = (event) => {
-      dbg(`Got stream event`, event)
-      const {} = event
-      const log = JSON.parse(event.data) as WorkerLogFields
-      update(log)
-    }
-    stream.onopen = () => {
-      dbg(`Stream is open`)
-    }
-    stream.onerror = () => {
-      dbg(`Stream error`)
-    }
 
     return () => {
-      stream.close()
+      controller.abort()
     }
   }
 

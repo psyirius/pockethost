@@ -42,6 +42,7 @@ export const createProxyService = async (
   const server = createServer(async (req, res) => {
     // dbg(`Incoming request ${req.headers.host}${req.url}`)
     // dbg(req.headers)
+    res.setHeader(`Access-Control-Allow-Origin`, `*`)
 
     try {
       const host = req.headers.host

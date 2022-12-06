@@ -3,6 +3,7 @@ import { DAEMON_PB_DATA_DIR } from '$src/constants'
 import { logger } from '$util/logger'
 import { InstanceFields, RecordId, WorkerLogFields } from '@pockethost/schema'
 import Bottleneck from 'bottleneck'
+import { text } from 'node:stream/consumers'
 import { join } from 'path'
 import pocketbaseEs from 'pocketbase'
 import { JsonifiableObject } from 'type-fest/source/jsonifiable'
@@ -11,7 +12,7 @@ import { MothershipEventHandler, MothershipMiddleware } from '../Mothership'
 export type RealtimeLogConfig = {}
 
 const mkEvent = (name: string, data: JsonifiableObject) => {
-  return [`event: ${name}`, `data: ${JSON.stringify(data)}`, '', ''].join('\n')
+  return `event: ${name}\ndata: ${JSON.stringify(data)}\n\n`
 }
 
 export type RealtimeLog = ReturnType<typeof realtimeLog>
@@ -23,21 +24,45 @@ export const realtimeLog = (
     const { req, internalPocketbaseUrl, res } = e
     if (!req.url?.startsWith('/logs')) return
 
+    const write = async (data: any) => {
+      return new Promise<void>((resolve) => {
+        if (!res.write(data)) {
+          // dbg(`Waiting for drain after`, data)
+          res.once('drain', resolve)
+        } else {
+          // dbg(`Waiting for nexttick`, data)
+          process.nextTick(resolve)
+        }
+      })
+    }
+
     /**
      * Extract query params
      */
     dbg(`Got a log request`)
     const parsed = new URL(req.url, `https://${req.headers.host}`)
-    dbg(`Parsed URL is`, parsed)
+    if (req.method === 'OPTIONS') {
+      // https://developer.mozilla.org/en-US/docs/Glossary/Preflight_request
+      res.setHeader('Access-Control-Allow-Origin', '*')
+      res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+      res.setHeader('Access-Control-Allow-Headers', 'content-type')
+      res.setHeader('Access-Control-Max-Age', 86400)
+      res.statusCode = 204
+      res.end()
+      return
+    }
+    // dbg(`Parsed URL is`, parsed)
 
-    const { searchParams } = parsed
-    const instanceId = searchParams.get('instanceId')
+    const json = await text(req)
+    dbg(`JSON payload is`, json)
+    const payload = JSON.parse(json)
+    dbg(`Parsed payload is`, parsed)
+    const { instanceId, auth, n: nInitialRecords } = payload
+
     if (!instanceId) {
       throw new Error(`instanceId query param required in ${req.url}`)
     }
-    const nInitialRecords = searchParams.get('n') || 0
-    const token = searchParams.get('auth')
-    if (!token) {
+    if (!auth) {
       throw new Error(`Expected 'auth' query param, but found ${req.url}`)
     }
 
@@ -45,7 +70,7 @@ export const realtimeLog = (
      * Validate auth token
      */
     const client = new pocketbaseEs(internalPocketbaseUrl)
-    client.authStore.loadFromCookie(token)
+    client.authStore.loadFromCookie(auth)
     dbg(`Cookie here is`, client.authStore.isValid)
     await client.collection('users').authRefresh()
     if (!client.authStore.isValid) {
@@ -83,11 +108,10 @@ export const realtimeLog = (
      * Start the stream
      */
     res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
+      'Content-Type': 'text/event-stream; charset=UTF-8',
       Connection: 'keep-alive',
-      'Cache-Control': 'no-cache',
+      'Cache-Control': 'no-store',
     })
-    res.flushHeaders()
 
     /**
      * Track the IDs we send so we don't accidentally send old
@@ -106,9 +130,10 @@ export const realtimeLog = (
         `Dispatching SSE log event from ${instance.subdomain} (${instance.id})`,
         evt
       )
-      res.write(evt)
+      limiter.schedule(() => write(evt))
     })
     req.on('close', () => {
+      limiter.stop()
       dbg(
         `SSE request for ${instance.subdomain} (${instance.id}) closed. Unsubscribing.`
       )
@@ -124,17 +149,20 @@ export const realtimeLog = (
         `select * from logs order by updated limit ${nInitialRecords}`
       )
       recs.forEach((rec) => {
-        if (_seenIds?.[rec.id]) return
-        const evt = mkEvent(`log`, rec)
-        dbg(
-          `Dispatching SSE initial log event from ${instance.subdomain} (${instance.id})`,
-          evt
-        )
-        res.write(evt)
+        limiter.schedule(async () => {
+          if (_seenIds?.[rec.id]) return // Skip if update already emitted
+          const evt = mkEvent(`log`, rec)
+          dbg(
+            `Dispatching SSE initial log event from ${instance.subdomain} (${instance.id})`,
+            evt
+          )
+          return write(evt)
+        })
       })
-
-      // Set seenIds to `undefined` so the subscribe listener stops tracking them.
-      _seenIds = undefined
+      limiter.schedule(async () => {
+        // Set seenIds to `undefined` so the subscribe listener stops tracking them.
+        _seenIds = undefined
+      })
     }
 
     return true
