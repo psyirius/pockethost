@@ -1,5 +1,4 @@
 import { getClientService } from '$services/ClientService'
-import { PocketbaseClientApi } from '$src/db/PbClient'
 import { RpcCommands, RpcFields, RpcStatus } from '@pockethost/schema'
 import { assertTruthy } from '@pockethost/tools'
 import { isObject, keys } from '@s-libs/micro-dash'
@@ -30,10 +29,7 @@ export type RpcRunner<
   TResult extends JsonObject
 > = (job: RpcFields<TPayload, TResult>) => Promise<TResult>
 
-export type RpcHandlerFactory = (config: {
-  client: PocketbaseClientApi
-  rpcService: RpcServiceApi
-}) => void
+export type RpcHandlerFactory = (config?: {}) => Promise<void>
 
 export type RpcServiceConfig = {}
 
@@ -126,19 +122,20 @@ export const createRpcService = async (config: RpcServiceConfig) => {
     }
   }
 
-  const rpcService = {
+  const api = {
     registerCommand,
     shutdown,
   }
+  _service = api
 
-  registerBackupInstanceHandler({ client, rpcService })
-  registerCreateInstanceHandler({ client, rpcService })
-  registerPublishBundleHandler({ client, rpcService })
+  await registerBackupInstanceHandler()
+  await registerCreateInstanceHandler()
+  await registerPublishBundleHandler()
   // registerRestoreInstanceHandler({ client, rpcService })
-  registerSaveSecretsHandler({ client, rpcService })
+  await registerSaveSecretsHandler()
   // gen:handler
 
-  return rpcService
+  return api
 }
 
 let _service: RpcServiceApi | undefined

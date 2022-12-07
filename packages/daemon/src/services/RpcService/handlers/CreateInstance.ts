@@ -1,3 +1,4 @@
+import { getClientService } from '$services/ClientService'
 import { LATEST_PLATFORM, USE_LATEST_VERSION } from '@pockethost/releases'
 import {
   CreateInstancePayload,
@@ -6,12 +7,13 @@ import {
   InstanceStatus,
   RpcCommands,
 } from '@pockethost/schema'
-import { RpcHandlerFactory } from '..'
+import { getRpcService, RpcHandlerFactory } from '..'
 
-export const registerCreateInstanceHandler: RpcHandlerFactory = ({
-  client,
-  rpcService: { registerCommand },
-}) => {
+export const registerCreateInstanceHandler: RpcHandlerFactory = async () => {
+  const client = await getClientService()
+  const rpcService = await getRpcService()
+  const { registerCommand } = rpcService
+
   registerCommand<CreateInstancePayload, CreateInstanceResult>(
     RpcCommands.CreateInstance,
     CreateInstancePayloadSchema,

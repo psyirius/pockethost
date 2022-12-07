@@ -1,6 +1,7 @@
 import { assertTruthy } from '@pockethost/tools'
-import { RpcHandlerFactory } from '..'
+import { getRpcService, RpcHandlerFactory } from '..'
 
+import { getClientService } from '$services/ClientService'
 import {
   PublishBundlePayload,
   PublishBundlePayloadSchema,
@@ -15,10 +16,11 @@ import { DAEMON_PB_DATA_DIR } from '../../../constants'
 import { dbg } from '../../../util/logger'
 import { createWorkerLogger } from '../../InstanceService/Deno/WorkerLogger'
 
-export const registerPublishBundleHandler: RpcHandlerFactory = ({
-  client,
-  rpcService: { registerCommand },
-}) => {
+export const registerPublishBundleHandler: RpcHandlerFactory = async () => {
+  const client = await getClientService()
+  const rpcService = await getRpcService()
+  const { registerCommand } = rpcService
+
   registerCommand<PublishBundlePayload, PublishBundleResult>(
     RpcCommands.PublishBundle,
     PublishBundlePayloadSchema,

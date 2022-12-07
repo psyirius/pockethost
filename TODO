@@ -1,11 +1,16 @@
+- Restart Deno process on script update
+- Reboot Deno on secrets update
+- shut down connection when idle
+- publish to npm
+- update Svelte UI with CLI docs
+- Update docker docs
+
+- Hygen templates for starter kits (TS/JS/React/Svelte)
+- Forward http requests to Deno
+- Shut down when only Deno worker is connected
+- DONE Live log viewer in Svelte
 - DONE - parse token from querystring
 - DONE - send initial batch of logs
 - DONE - build URL correctly, passing cookie contents is messy
-- shut down connection when idle
-- Hygen templates for starter kits (TS/JS/React/Svelte)
-- Update docker docs
-- Secrets UI and backend validation
-- Restart Deno process on script update
-- Live log viewer
-- Reboot deno on secrets update
-- Shut down when only Deno worker is connected
+- DONE - CLI tail
+- DONE - Secrets UI and backend validation

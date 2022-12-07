@@ -1,15 +1,16 @@
+import { getClientService } from '$services/ClientService'
 import {
   RpcCommands,
   SaveSecretsPayload,
   SaveSecretsPayloadSchema,
   SaveSecretsResult,
 } from '@pockethost/schema'
-import { RpcHandlerFactory } from '..'
+import { getRpcService, RpcHandlerFactory } from '..'
 
-export const registerSaveSecretsHandler: RpcHandlerFactory = ({
-  client,
-  rpcService: { registerCommand },
-}) => {
+export const registerSaveSecretsHandler: RpcHandlerFactory = async () => {
+  const client = await getClientService()
+  const rpcService = await getRpcService()
+  const { registerCommand } = rpcService
   registerCommand<SaveSecretsPayload, SaveSecretsResult>(
     RpcCommands.SaveSecrets,
     SaveSecretsPayloadSchema,
