@@ -11,6 +11,7 @@ import { addDevCommand } from './commands/dev'
 import { addInitCommand } from './commands/init'
 import { addLoginCommand } from './commands/login'
 import { addPublishCommand } from './commands/publish'
+import { addTailCommand } from './commands/tail'
 import { dbg } from './util/logger'
 console.log(`PocketHost CLI ${pkg.version}`)
 global.EventSource = require('eventsource')
@@ -24,5 +25,6 @@ addLoginCommand(program)
 addInitCommand(program)
 addDevCommand(program)
 addPublishCommand(program)
+addTailCommand(program)
 
 program.parse()

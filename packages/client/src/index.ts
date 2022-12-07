@@ -326,10 +326,10 @@ export const createPocketbaseClient = (config: PocketbaseClientConfig) => {
         auth,
       }),
       onmessage: (event) => {
-        dbg(`Got stream event`, event)
+        // dbg(`Got stream event`, event)
         const {} = event
         const log = JSON.parse(event.data) as WorkerLogFields
-        dbg(`Log is`, log)
+        // dbg(`Log is`, log)
         update(log)
       },
       onopen: async (response) => {

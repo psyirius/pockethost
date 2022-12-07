@@ -4,7 +4,7 @@
   "main": "src/index.ts",
   "license": "MIT",
   "dependencies": {
-    "@microsoft/fetch-event-source": "^2.0.1",
+    "@microsoft/fetch-event-source": "https://github.com/Almar/fetch-event-source.git#pr/make_web_worker_friendly",
     "@pockethost/schema": "0.0.1",
     "@pockethost/tools": "0.0.1",
     "@types/js-cookie": "^3.0.2",
