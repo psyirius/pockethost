@@ -45,6 +45,7 @@ export const getClientService = async (config?: ServicesConfig) => {
   if (config) {
     _service?.shutdown()
     _service = await createClientService({ ...config })
+    dbg(`client service initialized`)
   }
   if (!_service) {
     throw new Error(`Attempt to use backup service before initialization`)

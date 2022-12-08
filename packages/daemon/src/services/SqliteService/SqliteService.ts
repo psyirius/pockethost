@@ -4,7 +4,7 @@ import { Database as SqliteDatabase, open } from 'sqlite'
 import { Database } from 'sqlite3'
 import { JsonObject } from 'type-fest'
 import { ServicesConfig } from '..'
-import { logger } from '../../util/logger'
+import { dbg, logger } from '../../util/logger'
 
 export type SqliteUnsubscribe = () => void
 export type SqliteChangeHandler<TRecord extends JsonObject> = (
@@ -98,6 +98,7 @@ export const getSqliteService = async (config?: ServicesConfig) => {
   if (config) {
     _service?.shutdown()
     _service = await createSqliteService(config)
+    dbg(`Sqlite service initialized`)
   }
   if (!_service) {
     throw new Error(`Attempt to use Sqlite service before initialization`)

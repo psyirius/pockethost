@@ -19,7 +19,7 @@ export const registerBackupInstanceHandler: RpcHandlerFactory = async () => {
     async (job) => {
       const { payload } = job
       const { instanceId } = payload
-      const instance = await client.getInstance(instanceId)
+      const [instance] = await client.getInstanceById(instanceId)
       assertTruthy(instance, `Instance ${instanceId} not found`)
       assertTruthy(
         instance.uid === job.userId,

@@ -2,6 +2,7 @@ import { InstanceFields, StreamNames } from '@pockethost/schema'
 import Bottleneck from 'bottleneck'
 import { spawn } from 'child_process'
 import { join } from 'path'
+import { AsyncReturnType } from 'type-fest'
 import { DAEMON_PB_DATA_DIR } from '../../../constants'
 import { mkInternalAddress, mkInternalUrl } from '../../../util/internal'
 import { dbg } from '../../../util/logger'
@@ -11,6 +12,9 @@ export type DenoProcessConfig = {
   port: number
   instance: InstanceFields
 }
+
+export type DenoApi = AsyncReturnType<typeof createDenoProcess>
+
 export const createDenoProcess = async (config: DenoProcessConfig) => {
   const { instance, port } = config
   const internalUrl = mkInternalUrl(port)
@@ -36,6 +40,7 @@ export const createDenoProcess = async (config: DenoProcessConfig) => {
 
   const denoLogger = await createWorkerLogger(instance.id)
   const denoLogLimiter = new Bottleneck({ maxConcurrent: 1 })
+
   const denoWrite = (message: string, stream: StreamNames = StreamNames.Info) =>
     denoLogLimiter.schedule(() => {
       dbg(`[${instance.id}:${currentWorkerBundleId}:${stream}] ${message}`)
@@ -68,7 +73,8 @@ export const createDenoProcess = async (config: DenoProcessConfig) => {
   })
 
   return {
-    shutdown: () => {
+    shutdown: async () => {
+      dbg(`Shutting down Deno`)
       denoProcess.kill()
     },
   }

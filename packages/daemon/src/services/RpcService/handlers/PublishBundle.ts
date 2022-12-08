@@ -28,7 +28,7 @@ export const registerPublishBundleHandler: RpcHandlerFactory = async () => {
       dbg(`Got a publish job`, job)
       const { payload } = job
       const { instanceId, bundle } = payload
-      const instance = await client.getInstance(instanceId)
+      const [instance] = await client.getInstanceById(instanceId)
       assertTruthy(instance, `Instance ${instanceId} not found`)
       assertTruthy(
         instance.uid === job.userId,

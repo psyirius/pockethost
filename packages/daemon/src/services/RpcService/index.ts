@@ -143,6 +143,7 @@ export const getRpcService = async (config?: ServicesConfig) => {
   if (config) {
     _service?.shutdown()
     _service = await createRpcService(config)
+    dbg(`Rpc service initialized`)
   }
   if (!_service) {
     throw new Error(`Attempt to use Rpc service before initialization`)

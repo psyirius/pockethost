@@ -2,6 +2,7 @@ import { Unsubscribe } from '@pockethost/tools'
 import { UnsubscribeFunc } from 'pocketbase'
 import { getBackupService } from './BackupService'
 import { getClientService } from './ClientService'
+import { getInstanceService } from './InstanceService/InstanceService'
 import { getMothershipService } from './Mothership'
 import { dockerHealthCheck } from './ProxyService/middleware/DockerHealthCheck'
 import { instance } from './ProxyService/middleware/Instance'
@@ -56,6 +57,15 @@ export const services = async (config: ServicesConfig) => {
   }
 
   /**
+   * The instance service manages the spinning up and shutting
+   * down of all instances and Deno workers.
+   */
+  {
+    const instanceService = await getInstanceService(config)
+    shutdowns.unshift(instanceService.shutdown)
+  }
+
+  /**
    * Finally, create the Proxy service. This is the main
    * entry point to the daemon. It handles incoming requests
    * and routes them to the appropriate PB instance, Deno
@@ -63,21 +73,21 @@ export const services = async (config: ServicesConfig) => {
    */
   {
     // Initialize the mothership and all dependent handlers
-    const ms = await mothership()
-    const rtl = await realtimeLog()
-    ms.use(rtl.handle)
+    const mothershipService = await mothership()
+    const realtimeLogMiddleware = await realtimeLog()
+    mothershipService.use(realtimeLogMiddleware.handle)
 
     // Docker Health Check middleware
-    const dhc = await dockerHealthCheck()
+    const dockerHealthCheckService = await dockerHealthCheck()
 
     // Instance routing/dispatching middleware
-    const i = await instance()
+    const instanceMiddleware = await instance()
 
     // And the proxy service itself
     const ps = await getProxyService(config)
-    ps.use(ms.handle)
-    ps.use(dhc.handle)
-    ps.use(i.handle)
+    ps.use(mothershipService.handle)
+    ps.use(dockerHealthCheckService.handle)
+    ps.use(instanceMiddleware.handle)
   }
 
   return async () => {

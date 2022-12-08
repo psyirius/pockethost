@@ -3,7 +3,7 @@ import { createServer, IncomingMessage, ServerResponse } from 'http'
 import httpProxy from 'http-proxy'
 import { AsyncReturnType } from 'type-fest'
 import { DaemonService, ServicesConfig } from '..'
-import { error, info } from '../../util/logger'
+import { dbg, error, info } from '../../util/logger'
 
 export type MiddlewareProvider<TEvent> = { use: EventSubscriber<TEvent> }
 
@@ -40,7 +40,7 @@ export const createProxyService = async (
   })
 
   const server = createServer(async (req, res) => {
-    // dbg(`Incoming request ${req.headers.host}${req.url}`)
+    dbg(`Incoming request ${req.headers.host}${req.url}`)
     // dbg(req.headers)
     res.setHeader(`Access-Control-Allow-Origin`, `*`)
 
@@ -85,6 +85,7 @@ export const getProxyService = async (config?: ServicesConfig) => {
   if (config) {
     _service?.shutdown()
     _service = await createProxyService(config)
+    dbg(`Proxy service initialized`)
   }
   if (!_service) {
     throw new Error(`Attempt to use proxy service before initialization`)

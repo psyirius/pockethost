@@ -25,23 +25,6 @@ export const createInstanceMixin = (context: MixinContext) => {
     }
   )
 
-  const getInstanceBySubdomain = safeCatch(
-    `getInstanceBySubdomain`,
-    (subdomain: string): Promise<[InstanceFields, UserFields] | []> =>
-      client
-        .collection('instances')
-        .getFirstListItem<InstanceFields>(`subdomain = '${subdomain}'`)
-        .then((instance) => {
-          if (!instance) return []
-          return client
-            .collection('users')
-            .getOne<UserFields>(instance.uid)
-            .then((user) => {
-              return [instance, user]
-            })
-        })
-  )
-
   const updateInstance = safeCatch(
     `updateInstance`,
     async (instanceId: InstanceId, fields: Partial<InstanceFields>) => {
@@ -58,11 +41,41 @@ export const createInstanceMixin = (context: MixinContext) => {
     }
   )
 
-  const getInstance = safeCatch(
-    `getInstance`,
-    async (instanceId: InstanceId) => {
-      return client.collection('instances').getOne<InstanceFields>(instanceId)
+  const getInstanceById = safeCatch(
+    `getInstanceById`,
+    async (
+      instanceId: InstanceId
+    ): Promise<[InstanceFields, UserFields] | []> => {
+      return client
+        .collection('instances')
+        .getOne<InstanceFields>(instanceId)
+        .then((instance) => {
+          if (!instance) return []
+          return client
+            .collection('users')
+            .getOne<UserFields>(instance.uid)
+            .then((user) => {
+              return [instance, user]
+            })
+        })
     }
+  )
+
+  const getInstanceBySubdomain = safeCatch(
+    `getInstanceBySubdomain`,
+    (subdomain: string): Promise<[InstanceFields, UserFields] | []> =>
+      client
+        .collection('instances')
+        .getFirstListItem<InstanceFields>(`subdomain = '${subdomain}'`)
+        .then((instance) => {
+          if (!instance) return []
+          return client
+            .collection('users')
+            .getOne<UserFields>(instance.uid)
+            .then((user) => {
+              return [instance, user]
+            })
+        })
   )
 
   const updateInstances = safeCatch(
@@ -113,7 +126,7 @@ export const createInstanceMixin = (context: MixinContext) => {
     updateInstance,
     updateInstanceStatus,
     getInstanceBySubdomain,
-    getInstance,
+    getInstanceById,
     updateInstanceSeconds,
     updateInstances,
     createInstance,

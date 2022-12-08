@@ -24,7 +24,12 @@ export const createBackupService = async (
       // dbg(`No backups requested`)
       return true
     }
-    const instance = await client.getInstance(backupRec.instanceId)
+    const [instance] = await client.getInstanceById(backupRec.instanceId)
+    if (!instance) {
+      throw new Error(
+        `Instance in backup record does not exist ${backupRec.instanceId}`
+      )
+    }
     const _update = (fields: Partial<BackupFields>) =>
       limiter.schedule(() => client.updateBackup(backupRec.id, fields))
     try {
@@ -77,6 +82,7 @@ export const getBackupService = async (config?: ServicesConfig) => {
   if (config) {
     _service?.shutdown()
     _service = await createBackupService(config)
+    dbg(`Backup service initialized`)
   }
   if (!_service) {
     throw new Error(`Attempt to use backup service before initialization`)

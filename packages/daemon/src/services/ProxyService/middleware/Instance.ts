@@ -16,7 +16,7 @@ export const instance = async (
     if (isHandled) return // Already handled, do not process
 
     const instanceService = await getInstanceService()
-    const instance = await instanceService.getInstance(subdomain)
+    const instance = await instanceService.getInstanceBySubdomain(subdomain)
     if (!instance) {
       throw new Error(
         `${host} not found. Please check the instance URL and try again, or create one at ${PUBLIC_APP_PROTOCOL}://${PUBLIC_APP_DOMAIN}.`
