@@ -1,3 +1,4 @@
+import { getClientService } from '$services/ClientService'
 import {
   RestoreInstancePayload,
   RestoreInstancePayloadSchema,
@@ -5,12 +6,13 @@ import {
   RpcCommands,
 } from '@pockethost/schema'
 import { assertTruthy } from '@pockethost/tools'
-import { RpcHandlerFactory } from '..'
+import { getRpcService, RpcHandlerFactory } from '..'
 
-export const registerRestoreInstanceHandler: RpcHandlerFactory = ({
-  client,
-  rpcService: { registerCommand },
-}) => {
+export const registerRestoreInstanceHandler: RpcHandlerFactory = async () => {
+  const client = await getClientService()
+  const rpcService = await getRpcService()
+  const { registerCommand } = rpcService
+
   registerCommand<RestoreInstancePayload, RestoreInstanceResult>(
     RpcCommands.RestoreInstance,
     RestoreInstancePayloadSchema,
