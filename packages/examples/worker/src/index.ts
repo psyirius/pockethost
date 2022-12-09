@@ -1,5 +1,12 @@
 // @deno-types="https://cdn.jsdelivr.net/npm/pocketbase@^0.8.0/dist/pocketbase.es.d.ts"
 import Pocketbase from 'https://cdn.jsdelivr.net/npm/pocketbase@^0.8.0'
+import { EventSource as EventSourceClass } from 'https://deno.land/x/eventsource@v0.0.2/mod.ts'
+declare global {
+  // deno-lint-ignore no-var
+  var EventSource: typeof EventSourceClass
+}
+
+globalThis.EventSource = EventSourceClass
 
 const POCKETBASE_URL = Deno.env.get('POCKETBASE_URL')
 const ADMIN_LOGIN = Deno.env.get('ADMIN_LOGIN')
@@ -24,7 +31,9 @@ const client = new Pocketbase(POCKETBASE_URL)
 try {
   await client.admins.authWithPassword(ADMIN_LOGIN, ADMIN_PASSWORD)
   console.log(`Successfully logged in.`)
-  console.log(client.authStore)
+  client.collection('orders').subscribe('*', (data) => {
+    console.log(`Got a data record`, data)
+  })
 } catch (e) {
   console.error(e, JSON.stringify(e))
 }

@@ -311,35 +311,41 @@ export const createPocketbaseClient = (config: PocketbaseClientConfig) => {
   ): (() => void) => {
     const auth = client.authStore.exportToCookie()
 
-    dbg(`Subscribing to ${url}`)
-
     const controller = new AbortController()
     const signal = controller.signal
-    fetchEventSource(`${url}/logs`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        instanceId,
-        n: nInitial,
-        auth,
-      }),
-      onmessage: (event) => {
-        // dbg(`Got stream event`, event)
-        const {} = event
-        const log = JSON.parse(event.data) as WorkerLogFields
-        // dbg(`Log is`, log)
-        update(log)
-      },
-      onopen: async (response) => {
-        dbg(`Stream is open`, response)
-      },
-      onerror: (e) => {
-        dbg(`Stream error`, e)
-      },
-      signal,
-    })
+    const continuallyFetchFromEventSource = () => {
+      dbg(`Subscribing to ${url}`)
+      fetchEventSource(`${url}/logs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          instanceId,
+          n: nInitial,
+          auth,
+        }),
+        onmessage: (event) => {
+          // dbg(`Got stream event`, event)
+          const {} = event
+          const log = JSON.parse(event.data) as WorkerLogFields
+          // dbg(`Log is`, log)
+          update(log)
+        },
+        onopen: async (response) => {
+          dbg(`Stream is open`, response)
+        },
+        onerror: (e) => {
+          dbg(`Stream error`, e)
+        },
+        onclose: () => {
+          setTimeout(continuallyFetchFromEventSource, 100)
+          dbg(`Stream closed`)
+        },
+        signal,
+      })
+    }
+    continuallyFetchFromEventSource()
 
     return () => {
       controller.abort()

@@ -20,6 +20,7 @@ export type SqliteServiceApi = {
   all: SqliteDatabase['all']
   get: SqliteDatabase['get']
   migrate: SqliteDatabase['migrate']
+  exec: SqliteDatabase['exec']
   subscribe: <TRecord extends JsonObject>(
     cb: SqliteChangeHandler<TRecord>
   ) => SqliteUnsubscribe
@@ -36,10 +37,13 @@ export const createSqliteService = (config: SqliteServiceConfig) => {
   const limiter = new Bottleneck({ maxConcurrent: 1 })
 
   const getDatabase = async (filename: string): Promise<SqliteServiceApi> => {
+    // dbg(`Fetching database for ${filename}`, connections)
     if (!connections[filename]) {
+      // dbg(`${filename} is not yet opened`)
+
       connections[filename] = new Promise<SqliteServiceApi>(async (resolve) => {
         const db = await open({ filename, driver: Database })
-
+        // dbg(`Database opened`)
         db.db.addListener(
           'change',
           async (
@@ -48,6 +52,7 @@ export const createSqliteService = (config: SqliteServiceConfig) => {
             table: string,
             rowId: number
           ) => {
+            // dbg(`Got a raw change event`, { eventType, database, table, rowId })
             if (eventType === 'delete') return // Not supported
 
             await limiter.schedule(async () => {
@@ -65,6 +70,7 @@ export const createSqliteService = (config: SqliteServiceConfig) => {
         )
 
         cm.add(() => {
+          dbg(`Closing connection`)
           db.db.removeAllListeners()
           db.close()
         })
@@ -75,6 +81,7 @@ export const createSqliteService = (config: SqliteServiceConfig) => {
           all: db.all.bind(db),
           get: db.get.bind(db),
           migrate: db.migrate.bind(db),
+          exec: db.exec.bind(db),
           subscribe: onChange,
         }
         resolve(api)
@@ -84,6 +91,7 @@ export const createSqliteService = (config: SqliteServiceConfig) => {
   }
 
   const shutdown = async () => {
+    dbg(`Shutting down sqlite service`)
     await limiter.stop()
     await cm.shutdown()
   }

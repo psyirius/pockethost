@@ -120,6 +120,7 @@ export const realtimeLog = (
     let _seenIds: { [_: RecordId]: boolean } | undefined = {}
 
     const unsub = db.subscribe<WorkerLogFields>((e) => {
+      // dbg(`Caught db modification ${logDbPath}`, e)
       const { table, record } = e
       if (table !== 'logs') return
       if (_seenIds) {
@@ -146,19 +147,21 @@ export const realtimeLog = (
     if (nInitialRecords > 0) {
       dbg(`Fetching initial ${nInitialRecords} logs to prime history`)
       const recs = await db.all<WorkerLogFields[]>(
-        `select * from logs order by updated limit ${nInitialRecords}`
+        `select * from logs order by created desc limit ${nInitialRecords}`
       )
-      recs.forEach((rec) => {
-        limiter.schedule(async () => {
-          if (_seenIds?.[rec.id]) return // Skip if update already emitted
-          const evt = mkEvent(`log`, rec)
-          dbg(
-            `Dispatching SSE initial log event from ${instance.subdomain} (${instance.id})`,
-            evt
-          )
-          return write(evt)
+      recs
+        .sort((a, b) => (a.created < b.created ? -1 : 1))
+        .forEach((rec) => {
+          limiter.schedule(async () => {
+            if (_seenIds?.[rec.id]) return // Skip if update already emitted
+            const evt = mkEvent(`log`, rec)
+            dbg(
+              `Dispatching SSE initial log event from ${instance.subdomain} (${instance.id})`,
+              evt
+            )
+            return write(evt)
+          })
         })
-      })
       limiter.schedule(async () => {
         // Set seenIds to `undefined` so the subscribe listener stops tracking them.
         _seenIds = undefined

@@ -13,10 +13,18 @@ export const addTailCommand = (program: Command) => {
       const { instance, path } = await ensureWorker()
 
       const { watchInstanceLog } = client()
+      let lastSeen: string | undefined = undefined
       const unsub = watchInstanceLog(
         instance.id,
         (log) => {
-          console.log(`[${log.created}] [${log.stream}] ${log.message.trim()}`)
+          const dt = log.created
+          // dbg(
+          //   `Examining ${log.id} ${dt} against ${lastSeen}`,
+          //   lastSeen ? dt < lastSeen : 'false'
+          // )
+          if (lastSeen && dt < lastSeen) return
+          lastSeen = dt
+          console.log(`[${dt}] [${log.stream}] ${log.message.trim()}`)
         },
         nInitial
       )
