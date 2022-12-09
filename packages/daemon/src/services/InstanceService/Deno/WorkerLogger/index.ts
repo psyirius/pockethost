@@ -38,7 +38,7 @@ const mkApi = (logDbPath: string) => {
         updated: pocketNow(),
       }
       const sql = conn('logs').insert(_in).toString()
-      dbg(`Writing log for ${logDbPath}`, _in, sql)
+      // dbg(`Writing log for ${logDbPath}`, _in, sql)
       const sqliteService = await getSqliteService()
       const db = await sqliteService.getDatabase(logDbPath)
       await db.exec(sql)
