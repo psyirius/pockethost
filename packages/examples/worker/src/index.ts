@@ -1,4 +1,4 @@
-import { PocketBase } from 'https://cdn.jsdelivr.net/gh/benallfree/pockethost@deno-workers/packages/deno-worker/index.ts'
+import { PocketBase } from 'https://raw.githubusercontent.com/benallfree/pockethost/deno-workers/packages/deno-worker/index.ts'
 
 const POCKETBASE_URL = Deno.env.get('POCKETBASE_URL')
 const ADMIN_LOGIN = Deno.env.get('ADMIN_LOGIN')
