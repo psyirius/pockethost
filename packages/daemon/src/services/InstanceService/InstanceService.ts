@@ -138,14 +138,14 @@ export const createInstanceService = async (config: InstanceServiceConfig) => {
               port: newPort,
               instance: freshInstance,
             })
-            cancel = shutdownManager.add(api.shutdown)
+            cancel = shutdownManager.add(() => api?.shutdown())
           }
         }
       })()
       reloadDeno()
 
       const tm = createTimerManager({})
-      shutdownManager.add(tm.shutdown)
+      shutdownManager.add(() => tm.shutdown())
       let openRequestCount = 0
       let lastRequest = now()
       const RECHECK_TTL = 1000 // 1 second

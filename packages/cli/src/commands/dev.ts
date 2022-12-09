@@ -30,6 +30,7 @@ export const addDevCommand = (program: Command) => {
         `--allow-env=POCKETBASE_URL,ADMIN_LOGIN,ADMIN_PASSWORD`,
         `--allow-net=${instanceHost}:443`,
         `--unsafely-ignore-certificate-errors`,
+        `--location=https://${instanceHost}`,
         `--watch`,
         path,
       ]

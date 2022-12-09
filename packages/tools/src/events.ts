@@ -24,7 +24,7 @@ export const createEvent = <TPayload>(
 ): [EventSubscriber<TPayload>, EventEmitter<TPayload>] => {
   let i = 0
   const callbacks: any = {}
-  let callbacksArray: EventHandler<TPayload>[]
+  let callbacksArray: EventHandler<TPayload>[] = []
   const onEvent = (cb: EventHandler<TPayload>) => {
     const id = i++
     callbacks[id] = cb
