@@ -152,16 +152,25 @@ export const instanceService = mkSingleton(
 
           dbg(`Starting instance`)
           await instanceLogger.write(`Starting instance`)
-          const childProcess = await pbService.spawn({
-            command: 'serve',
-            slug: instance.id,
-            port: newPort,
-            version: instance.version,
-            onUnexpectedStop: (code) => {
-              warn(`${subdomain} exited unexpectedly with ${code}`)
-              api.shutdown()
-            },
-          })
+          const childProcess = await (async () => {
+            try {
+              const cp = await pbService.spawn({
+                command: 'serve',
+                slug: instance.id,
+                port: newPort,
+                version: instance.version,
+                onUnexpectedStop: (code) => {
+                  warn(`${subdomain} exited unexpectedly with ${code}`)
+                  api.shutdown()
+                },
+              })
+              return cp
+            } catch (e) {
+              throw new Error(
+                `Could not launch PocketBase ${instance.version}. It may be time to upgrade.`
+              )
+            }
+          })()
 
           const { pid } = childProcess
           assertTruthy(pid, `Expected PID here but got ${pid}`)
