@@ -1,5 +1,5 @@
 import { PUBLIC_APP_DOMAIN } from '$constants'
-import { logger, mkSingleton } from '@pockethost/common'
+import { Logger, mkSingleton, SingletonBaseConfig } from '@pockethost/common'
 import { isFunction } from '@s-libs/micro-dash'
 import {
   createServer,
@@ -21,14 +21,17 @@ export type ProxyMiddleware = (
     coreInternalUrl: string
     proxy: Server
     host: string
-  }
+  },
+  logger: Logger
 ) => void | Promise<void>
 
-export type ProxyServiceConfig = {
+export type ProxyServiceConfig = SingletonBaseConfig & {
   coreInternalUrl: string
 }
 export const proxyService = mkSingleton(async (config: ProxyServiceConfig) => {
-  const { dbg, error, info, trace, warn } = logger().create('ProxyService')
+  const { logger } = config
+  const _proxyLogger = logger.create('ProxyService')
+  const { dbg, error, info, trace, warn } = _proxyLogger
 
   const { coreInternalUrl } = config
 
@@ -89,7 +92,8 @@ export const proxyService = mkSingleton(async (config: ProxyServiceConfig) => {
     handler: ProxyMiddleware,
     handlerName: string
   ) => {
-    const { dbg, trace } = logger().create(`ProxyService:${handlerName}`)
+    const _handlerLogger = _proxyLogger.create(`${handlerName}`)
+    const { dbg, trace } = _handlerLogger
     dbg({ subdomainFilter, urlFilters })
 
     const _urlFilters = Array.isArray(urlFilters)
@@ -133,7 +137,12 @@ export const proxyService = mkSingleton(async (config: ProxyServiceConfig) => {
         return
       }
       dbg(`${url} matches ${urlFilters}, sending to handler`)
-      return handler(req, res, { host, subdomain, coreInternalUrl, proxy })
+      return handler(
+        req,
+        res,
+        { host, subdomain, coreInternalUrl, proxy },
+        _handlerLogger
+      )
     })
   }
 
