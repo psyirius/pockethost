@@ -12,7 +12,8 @@ export const tryFetch = (logger: Logger) =>
             dbg(`Checking preflight`)
             const shouldFetch = await preflight()
             if (!shouldFetch) {
-              throw new Error(`tryFetch failed preflight, aborting`)
+              reject(new Error(`tryFetch failed preflight, aborting`))
+              return
             }
           }
           try {

@@ -81,7 +81,7 @@ export const createLogger = (config: Partial<Config>) => {
       pfx: [..._config.pfx, s],
     })
 
-  const breadcrumb = (s: string) => pfx.push(s)
+  const breadcrumb = (s?: string) => (s ? pfx.push(s) : null)
 
   // Compatibility func
   const child = (extra: any) => create(JSON.stringify(extra))

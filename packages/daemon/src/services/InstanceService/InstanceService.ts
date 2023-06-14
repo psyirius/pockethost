@@ -93,8 +93,8 @@ export const instanceService = mkSingleton(
     const getInstance = (subdomain: string) =>
       instanceLimiter
         .schedule(async () => {
-          const _subdomainlogger = _instanceLogger.create(subdomain)
-          const { dbg, warn, error } = _subdomainlogger
+          const _subdomainLogger = _instanceLogger.create(subdomain)
+          const { dbg, warn, error } = _subdomainLogger
           dbg(`Getting instance`)
           {
             const instance = instances[subdomain]
@@ -113,7 +113,7 @@ export const instanceService = mkSingleton(
             )
           }
           dbg(`Instance found`)
-          _subdomainlogger.breadcrumb(instance.id)
+          _subdomainLogger.breadcrumb(instance.id)
 
           dbg(`Checking for verified account`)
           if (!owner?.verified) {
@@ -134,12 +134,12 @@ export const instanceService = mkSingleton(
             error(`Failed to get port for ${subdomain}`)
             throw e
           })
-          _subdomainlogger.breadcrumb(newPort.toString())
+          _subdomainLogger.breadcrumb(newPort.toString())
           dbg(`Found port: ${newPort}`)
 
           const instanceLogger = await instanceLoggerService().get(
             instance.id,
-            _subdomainlogger
+            { parentLogger: _subdomainLogger }
           )
 
           await clientLimiter.schedule(() => {
@@ -217,7 +217,7 @@ export const instanceService = mkSingleton(
               port: newPort,
               shutdown: safeCatch(
                 `Instance ${subdomain} invocation ${invocation.id} pid ${pid} shutdown`,
-                _subdomainlogger,
+                _subdomainLogger,
                 async () => {
                   dbg(`Shutting down`)
                   await instanceLogger.write(`Shutting down instance`)
@@ -255,7 +255,7 @@ export const instanceService = mkSingleton(
 
             {
               tm.repeat(
-                safeCatch(`idleCheck`, _subdomainlogger, async () => {
+                safeCatch(`idleCheck`, _subdomainLogger, async () => {
                   raw(
                     `${subdomain} idle check: ${openRequestCount} open requests`
                   )
@@ -280,7 +280,7 @@ export const instanceService = mkSingleton(
             }
 
             {
-              const uptime = safeCatch(`uptime`, _subdomainlogger, async () => {
+              const uptime = safeCatch(`uptime`, _subdomainLogger, async () => {
                 raw(`${subdomain} uptime`)
                 await clientLimiter.schedule(() =>
                   client.pingInvocation(invocation)

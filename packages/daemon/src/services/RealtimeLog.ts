@@ -21,7 +21,8 @@ const mkEvent = (name: string, data: JsonifiableObject) => {
 export type RealtimeLog = ReturnType<typeof realtimeLog>
 export const realtimeLog = mkSingleton(async (config: RealtimeLogConfig) => {
   const { logger } = config
-  const { dbg, error } = logger.create(`RealtimeLog`)
+  const _realtimeLogger = logger.create(`RealtimeLog`)
+  const { dbg, error } = _realtimeLogger
 
   ;(await proxyService()).use(
     PUBLIC_APP_DB,
@@ -32,7 +33,8 @@ export const realtimeLog = mkSingleton(async (config: RealtimeLogConfig) => {
         return
       }
 
-      const { dbg, error, trace } = logger.create(`${subdomain}:${host}`)
+      const _requestLogger = logger.create(`${subdomain}`)
+      const { dbg, error, trace } = _requestLogger
 
       const write = async (data: any) => {
         return new Promise<void>((resolve) => {
@@ -114,10 +116,9 @@ export const realtimeLog = mkSingleton(async (config: RealtimeLogConfig) => {
       /**
        * Get a database connection
        */
-      const instanceLogger = await instanceLoggerService().get(
-        instanceId,
-        logger
-      )
+      const instanceLogger = await instanceLoggerService().get(instanceId, {
+        parentLogger: _requestLogger,
+      })
       const { subscribe } = instanceLogger
 
       /**

@@ -41,7 +41,7 @@ export const proxyService = mkSingleton(async (config: ProxyServiceConfig) => {
   })
 
   const server = createServer(async (req, res) => {
-    dbg(`Incoming request ${req.headers.host}/${req.url}`)
+    dbg(`Incoming request ${req.method} ${req.headers.host}/${req.url}`)
     if (!req.headers.host?.endsWith(PUBLIC_APP_DOMAIN)) {
       warn(
         `Request for ${req.headers.host} rejected because host does not end in ${PUBLIC_APP_DOMAIN}`
@@ -109,6 +109,10 @@ export const proxyService = mkSingleton(async (config: ProxyServiceConfig) => {
       if (!host) {
         throw new Error(`Host not found`)
       }
+      const _requestLogger = _handlerLogger.create(host)
+      const { dbg, trace } = _requestLogger
+      _requestLogger.breadcrumb(req.method)
+      _requestLogger.breadcrumb(req.url)
       const [subdomain, ...junk] = host.split('.')
       if (!subdomain) {
         throw new Error(`${host} has no subdomain.`)
@@ -141,7 +145,7 @@ export const proxyService = mkSingleton(async (config: ProxyServiceConfig) => {
         req,
         res,
         { host, subdomain, coreInternalUrl, proxy },
-        _handlerLogger
+        _requestLogger
       )
     })
   }

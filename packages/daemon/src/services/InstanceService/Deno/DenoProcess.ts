@@ -37,7 +37,9 @@ export const createDenoProcess = async (config: DenoProcessConfig) => {
     path,
   ]
 
-  const denoLogger = await instanceLoggerService().get(instance.id, _denoLogger)
+  const denoLogger = await instanceLoggerService().get(instance.id, {
+    parentLogger: _denoLogger,
+  })
 
   const denoWrite = (
     message: string,
