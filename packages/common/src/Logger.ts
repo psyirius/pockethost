@@ -81,6 +81,8 @@ export const createLogger = (config: Partial<Config>) => {
       pfx: [..._config.pfx, s],
     })
 
+  const breadcrumb = (s: string) => pfx.push(s)
+
   // Compatibility func
   const child = (extra: any) => create(JSON.stringify(extra))
 
@@ -94,6 +96,7 @@ export const createLogger = (config: Partial<Config>) => {
     child,
     trace,
     debug: dbg,
+    breadcrumb,
     shutdown() {
       dbg(`Logger shutting down`)
     },

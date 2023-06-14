@@ -6,7 +6,6 @@ import {
   BackupStatus,
   InstanceFields,
   InstanceId,
-  logger,
   safeCatch,
 } from '@pockethost/common'
 import { MixinContext } from './PbClient'
@@ -14,12 +13,14 @@ import { MixinContext } from './PbClient'
 export type BackupApi = ReturnType<typeof createBackupMixin>
 
 export const createBackupMixin = (context: MixinContext) => {
-  const { dbg } = logger().create('BackupMixin')
+  const { logger } = context
+  const { dbg } = logger.create('BackupMixin')
 
   const { client, rawDb } = context
 
   const createBackup = safeCatch(
     `createBackup`,
+    logger,
     async (instanceId: InstanceId) => {
       const instance = await client
         .collection('instances')
@@ -42,12 +43,13 @@ export const createBackupMixin = (context: MixinContext) => {
 
   const updateBackup = safeCatch(
     `updateBackup`,
+    logger,
     async (backupId: BackupRecordId, fields: BackupFields_Update) => {
       await client.collection('backups').update(backupId, fields)
     }
   )
 
-  const resetBackups = safeCatch(`resetBackups`, async () =>
+  const resetBackups = safeCatch(`resetBackups`, logger, async () =>
     rawDb('backups')
       .whereNotIn('status', [
         BackupStatus.FinishedError,
@@ -56,7 +58,7 @@ export const createBackupMixin = (context: MixinContext) => {
       .delete()
   )
 
-  const getNextBackupJob = safeCatch(`getNextBackupJob`, async () => {
+  const getNextBackupJob = safeCatch(`getNextBackupJob`, logger, async () => {
     return client
       .collection('backups')
       .getList<BackupFields>(1, 1, {
@@ -69,6 +71,7 @@ export const createBackupMixin = (context: MixinContext) => {
 
   const getBackupJob = safeCatch(
     `getBackupJob`,
+    logger,
     async (backupId: BackupRecordId) => {
       return client.collection('backups').getOne<BackupFields>(backupId)
     }

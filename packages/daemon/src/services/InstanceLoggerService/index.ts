@@ -4,12 +4,13 @@ import {
   InstanceId,
   InstanceLogFields,
   InstanceLogFields_Create,
-  logger,
+  Logger,
   mkSingleton,
   newId,
   pocketNow,
   RecordId,
   safeCatch,
+  SingletonBaseConfig,
   StreamNames,
 } from '@pockethost/common'
 import { mkdirSync } from 'fs'
@@ -18,8 +19,9 @@ import { dirname, join } from 'path'
 import { AsyncReturnType } from 'type-fest'
 
 export type InstanceLogger = AsyncReturnType<typeof mkApi>
-const mkApi = async (logDbPath: string) => {
-  const { dbg } = logger().create(`InstanceLogger ${logDbPath}`)
+const mkApi = async (logDbPath: string, logger: Logger) => {
+  const _dbLogger = logger.create(`${logDbPath}`)
+  const { dbg } = _dbLogger
 
   const { getDatabase } = sqliteService()
   const db = await getDatabase(logDbPath)
@@ -33,7 +35,8 @@ const mkApi = async (logDbPath: string) => {
   })
 
   const write = safeCatch(
-    `workerLogger:write`,
+    `write`,
+    _dbLogger,
     async (message: string, stream: StreamNames = StreamNames.Info) => {
       const _in: InstanceLogFields_Create = {
         id: newId(),
@@ -76,10 +79,14 @@ const instances: {
   [instanceId: InstanceId]: Promise<InstanceLogger>
 } = {}
 
-export const createInstanceLogger = (instanceId: InstanceId) => {
+export const createInstanceLogger = (
+  instanceId: InstanceId,
+  logger: Logger
+) => {
   if (!instances[instanceId]) {
     instances[instanceId] = new Promise<InstanceLogger>(async (resolve) => {
-      const { dbg } = logger().create(`WorkerLogger:${instanceId}`)
+      const _workerLogger = logger.create(`InstanceLogger`)
+      const { dbg } = _workerLogger
 
       const logDbPath = join(
         DAEMON_PB_DATA_DIR,
@@ -98,7 +105,7 @@ export const createInstanceLogger = (instanceId: InstanceId) => {
         migrationsPath: join(__dirname, 'migrations'),
       })
 
-      const api = await mkApi(logDbPath)
+      const api = await mkApi(logDbPath, _workerLogger)
       await api.write(`Ran migrations`, StreamNames.System)
       resolve(api)
     })
@@ -107,13 +114,18 @@ export const createInstanceLogger = (instanceId: InstanceId) => {
   return instances[instanceId]!
 }
 
-export const instanceLoggerService = mkSingleton(() => {
-  const { dbg } = logger().create(`InstanceLoggerService`)
-  dbg(`Starting up`)
-  return {
-    get: createInstanceLogger,
-    shutdown() {
-      dbg(`Shutting down`)
-    },
+export type InstanceLoggerServiceConfig = SingletonBaseConfig
+
+export const instanceLoggerService = mkSingleton(
+  (config: InstanceLoggerServiceConfig) => {
+    const { logger } = config
+    const { dbg } = logger.create(`InstanceLoggerService`)
+    dbg(`Starting up`)
+    return {
+      get: createInstanceLogger,
+      shutdown() {
+        dbg(`Shutting down`)
+      },
+    }
   }
-})
+)

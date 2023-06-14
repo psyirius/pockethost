@@ -1,9 +1,9 @@
 import { PUBLIC_APP_DB } from '$src/constants'
 import {
   InstanceFields,
-  logger,
   mkSingleton,
   RecordId,
+  SingletonBaseConfig,
 } from '@pockethost/common'
 import Bottleneck from 'bottleneck'
 import { text } from 'node:stream/consumers'
@@ -12,7 +12,7 @@ import { JsonifiableObject } from 'type-fest/source/jsonifiable'
 import { instanceLoggerService } from './InstanceLoggerService'
 import { proxyService } from './ProxyService'
 
-export type RealtimeLogConfig = {}
+export type RealtimeLogConfig = SingletonBaseConfig & {}
 
 const mkEvent = (name: string, data: JsonifiableObject) => {
   return `event: ${name}\ndata: ${JSON.stringify(data)}\n\n`
@@ -20,20 +20,19 @@ const mkEvent = (name: string, data: JsonifiableObject) => {
 
 export type RealtimeLog = ReturnType<typeof realtimeLog>
 export const realtimeLog = mkSingleton(async (config: RealtimeLogConfig) => {
-  const { dbg, error } = logger().create(`RealtimeLog.ts`)
+  const { logger } = config
+  const { dbg, error } = logger.create(`RealtimeLog`)
 
   ;(await proxyService()).use(
     PUBLIC_APP_DB,
     '/logs',
-    async (req, res, meta) => {
+    async (req, res, meta, logger) => {
       const { subdomain, host, coreInternalUrl } = meta
       if (!req.url?.startsWith('/logs')) {
         return
       }
 
-      const { dbg, error, trace } = logger().create(
-        `RealtimeLog:${subdomain}:${host}`
-      )
+      const { dbg, error, trace } = logger.create(`${subdomain}:${host}`)
 
       const write = async (data: any) => {
         return new Promise<void>((resolve) => {
@@ -115,7 +114,10 @@ export const realtimeLog = mkSingleton(async (config: RealtimeLogConfig) => {
       /**
        * Get a database connection
        */
-      const instanceLogger = await instanceLoggerService().get(instanceId)
+      const instanceLogger = await instanceLoggerService().get(
+        instanceId,
+        logger
+      )
       const { subscribe } = instanceLogger
 
       /**
@@ -182,8 +184,6 @@ export const realtimeLog = mkSingleton(async (config: RealtimeLogConfig) => {
           })
           .catch(error)
       }
-
-      return true
     },
     `RealtimeLogService`
   )
