@@ -5,6 +5,7 @@
   import InstanceGeneratorWidget from '$components/InstanceGeneratorWidget.svelte'
   import { PUBLIC_APP_DOMAIN } from '$src/env'
   import { isUserLoggedIn } from '$util/stores'
+  import MiniStat from './MiniStat.svelte'
 </script>
 
 <svelte:head>
@@ -12,6 +13,7 @@
 </svelte:head>
 
 <div class="container">
+  <MiniStat />
   <div class="row align-items-center justify-content-between hero">
     <div class="col-lg-6 mb-5 mb-lg-0">
       <h2>Deploy <span>PocketBase</span> in 30 seconds</h2>
@@ -170,7 +172,7 @@
     background-image: var(--gradient-white-lime);
   }
 
-  .section{
+  .section {
     padding: 120px 0;
   }
   .section h2 {

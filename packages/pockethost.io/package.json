@@ -49,6 +49,7 @@
     "random-word-slugs": "^0.1.6",
     "sass": "^1.54.9",
     "svelte-highlight": "^6.2.1",
+    "svelte-tiny-linked-charts": "^1.2.1",
     "type-fest": "^3.3.0",
     "url-pattern": "^1.0.3",
     "vite-plugin-markdown": "^2.1.0"
