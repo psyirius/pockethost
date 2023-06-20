@@ -1,7 +1,7 @@
 import { DEBUG, TRACE } from '$constants'
 import { clientService } from '$services'
 import { InstanceStatus, logger as loggerService } from '@pockethost/common'
-import { random, range, shuffle } from '@s-libs/micro-dash'
+import { random, range, shuffle, values } from '@s-libs/micro-dash'
 import { customAlphabet } from 'nanoid'
 import fetch from 'node-fetch'
 import { serialAsyncExecutionGuard } from './util/serialAsyncExecutionGuard'
@@ -56,6 +56,11 @@ global.EventSource = require('eventsource')
       const instance = shuffle(instances)
         .filter((v) => !excluded[v.id])
         .pop()
+      dbg(
+        `There are ${instances.length} instances and ${
+          values(excluded).length
+        } excluded`
+      )
       if (!instance) throw new Error(`No instance to grab`)
 
       const { subdomain, id } = instance
@@ -63,11 +68,13 @@ global.EventSource = require('eventsource')
       const url = `https://${subdomain}.pockethost.test/_`
       const res = await fetch(url)
       if (res.status !== 200) {
-        dbg(`${url} failed with ${res.status}`)
+        dbg(
+          `${url} response error ${res.status} ${res.body?.read().toString()}`
+        )
         excluded[id] = true
       }
     } catch (e) {
-      error(`${url} failed with: ${e}`)
+      error(`${url} failed with: ${e}`, JSON.stringify(e))
     } finally {
       setTimeout(stress, random(50, 500))
     }
